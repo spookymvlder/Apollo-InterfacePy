@@ -1,0 +1,151 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Character Generator
+{% endblock %}
+
+{% block main %}
+<div class="container-center">
+    <h1>Character Generator</h1>
+    <form method="post" action="/">
+        <div class="mb-3">
+            <div class="btn-group">
+                <select class="form-select mx-auto w-auto" name="sex">
+                    <option selected value="">Sex</option>
+                    {% for sex in sexes %}
+                    <option value="{{ sex }}">{{ sex }}</option>
+                    {% endfor %}
+                </select>
+                <select class="form-select mx-auto w-auto" name="faction">
+                    <option selected value="">Faction</option>
+                    {% for faction in factions %}
+                    <option value="{{ faction }}">{{ faction }}</option>
+                    {% endfor %}
+                </select>
+                <select class="form-select mx-auto w-auto" name="pstat">
+                    <option selected value="">Primary Stat</option>
+                    {% for stat in statlist %}
+                    <option value="{{ stat }}">{{ stat }}</option>
+                    {% endfor %}
+                </select>
+                <select class="form-select mx-auto w-auto" name="type">
+                    <option selected value="">Type</option>
+                    {% for type in types %}
+                    <option value="{{ type }}">{{ type }}</option>
+                    {% endfor %}
+                </select>
+                <select class="form-select mx-auto w-auto" name="namelist">
+                    <option selected value="">Name List Source</option>
+                    {% for name in namelist %}
+                    <option value="{{ name }}">{{ name }}</option>
+                    {% endfor %}
+                </select>
+                <button class="btn btn-primary" type="submit" id="generate" value="generate">Generate New</button>
+            </div>
+            <p></p>
+        </div>
+    </form>
+    <div class="section primary">
+        <form class="row gy-2 gx-3 align-items-center gap-3 border-success" method="post" action="/validatenpc">
+            <div class="row mb-3">
+                <div class="col">
+                    <label class="visually-hidden" for="genforename">Forename</label>
+                    <input type="text" class="form-control" id="genforename" name="genforename" value="{{ npc.forename }}">
+                </div>
+                <div class="col">
+                    <label class="visually-hidden" for="gensurname">Surname</label>
+                    <input type="text" class="form-control" id="gensurname" name="gensurname" value="{{ npc.surname }}">
+                </div>
+                <div class="col-auto">
+                    <label class="visually-hidden" for="gensex">Sex</label>
+                    <div class="input-group">
+                        <div class="input-group-text">Sex</div>
+                        <select class="form-select" id="gensex" name="gensex">
+                            <option selected value="{{ npc.sex }}">{{ npc.sex }}</option>
+                            {% for sex in sexes if sex != npc.sex %}
+                            <option value="{{sex}}">{{sex}}</option>
+                            {% endfor %}
+                        </select>
+                    </div> 
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    <label class="visually-hidden" for="genjob">Job</label>
+                    <input type="text" class="form-control" id="genjob" name="genjob" value="{{ npc.job }}">
+                </div>
+                <div class="col">
+                    <label class="visually-hidden" for="gentype">Type</label>
+                    <select class="form-select" id="gentype" name="gentype">
+                        <option selected value="{{ npc.type }}">{{ npc.type }}</option>
+                        {% for type in types if type != npc.type %}
+                        <option value="{{type}}">{{type}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col">
+                    <label class="visually-hidden" for="genfaction">Faction</label>
+                    <select class="form-select" id="genfaction" name="genfaction">
+                        <option selected value="{{ npcfaction }}">{{ npcfaction }}</option>
+                        {% for faction in factions if faction != npcfaction %}
+                        <option value="{{faction}}">{{faction}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-auto">
+                    <label class="visually-hidden" for="genpstat">Primary Stat</label>
+                    <div class="input-group">
+                        <div class="input-group-text">Primary Stat</div>
+                        <select class="form-select" id="genpstat" name="genpstat">
+                            <option selected value="{{ pstat }}">{{ pstat }}</option>
+                            {% for stat in statlist if stat != pstat %}
+                            <option value="{{stat}}">{{stat}}</option>
+                            {% endfor %}
+                        </select>
+                    </div> 
+                </div>
+                <div class="col">
+                    <label class="visually-hidden" for="genstr">Strength</label>
+                    <div class="input-group">
+                    <div class="input-group-text">STR</div>
+                    <input type="text" class="form-control" id="genstr" name="genstr" value="{{ npc.stats[0] }}">
+                    </div>
+                </div>
+                <div class="col">
+                    <label class="visually-hidden" for="genagl">Agility</label>
+                    <div class="input-group">
+                    <div class="input-group-text">AGL</div>
+                    <input type="text" class="form-control" id="genagl" name="genagl" value="{{ npc.stats[1] }}">
+                    </div>
+                </div>
+                <div class="col">
+                    <label class="visually-hidden" for="genwit">Wits</label>
+                    <div class="input-group">
+                    <div class="input-group-text">WIT</div>
+                    <input type="text" class="form-control" id="genwit" name="genwit" value="{{ npc.stats[2] }}">
+                    </div>
+                </div>
+                <div class="col">
+                    <label class="visually-hidden" for="genemp">Empathy</label>
+                    <div class="input-group">
+                    <div class="input-group-text">EMP</div>
+                    <input type="text" class="form-control" id="genemp" name="genemp" value="{{ npc.stats[3] }}">
+                    </div>
+                </div>
+                <div class="col">
+                    <label class="visually-hidden" for="genhp">Health</label>
+                    <div class="input-group">
+                    <div class="input-group-text">HP</div>
+                    <input type="text" class="form-control" id="genhp" name="genhp" value="{{ npc.stats[4] }}">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <button type="submit" class="btn btn-primary" id="save">Save Character</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

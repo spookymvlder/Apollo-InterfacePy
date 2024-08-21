@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Characters
+{% endblock %}
+
+{% block main %}
+
+<div>
+    {% for npc in npcstrings %}
+    <p>{{ npc }}</p>
+    {% endfor %}
+</div>
+
+
+{% endblock %}
