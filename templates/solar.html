@@ -1,0 +1,152 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Solar System
+{% endblock %}
+
+{% block main %}
+
+<div>
+    <div class="conainter text-center">
+        <table class="table table-condensed">
+            <thead>
+                <tr>
+                    <th>Star</th>
+                    <th>Color</th>
+                    <th>Type</th>
+                    <th>Size</th>
+                    <th>Planet Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{sun.name}}</td>
+                    <td>{{sun.color}}</td>
+                    <td>{{sun.type}}</td>
+                    <td>{{sun.size}}</td>
+                    <td>{{sun.pcount}}</td>
+                </tr>
+            </tbody>
+        </table>
+            {% if sun.pcount > 0 %}
+        <table class="table table-condensed">
+            <thead>
+                <tr>
+                    <th>Planet</th>
+                    <th>Type</th>
+                    <th>Distance</th>
+                    <th>G-zone</th>
+                    <th>Size</th>
+                    <th>Rings</th>
+                    <th>Atmosphere</th>
+                    <th>Lwater</th>
+                    <th>Pressure</th>
+                    <th>Temperature</th>
+                    <th>Life</th>
+                    <th>Factions</th>
+                    <th>Moons</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    {% for planet in planets %}
+                    <td>{{planet.pname}}</td>
+                    <td>{{planet.ptype}}</td>
+                    <td>{{planet.sundistance}}</td>
+                    {% if planet.gzone %}
+                    <td>{{planet.gzone}}</td>
+                    {% else %}
+                    <td>-</td>
+                    {% endif %}
+                    <td>{{planet.size}}</td>
+                    {% if planet.rings %}
+                    <td>{{planet.rings}}</td>
+                    {% else %}
+                    <td>-</td>
+                    {% endif %}
+                    <td>{{planet.atmosphere}}</td>
+                    {% if planet.lwater %}
+                    <td>{{planet.lwater}}</td>
+                    {% else %}
+                    <td>-</td>
+                    {% endif %}
+                    <td>{{planet.pressure}}</td>
+                    <td>{{planet.temperature}}</td>
+                    {% if planet.life %}
+                    <td>{{planet.life}}</td>
+                    {% else %}
+                    <td>-</td>
+                    {% endif %}
+                    {% if planet.populated %}
+                    <td>{% for faction in planet.factions %}{{faction}}{% endfor %}</td>
+                    {% else %}
+                    <td>-</td>
+                    {% endif %}
+                    <td>{{planet.mooncount}}</td>
+                </tr>
+                    {% if planet.mooncount > 0 %}
+                    <tr>
+                        <td colspan="13">
+                            <div class="accordion accordion-flush" id="toggle">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#moons" aria-expanded="false" aria-controls="moons">
+                                            Show Moons
+                                        </button>
+                                    </h2>
+                                    <div id="moons" class="accordion-collapse collapse" data-bs-parent="toggle">
+                                        <table class="table border table-borderless mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Moon</th>
+                                                    <th>Type</th>
+                                                    <th>Temperature</th>
+                                                    <th>Atmosphere</th>
+                                                    <th>Liquid Water</th>
+                                                    <th>Life</th>
+                                                    <th>Factions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for moon in moons if moon.pname == planet.pname %}
+                                                <tr>
+                                                    <td>{{moon.name}}</td>
+                                                    <td>{{moon.type}}</td>
+                                                    <td>{{moon.temperature}}</td>
+                                                    <td>{{moon.atmosphere}}</td>
+                                                    {% if moon.lwater %}
+                                                        <td>{{moon.lwater}}</td>
+                                                    {% else %}
+                                                        <td>-</td>
+                                                    {% endif %}
+                                                    {% if moon.life %}
+                                                    <td>{{moon.life}}</td>
+                                                    {% else %}
+                                                    <td>-</td>
+                                                    {% endif %}
+                                                    {% if moon.populated %}
+                                                        <td>{% for faction in moon.factions %}{{faction}}<br> {% endfor %}</td>
+                                                    {% else %}
+                                                    <td>-</td>
+                                                    {% endif %}
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                        </td>
+                    </tr>
+                        
+                    {% endif %}
+                {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+{% endblock %}

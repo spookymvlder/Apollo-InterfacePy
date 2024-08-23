@@ -4,6 +4,9 @@ from gennpc import Npc, statlist
 from load_initial import nationlist, factionlist, Faction
 from location import Location
 from genmeow import Cat
+from genstar import Star
+from genplanet import Planet
+from genmoon import Moon
 
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
@@ -88,9 +91,20 @@ def npcs():
 @app.route("/cats")
 def cats():
     cat = Cat()
-    print(cat)
     return render_template("cats.html", cat=cat)
-        
+
+@app.route("/solar")
+def solar():
+    sun = Star()
+    planets = []
+    moons = []
+    if sun.pcount != 0:
+        for planet in sun.solarobjects:
+            planets.append(planet)
+            if planet.mooncount > 0:
+                for moon in planet.moons:
+                    moons.append(moon)
+    return render_template("solar.html", sun=sun, planets=planets, moons=moons)
 
 
 

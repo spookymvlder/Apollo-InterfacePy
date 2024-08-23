@@ -249,7 +249,8 @@ class Cat:
                         name = random.choice(x[1])
                     else:
                         name = random.choice(x[2])
-
+        if name:
+            return name
         r = random.randint(1,5)
         if r == 1:
             u = ["Honorable", "Senator", "President", "Councillor", "Alderman", "Mayor", "Governor", "Prefect", "Prelate", "Premier", "Ambassador", "Envoy", "Provost", "Chief", "Dr.", "Professor", "Admiral", "Captain", "Commander", "Colonel", "General", "Constable", "Sensei"]
@@ -265,6 +266,6 @@ class Cat:
                     title = random.choice(m)
             name = title + " " + name
         return name
-
-cat = Cat()
-print(cat)
+    
+#cat = Cat()
+#print(cat)

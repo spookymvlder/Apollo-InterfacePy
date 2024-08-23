@@ -194,9 +194,9 @@ def catnametable():
     table = []
     if not bool(gcat):
         loadCat()
-        table.append(gcat)
-        table.append(fcat)
-        table.append(mcat)
+    table.append(gcat)
+    table.append(fcat)
+    table.append(mcat)
     return table
 
 #Returns a list of three name lists for the entered language. Initializes names from that country if not already initialized.

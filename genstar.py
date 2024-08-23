@@ -1,4 +1,5 @@
 import random
+from genplanet import Planet
 #Define star type and number
 
 #Define planet type https://en.wikipedia.org/wiki/List_of_planet_types https://astronomy.stackexchange.com/questions/13165/what-is-the-frequency-distribution-for-luminosity-classes-in-the-milky-way-galax 
@@ -19,21 +20,24 @@ VII     89     0.16%'''
 #Define celestial objects
 #Flesh out planet
 
+#Main sequence stars may be all we care about
+
 class Star:
     def __init__(self, name=False, type=False, color=False):
         self.name = Star.genname(self, name)
         self.color = Star.gencolor(self, color)
         self.type = Star.gentype(self, type)
         self.solarobjects = []
-        self.size = Star.gensize(self, type, color)
-        self.planetcount = Star.planetcount(self)
+        self.size = Star.gensize(self, self.type, self.color)
+        self.pcount = Star.planetcount(self)
+        Star.genplanet(self, self.pcount)
 
     def gensize(self, type, color):
         size = ""
         match type:
             case "0":
                 size = "hypergiant"
-            case "Ia", "Iab", "Ib":
+            case "Ia" | "Iab" | "Ib":
                 size = "supergiant"
             case "II":
                 size = "bright giant"
@@ -51,6 +55,10 @@ class Star:
                     self.color = "white"
         return size
 
+    def genplanet(self, pcount):
+        if pcount != 0:
+            for i in range(pcount):
+                self.solarobjects.append(Planet())
 
 
     def gencolor(self, color):
@@ -189,34 +197,34 @@ class Star:
     def planetcount(self):
         r = random.randint(1, 86760)
         if r < 7103:
-            planetcount = 0
+            pcount = 0
         elif r < 22142:
-            planetcount = 1
+            pcount = 1
         elif r < 41100:
-            planetcount = 2
+            pcount = 2
         elif r < 57765:
-            planetcount = 3
+            pcount = 3
         elif r < 69929:
-            planetcount = 4
+            pcount = 4
         elif r < 77732:
-            planetcount = 5
+            pcount = 5
         elif r < 82417:
-            planetcount = 6
+            pcount = 6
         elif r < 84856:
-            planetcount = 7
+            pcount = 7
         elif r < 85950:
-            planetcount = 8
+            pcount = 8
         elif r < 86480:
-            planetcount = 9
+            pcount = 9
         elif r < 86645:
-            planetcount = 10
+            pcount = 10
         elif r < 86728:
-            planetcount = 11
+            pcount = 11
         elif r < 86752:
-            planetcount = 12
+            pcount = 12
         else:
-            planetcount = 13
-        return planetcount
+            pcount = 13
+        return pcount
     
 
     #https://en.wikipedia.org/wiki/O-type_main-sequence_star
@@ -270,7 +278,11 @@ class Star:
 
 
     def __str__(self):
-        return f"A {self.color} star named {self.name}. It has {self.planetcount} planet(s)."
+        planetd = ""
+        if self.pcount != 0:
+            for planet in self.solarobjects:
+                planetd += f"{planet.pname}, "
+        return f"A {self.color} star named {self.name}. It has {self.pcount} planet(s) named:\n{planetd}"
     
-star = Star()
-print(star)
+#star = Star()
+#print(star)
