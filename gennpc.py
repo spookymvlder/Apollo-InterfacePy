@@ -126,11 +126,13 @@ class Npc():
                 nation = Npc.gennationinformed(faction)
         self._nation = nation
 
+    @staticmethod
     def gennametable(nation=""):
         if not nation or nation not in nationlist:
             nation = Npc.gennationrand()
         return nametable(nation)
 
+    @staticmethod
     def genname(namelist):
         name = random.randint(0, Npc.chance(namelist))
         name = namelist[name]

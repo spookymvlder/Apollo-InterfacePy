@@ -1,6 +1,8 @@
 import csv, string
 from pathlib import Path
 
+#TODO, get rid of globals replace with class lists
+
 factioncountry = {}
 factionlist = []
 entitycat = []
