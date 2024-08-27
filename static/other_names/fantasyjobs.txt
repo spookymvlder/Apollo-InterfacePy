@@ -1,0 +1,9 @@
+Assassin
+Baron
+Champion
+Corsair
+Gladiator
+Guard
+Knight
+King
+Queen

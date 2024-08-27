@@ -1,0 +1,19 @@
+Alligator
+Boa
+Bobcat
+Cobra
+Copperhead
+Coyote
+Eagle
+Falcoln
+Grizzly
+Hawk
+Hyena
+Jaguar
+Lion
+Polar Bear
+Python
+Scorpion
+Shark
+Viper
+Wolf

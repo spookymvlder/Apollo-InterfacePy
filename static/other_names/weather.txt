@@ -1,0 +1,15 @@
+Chain Lightning
+Earthquake
+Fireball
+Fog
+Heat Lightning
+Hurricane
+Ice Storm
+Lightning
+Storm
+Thunder
+Thunderbolt
+Tornado
+Tsunami
+Vortex
+Wave
