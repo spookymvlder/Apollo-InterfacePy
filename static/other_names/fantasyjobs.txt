@@ -7,3 +7,4 @@ Guard
 Knight
 King
 Queen
+Magister
