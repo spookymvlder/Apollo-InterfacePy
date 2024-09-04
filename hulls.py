@@ -3,18 +3,23 @@ from gencorp import Corp
 import namelists
 import string, copy, re
 from helpers import coin
+from shipparts import Module, ShipRoomType
 
+#Size of small not currently supported as it will not receive modules.
+#Types do not drive any behavior, but can be used to assign other variables if they are not present upon building class.
+#Categories have some 
 class HullTemplate:
-    sizes = ["xsmall", "small", "smedium", "medium", "large", "xlarge"]
-    types = ["lifeboat", "shuttle", "skiff", "fighter", "dropship", "heavy dropship", "assault transport", "frigate", "light frigate", 
-            "escort frigate", "heavy frigate", "carrier frigate", "corvette", "light corvette", "heavy corvette", 
-            "stealth corvette", "destroyer", "heavy destroyer", "cruiser", "surveillance cruiser", 
-            "carrier", "assault carrier", "heavy carrier", "battleship", "mobile dockyard",
-            "minehunter", "galleon", "monitor", "transport", "patrol", "research", "yacht", 
-            "miner", "cargo freighter", "colony ship", "exploration"]
-    shipcategories = ["courier", "cargo", "military", "science", "private", "government", "any", "emergency", "colony"]
+    sizes = ["small", "smedium", "medium", "large", "xlarge"]
+    types = ["skiff", "dropship", "transport", "frigate", "corvette", "destroyer", "cruiser", 
+            "carrier", "battleship", "mobile dockyard",
+            "minehunter", "galleon", "monitor", "patrol", "research", "yacht", 
+            "miner", "freighter", "colony", "exploration"]
+    shipcategories = ["courier", "cargo", "warship", "passenger", "science", "luxury",  
+                      "colony", "industrial", "support", "lander", "transport", "carrier", "exploration", "research"]
     ordenancelevels = ["none", "light", "defensive", "medium", "heavy", "support"]
     armorlevels = ["light", "medium", "heavy"]
+    shiprange = ["short", "medium", "long"]
+    priorities = ["cargo", "speed", "quality", "stealth", "signal", "carrier", "rail", "missile", "lander", "troops", "mines"]
     #Eventually add function to combine this list with the existing list, so new categories can be added. Then can export just
     #these categories when creating saving format, probably JSON.
     newtypes = []
@@ -25,24 +30,27 @@ class HullTemplate:
 
 #TODO new variable for getsmodules. Can then skip for things like dropships and escape pods
 #checks for carrier and armor
-    def __init__(self, size, hulltype, category, ordenance, carrier, armorcat):
+#TODO defaults for variables should be a randomizing function
+    def __init__(self, size, hulltype, category, ordenance, armorcat, troops, priority=""):
         self.size = size
         self.hulltype = hulltype
         self.category = category
         self.ordenance = ordenance
-        self.carrier = carrier
         self.armorcat = armorcat
+        self.priority = priority
         self.hardpoints = HullTemplate.genhardpoints(self, self.size, self.ordenance)
-        self.signature = HullTemplate.gensignature(self, self.size)
+        self.signature = HullTemplate.gensignature(self, self.size, self.priority)
         self.crew = HullTemplate.gencrew(self, self.size)
         self.hullen = HullTemplate.genhullen(self, self.size)
         self.hullval = HullTemplate.genhullval(self, self.size, self.category)
         self.armorval = HullTemplate.genarmorval(self, self.armorcat, self.hullval)
-        self.modules = HullTemplate.genmodules(self, self.size, self.category)
+        self.modules = HullTemplate.genmodules(self, self.size, self.priority)
+        self.squads = HullTemplate.gensquadcount(size, troops, self.priority, category)
         #More robust manufacturer functionality, choose from Corps once gencorp is more built out. If new, save to list
         self.manufacturer = Corp.gencorpname()
-        self.shipmodel = HullTemplate.genshipmodel(self, self.category, self.hulltype)
-        self.initmodules = HullTemplate.geninitmodules(self, self.modules, self.category, self.crew, self.carrier, self.size)
+        self.shipmodel = HullTemplate.genshipmodel(self, self.category)
+        self.eqmodules = HullTemplate.geninitmodules(self, self.modules, self.category, self.crew, self.size, self.squads)
+        self.availmodules = HullTemplate.countavailmodules(self.modules, self.eqmodules, 1)
         self.thrusters = HullTemplate.genthrusters(self, self.size, self.armorcat, self.ordenance, self.category)
     
     @property
@@ -86,16 +94,6 @@ class HullTemplate:
         self._ordenance = ordenance
     
     @property
-    def carrier(self):
-        return self._carrier
-    
-    @carrier.setter
-    def carrier(self, carrier):
-        if carrier == "" or not isinstance(carrier, bool):
-            raise ValueError("Carrier must be bool.")
-        self._carrier = carrier
-    
-    @property
     def armorcat(self):
         return self._armorcat
     
@@ -104,6 +102,16 @@ class HullTemplate:
         if armorcat == "" or armorcat not in HullTemplate.armorlevels:
             raise ValueError(f"Invalid armor level {armorcat}.")
         self._armorcat = armorcat
+
+    @property
+    def priority(self):
+        return self._priority
+    
+    @priority.setter
+    def priority(self, priority):
+        if priority != "" and priority not in HullTemplate.priorities:
+            raise ValueError(f"Invalid priority {priority}.")
+        self._priority = priority
 
     @property
     def hardpoints(self):
@@ -121,8 +129,6 @@ class HullTemplate:
         hardpoints = [0,0,0]
         if ordenance != "none":
             match size:
-                case "xsmall":
-                    hardpoints[0] = 1
                 case "small":
                     hardpoints[0] = 1
                     hardpoints[1] = 1
@@ -167,10 +173,8 @@ class HullTemplate:
             raise ValueError(f"Invalid signature {signature}")
         self._signature = signature
 
-    def gensignature(self, size):
+    def gensignature(self, size, priority):
         match size:
-            case "xsmall":
-                signature = -2
             case "small":
                 signature = -1
             case "smedium":
@@ -181,6 +185,10 @@ class HullTemplate:
                 signature = 2
             case "xlarge":
                 signature = 3
+        if priority == "stealth":
+            signature -= 2
+        if signature < -3:
+            signature = -3
         return signature
     
     '''@property
@@ -214,9 +222,6 @@ class HullTemplate:
     def gencrew(self, size):
         crew = [0, 0]
         match size:
-            case "xsmall":
-                crew[0] = 1
-                crew[1] = random.randint(1,4)
             case "small":
                 crew[0] = 1
                 crew[1] = random.randint(1,6)
@@ -234,7 +239,6 @@ class HullTemplate:
                 crew[1] = random.randint(16, 36)
         return crew
     
-    
     @property
     def hulllen(self):
         return self._hullen
@@ -248,12 +252,10 @@ class HullTemplate:
     def genhullen(self, size):
         hullen = ""
         match size:
-            case "xsmall":
-                hullen = random.randint(10,18)
             case "small":
-                hullen = random.randint(20,80)
+                hullen = random.randint(15,70)
             case "smedium":
-                hullen = random.randint(80,225)
+                hullen = random.randint(70,225)
             case "medium":
                 hullen = random.randint(225,400)
             case "large":
@@ -275,8 +277,6 @@ class HullTemplate:
     def genhullval(self, size, category):
         hullval = ""
         match size:
-            case "xsmall":
-                hullval = 2
             case "small":
                 hullval = random.randint(2,6)
             case "smedium":
@@ -287,7 +287,7 @@ class HullTemplate:
                 hullval = random.randint(7,12)
             case "xlarge":
                 hullval = random.randint(9, 15)
-        if category == "military":
+        if category == "warship":
             hullval += 2
         return hullval
     
@@ -325,7 +325,7 @@ class HullTemplate:
                 raise ValueError(f"Invalid module count {module}.")
         self._modules = modules
 
-    def genmodules(self, size, category):
+    def genmodules(self, size, priority):
         modules = [0, 0, 0, 0, 0]
         match size:
             case "xsmall":
@@ -334,7 +334,7 @@ class HullTemplate:
             case "small":
                 modules[0] = random.randint(4,8)
                 modules[1] = random.randint(2,6)
-                modules[2] = random.randint(2,3)
+                modules[2] = random.randint(3,3)
             case "smedium":
                 modules[0] = random.randint(5,9)
                 modules[1] = random.randint(3,7)
@@ -342,23 +342,18 @@ class HullTemplate:
             case "medium":
                 modules[1] = random.randint(7,9)
                 modules[2] = random.randint(4,7)
-                modules[3] = random.randint(3,5)
+                modules[3] = random.randint(4,5)
             case "large":
                 modules[2] = random.randint(7,9)
                 modules[3] = random.randint(5,8)
-                modules[4] = random.randint(3,6)
+                modules[4] = random.randint(5,6)
             case "xlarge":
                 modules[2] = random.randint(10,17)
                 modules[3] = random.randint(9,14)
-                modules[4] = random.randint(4,9)
-        #will consume at least one of the largest slots for a cargo module, should get around scenario where all rolls are low
-        if category == "cargo":
-            if modules[4] > 0:
-                modules[4] += 1
-            elif modules[3] > 0:
-                modules[3] +=1
-            else:
-                modules[2] +=1
+                modules[4] = random.randint(6,9)
+        if priority == "quality":
+            for i, module in enumerate(modules):
+                modules[i] += 1
         return modules
 
     @property
@@ -372,22 +367,22 @@ class HullTemplate:
         self._shipmodel = shipmodel
     
 
-    def genshipmodel(self, category, type):
+    def genshipmodel(self, category):
         choices = []
-        if type == "yacht":
-            choices.append(namelists.returnNamelist("yacht"))
-        elif type == "exploration":
-            choices.append(namelists.returnNamelist("explorer"))
         match category:
             case "courier":
                 choices.append(namelists.returnNamelist("courier"))
             case "cargo":
                 choices.append(namelists.returnNamelist("cargo"))
-            case "military":
+            case "warship":
                 choices.append(namelists.returnNamelist("mythical"))
                 choices.append(namelists.returnNamelist("fantasy"))
                 choices.append(namelists.returnNamelist("predator"))
                 choices.append(namelists.returnNamelist("weather"))
+            case "luxury":
+                choices.append(namelists.returnNamelist("yacht"))
+            case "exploration":
+                choices.append(namelists.returnNamelist("explorer"))
         if choices == []:
             choices.append(namelists.returnNamelist("animal"))
         choices = random.choice(choices)
@@ -408,219 +403,220 @@ class HullTemplate:
                 raise ValueError(f"Invalid module {module}.")
         self._initmodules = initmodules
 
+    @property
+    def squads(self):
+        return self._squads
+    
+    @squads.setter
+    def squads(self, squads):
+        if squads < 0:
+            raise ValueError(f"Invalid number of squads {squads}.")
+        self._squads = squads
+        
+    #TODO review code and make failed returns consistent between none and False.
+    #squad size is 26 for 20 marines, 2 crew/dropship, and 2 command staff
+    #sets the max squad size based on what seems reasonable based on ship size, adds more if priority is transporting troops.
+    #Picks a random number as how many troops are actually carried since cryodeck max isn't what is cannonically in use.
+    @staticmethod
+    def gensquadcount(size, troops, priority, category):
+        squads = 0
+        if not troops:
+            return squads
+        min = 1
+        match size:
+            case "small":
+                squads = 1
+            case "smedium":
+                squads = 2
+            case "medium":
+                squads = 4
+            case "large":
+                squads = 8
+            case "xlarge":
+                squads = 16
+        if priority != "troops" or (category != "transport") and size != "small":
+            squads = math.ceil(squads / 2)
+        if priority == "troops" or category == "transport":
+            min = int(squads/2)
+        squads = (random.randint(min, squads)) #doesn't take crew into account, will deal with elsewhere in case passengers too.
+        return squads
+
     #Need air scrubbers, AI, cryodeck, docking umbilical and galley. 
     #Cargo requires at least one cargo bay, may split off each type to own function.
     #Also changes value for modules
-    def geninitmodules(self, modules, category, crew, carrier, size):
+    def geninitmodules(self, modules, category, crew,  priority, squads):
         initmodules = []
-        self.pregenmodules = copy.copy(modules)
-        if size == "xsmall":
-            initmodules.append("None")
-            return initmodules
-        cargo = [.5, 10, 250, 5000, 100000]
-        numlist = [1, 2, 3, 4, 5]
-        people = [1, 10, 50, 500, 2500]
-        evlist = [1, 4, 5, 20]
-        #set AI in smallest slot
-        unit, modules = HullTemplate.setmodulehelper(modules, "AI", 0, 4)
-        if unit:
-            initmodules.append(unit)
-
-        #Can't use helper function for cryo/galley since we're trying to keep track of the total folks on the ship
-        #Could be cleaner with more helper functions but also more complicated.
-        passengers = crew[1]
-        if carrier:
-            count = 4
-            for module in reversed(modules):
-                if module >= 2:
-                    modules[count] -= 1
-                    initmodules.append(f"Cryo {people[count]}")
-                    modules[count] -= 1
-                    initmodules.append(f"Galley {people[count]}")
-                    passengers = people[count]
-                    break
-                count -= 1
-        else:
-            #Try to assign the cryodeck as efficiently as possible.
-            tcrew = passengers
-            passengers = 0
-            while tcrew > 0:
-                if tcrew > 20:
-                    if modules[2] > 2:
-                        modules[2] -= 2
-                        initmodules.append("Cryo 50")
-                        initmodules.append("Galley 50")
-                        tcrew -= 50
-                        passengers += 50                      
-                    else:
-                        try:
-                            modules[1] -= 2
-                            initmodules.append("Cryo 10")
-                            initmodules.append("Galley 10")
-                        except:
-                            initmodules.append("Cryo 10")
-                            initmodules.append("Galley 10")
-                        tcrew -= 10
-                        passengers += 10
-                else:
-                    if modules[1] >= 2:
-                        modules[1] -= 2
-                        initmodules.append("Cryo 10")
-                        initmodules.append("Galley 10")
-                        tcrew -= 10
-                        passengers += 10
-                    else:
-                        modules[2] -= 2
-                        initmodules.append("Cryo 50")
-                        initmodules.append("Galley 50")
-                        tcrew -= 50
-                        passengers += 50
-
-        if category == "cargo":
-            unit, modules = HullTemplate.setmodulehelper(modules, "Cargo Bay", 4, 0, 1, cargo)
-            if unit:
-                initmodules.append(unit)
-    
-        #air scrubbers
-        if passengers <= 10:
-            if modules[0] > 0:
-                modules[0] -= 1
-                initmodules.append("Air Scrubbers 10")
-            elif modules[1] > 0:
-                modules[1] -= 1
-                initmodules.append("Air Scrubbers 50")
-            else:
-                modules[2] -= 1
-                initmodules.append("Air Scrubbers 500")
-        elif passengers <= 50:
-            if modules[1] > 0:
-                modules[1] -= 1
-                initmodules.append("Air Scrubbers 50")
-            else:
-                modules[2] -= 1
-                initmodules.append("Air Scrubbers 500")
-        elif passengers <= 500:
-            modules[2] -= 1
-            initmodules.append("Air Scrubbers 500")
-        else:
-            modules[3] -= 1
-            initmodules.append("Air Scrubbers 2500")
+        # Retains original module count for troubleshooting
+        cmodules = copy.copy(modules)
         
-        if carrier:
-            flip = coin()
-            if flip:
-                unit = "Hangar"
+        #set AI in smallest slot
+        lvl = HullTemplate.findopenmodule(cmodules, 0, 4, 1, direction=0)
+        if lvl != "":
+            initmodules.append(Module("AI", lvl, 1))
+            cmodules[lvl] -= 1
+
+        passengers = HullTemplate.genpassengers(modules, category, priority)
+        if passengers > 0:
+            passengers -= crew[1]
+        capacity = passengers + (squads*26) + crew[1]
+        capacitylvl = HullTemplate.findpopmodule(capacity)
+        if category == "passenger" or "colony":
+            quant = 1
+        else:
+            quant = 2
+        lvl = HullTemplate.findopenmodule(cmodules, capacitylvl, 4, quant, 0)
+        if lvl != "":
+            initmodules.append(Module("Cryo", lvl, 1))
+            cmodules[lvl] -= 1
+            if capacitylvl != 0:
+                airlvl = capacitylvl - 1
             else:
-                unit = "Vehicle Bay"
-            unit, modules = HullTemplate.setmodulehelper(modules, unit, 4, 0, 1, numlist)
-            if unit:
-                initmodules.append(unit)
-            
-        #EEVs
-        max = crew[1]
-        while max > 0:
-            if max >= 15:
-                if modules[3] > 1:
-                    modules[3] -= 1
-                    initmodules.append("EEV 20")
-                    max -= 20
-                else:
-                    modules[2] -= 1
-                    initmodules.append("EEV 5")
-                    max -= 5
-            elif max >= 9:
-                    modules[2] -= 1
-                    initmodules.append("EEV 5")
-                    max -= 5
-            elif max > 2:
-                if modules[1] > 1:
-                    modules[1] -= 1
-                    initmodules.append("EEV 4")
-                    max -= 4
-                elif modules[2] > 2:
-                    modules[2] -= 2
-                    initmodules.append("EEV 4")
-                    initmodules.append("EEV 4")
-                    max -= 8
-                else:
-                    modules[0] -= 1
-                    initmodules.append("EEV 1")
-                    max -= 1
-            else:
-                if modules[0] > 0:
-                    modules[0] -= 1
-                    initmodules.append("EEV 1")
-                    max -= 1
-                elif modules[1] > 0:
-                    modules[1] -= 1
-                    initmodules.append("EEV 4")
-                    max -= 4
-                elif modules[2] > 0:
-                    modules[2] -= 1
-                    initmodules.append("EEV 5")
-                    max -= 5
-                else:
-                    modules[0] -= 1
-                    initmodules.append("EEV 1")
-                    max -= 1
-        #More EEVs. Essentially a non-Carrier ship may end up with more cryopods than escape pods due to crew sizes
-        #not meshing with the cryopods available. If Carrier is true, ship is carrying extra passengers on purpose. 
-        #It's a dark future so don't need to handle all those folks, but should handle some.
-        extra = passengers - crew[1]
-        if extra > 0 and carrier:
-            if extra >= 20:
-                unit, modules = HullTemplate.setmodulehelper(modules, "EEV 1 x 20", 4, 2, 1)
-                if unit:
-                    initmodules.append(unit)
-            elif extra > 7:
-                for i in range(1):
-                    unit, modules = HullTemplate.setmodulehelper(modules, "EEV", 2, 1, 1, evlist)
-                    if unit:
-                        initmodules.append(unit)
-            else:
-                unit, modules = HullTemplate.setmodulehelper(modules, "EEV", 2, 1, 1, evlist)
-                if unit:
-                    initmodules.append(unit)
+                airlvl = capacitylvl
+            airlvl = HullTemplate.findopenmodule(cmodules, airlvl, 4, 1, 0)
+            initmodules.append(Module("Air Scrubbers", airlvl, 1))
+            cmodules[airlvl] -= 1
+        else:
+            raise ValueError("Unable to set appropriate cryo module level for hull template.")
+        if quant != 2:
+            capacitylvl = HullTemplate.findpopmodule(crew[1])
+        lvl = HullTemplate.findopenmodule(cmodules, capacitylvl, 4, 1, 0) #confirm there is still galley room in case air scrubbers somehow stole slot.
+        if lvl != "":
+            initmodules.append(Module("Galley", lvl, 1))
+            cmodules[lvl] -= 1
+        else:
+            raise ValueError("Unable to set appropriate galley level for hull template.")
 
-
-        unit, modules = HullTemplate.setmodulehelper(modules, "Docking Umbilical", 1, 3)
-        if unit:
-            initmodules.append(unit)
-
-
-        #Module count is random anyways and this is an easier fix than keeping track of cryo and galley separately.
-        for i, module in enumerate(modules):
-            if module < 0:
-                modules[i] = 0
-        self.modules = modules
-        return initmodules
+        #No error message here, because dropships are a matter of us trying our best. 
+        if squads > 0:
+            dropships = HullTemplate.dropshipcalc(cmodules, priority, squads)
+            for i, dropship in enumerate(dropships):
+                if dropship > 0:
+                    initmodules.append(Module("Hangar", i, dropship))
+                    cmodules[i] -= 1
+        
+        elif category == "carrier" or priority == "carrier":
+            lvl = HullTemplate.findopenmodule(cmodules, 4, 1, 1, 1)
+            if lvl != "":
+                initmodules.append(Module("Hangar", lvl, 1))
+                cmodules[lvl] -= 1
+        
+        if category == "cargo" or priority == "cargo":
+            lvl = HullTemplate.findopenmodule(cmodules, 4, 0, 2, 1)
+            if lvl != "":
+                initmodules.append(Module("Cargo Bay", lvl, 2))
+                cmodules[lvl] -= 2
     
-    #Modules is the current list of available modules.
-    #Unit is what we're appending
-    #Start is the starting tier to check
-    #End is the last value to check
-    #Direction if left blank or set to zero counts forward, direction set to 1 counts backwards
-    #Lists is optional for appending to the name to the module.
+            #can maybe revamp the dropship function, but also the previous logic isn't awful. Would be good to have a function that could permutate through 
+            #the options and see what's the most efficient. Like start at 4 and work down, then start at 0 and work up, then start at 2 and work down then at 2 and work up.
+            #Then compare results and see what was the most efficient.
+            ...#maybe warship function to set a x20 escape pods because those are cool.
+        eevs = HullTemplate.eevcalc(cmodules, crew[1])
+        for i, eev in enumerate(eevs):
+            if eev > 0:
+                initmodules.append(Module("EEV", i, eev))
+                cmodules[i] -= eev
+
+        lvl = HullTemplate.findopenmodule(cmodules, 1, 4, 1, direction=0)
+        if lvl != "":
+            initmodules.append(Module("Docking", lvl, 1))
+            cmodules[lvl] -= 1
+
+        if category == ("exploration" or "lander" or "colony"):
+                lvl = HullTemplate.findopenmodule(cmodules, 3, 1, 1, 1)
+                if lvl != "":
+                    cmodules.append(Module("Vehicle Bay", lvl, 1))
+                    modules[lvl] -= 1
+
+        return initmodules
+
     @staticmethod
-    def setmodulehelper(modules, unit, start, end, direction=0, list=""):
+    def eevcalc(cmodules, bodies):
+        evlist = [1, 4, 5, 20, 20]
+        eevs = [0, 0, 0, 0, 0]
+        while (bodies > 0):
+            lvl = ""
+            if bodies > 15:
+                lvl = HullTemplate.findopenmodule(cmodules, 3, 3, 1, 1)
+                if lvl == "":
+                    lvl = HullTemplate.findopenmodule(cmodules, 4, 0, 1, 1) #attempt to save the larger slots
+            elif bodies >= 9:
+                lvl = HullTemplate.findopenmodule(cmodules, 2, 0, 1, 1)
+            elif bodies >= 2:
+                lvl = HullTemplate.findopenmodule(cmodules, 1, 0, 1, 1)
+            else:
+                lvl = HullTemplate.findopenmodule(cmodules, 0, 4, 1, 0)
+            if lvl == "":
+                lvl = HullTemplate.findopenmodule(cmodules, 0, 4, 1, 0)
+            if lvl !="":
+                eevs[lvl] += 1
+                cmodules[lvl] -= 1
+                bodies -= evlist[lvl]
+            else:
+                break
+        return eevs
+
+
+
+
+    #Takes in squads and remaining modules, pops out the amount of hangars needed to support 
+    @staticmethod
+    def dropshipcalc(cmodules, priority, squads):
+        #Calculate how many dropships needed to support squad count
+        if priority != "lander" and squads > 0:
+            shipcnt = math.ceil(squads / 2)
+            baysize = [1, 1, 2, 3, 5] #How many dropships fit in each hanger level
+            stored = [0, 0, 0, 0, 0]
+            saved = 0
+            while saved < shipcnt:
+                lvl = HullTemplate.findopenmodule(cmodules, 4, 0, 1, 1)
+                if lvl:
+                    saved += baysize[lvl]
+                    cmodules[lvl] -= 1
+                    stored[lvl] += 1
+                else:
+                    return False
+        return stored
+
+
+
+    #TODO Need to make it so that civilian transport and military transport are mutually exclusive.
+    #Gets the highest amount of passengers the ship can support using all modules of the same level.
+    def genpassengers(modules, category, priority):
+        if category == ("passenger" or "colony"): #Cryo, Air
+            quant = 2
+        elif priority == "transport": #Cryo, air, galley
+            quant = 3
+        else:
+            return 0
+        passengerlvl =  HullTemplate.findopenmodule(modules, 4, 0, quant, 1)
+        return Module.poplvls[passengerlvl]
+    
+    @classmethod
+    def findpopmodule(cls, capacity):
+        for i, lvl in enumerate(Module.poplvls):
+            if lvl >= capacity:
+                return i
+        
+
+    #Modules is a list of open modules
+    #Start is the module level to start search, end is end search (up to and including)
+    #Quant is quantity of modules you want found
+    #Direction 0 loops upwards, direction=1 loops downwards
+    @staticmethod
+    def findopenmodule(modules, start, end, quant, direction=0):
         if direction == 0:
             for i, module in enumerate(modules):
-                if i >= start and module > 0 and i <= end:
-                    if list != "":
-                        unit = unit + " " + str(list[i])
-                    modules[i] -= 1
-                    return unit, modules
+                if i >= start and module >= quant and i <= end:
+                    return i
         else:
             i = 4
             for module in reversed(modules):
-                if i <= start and module > 0 and i >= end:
-                    if list != "":
-                        unit = unit + " " + str(list[i])
-                    modules[i] -= 1
-                    return unit, modules
+                if i <= start and module >= quant and i >= end:
+                    return i
                 i -= 1
-        return False, modules
-    
+        return ""
+
+
     @property
     def thrusters(self):
         return self._thrusters
@@ -658,11 +654,37 @@ class HullTemplate:
         elif thrusters < -3:
             thrusters = -3
         return thrusters
+    
+    @property
+    def availmodules(self):
+        return self._availmodules
+    
+    @availmodules.setter
+    def availmodules(self, availmodules):
+        for module in availmodules:
+            if module < 0:
+                raise ValueError(f"Module count must be greater than or equal to 0, not {module}.")
+        self._availmodules = availmodules
+
+    #Initmodules is a list of module slots that the ship had before having modules equipped. 
+    #Savedmodules is a list of module classes assigned to the ship.
+    #Guard will set the number of available modueles to 0 rather than returning a negative number. Ensures it is possible to generate a ship
+    #that meets all ship requirements despite having a random module count. Set to 1 to ignore.
+    @staticmethod
+    def countavailmodules(initmodules, savedmodules, guard=0):
+        for module in savedmodules:
+            initmodules[module.lvl] -= module.quantity
+        if guard == 1:
+            for i, module in enumerate(initmodules):
+                if module < 0:
+                    initmodules[i] = 0
+        return initmodules
+
                     
 
     def __str__(self):
         description = f"This is a {self.manufacturer} {self.shipmodel}, a {self.category} {self.hulltype} ship. \n"
-        description += f"Crew: {self.crew} \nLength: {self.hullen} \nSignature: {self.signature} \nHull: {self.hullval} \nArmor: {self.armorval} \n"
+        description += f"Crew: {self.crew} \nLength: {self.hullen} \nSignature: {self.signature} \nHull: {self.hullval} \nArmor: {self.armorval} \nThrusters: {self.thrusters}\n"
         description += "Hardpoints: "
         count = 1
         for hardpoint in self.hardpoints:
@@ -670,12 +692,12 @@ class HullTemplate:
             count += 1
         description += "\nModules Total: "
         count = 1
-        for module in self.modules:
+        for module in self.availmodules:
             description += f"{count}: {module} "
             count += 1
         description += "\nModules Set: "
-        for module in self.initmodules:
-            description += f"{module}, "
+        for module in self.eqmodules:
+            description += f"{module.name} x{module.quantity}, "
         return description
 
 
@@ -693,11 +715,9 @@ class HullModel:
 
     def __init__(self, template):
         self.size = template.size
-        self.pregenmodules = template.pregenmodules
         self.hulltype = template.hulltype
         self.category = template.category
         self.ordenance = template.ordenance
-        self.carrier = template.carrier
         self.armorcat = template.armorcat
         self.hardpoints = template.hardpoints
         self.signature = template.signature
@@ -708,13 +728,16 @@ class HullModel:
         self.modules = template.modules
         self.manufacturer = template.manufacturer
         self.shipmodel = template.shipmodel + " " + HullModel.genshipmodelsuffix()
-        self.eqmodules = template.initmodules
-        eqmodules = HullModel.genmodules(self, self.eqmodules, self.modules, self.hulltype, self.category, self.size)
+        self.eqmodules = template.eqmodules
+        self.priority = template.priority
+        self.availmodules = template.availmodules
+        self.squads = template.squads
+        eqmodules = HullModel.genmodules(self, self.eqmodules, self.modules, self.priority, self.category, self.size)
         if eqmodules:
-            self.eqmodules = eqmodules
+            self.eqmodules = self.eqmodules + eqmodules
         self.thrusters = template.thrusters
-        self.eqweapons = HullModel.genweapons(self, self.ordenance, self.hardpoints)
-        self.rooms = HullModel.genrooms(self, self.eqmodules, self.crew, self.size, self.category)
+        self.eqweapons = HullModel.genweapons(self, self.ordenance, self.hardpoints, self.priority)
+        self.rooms = HullModel.genrooms(self, self.eqmodules, self.crew, self.size, self.category, self.squads)
 
     @property
     def eqmodules(self):
@@ -723,67 +746,75 @@ class HullModel:
     @eqmodules.setter
     def eqmodules(self, eqmodules):
         for module in eqmodules:
-            if module == "" or not isinstance(module, str):
-                raise ValueError(f"Invalid module {module}.")
+            if module.type not in Module.all:
+                raise ValueError(f"Invalid module {module.name}.")
         self._eqmodules = eqmodules
 
 
 #TODO - new function that takes in the module, ideal size for module, and then iterates from that point until it can slot it in. 
 # If it can, returns level of slot, else returns false.
 #TODO actual list for modules.
-    def genmodules(self, eqmodules, modules, type, category, size):
-        cargo = [.5, 10, 250, 5000, 100000]
-        numlist = [1, 2, 3, 4, 5]
+    def genmodules(self, eqmodules, modules, priority, category, size):
         if "None" in eqmodules:
             return False
         flip = coin()
-        if category == ("science" or "military") or size == ("medium" or "large" or "xlarge") or type == ("exploration" or "research") or flip:
-            unit, modules = HullTemplate.setmodulehelper(modules, "Medlab", 1, 3)
-            if unit:
-                eqmodules.append(unit)
+        if category == ("science" or "warship" or "exploration" or "research") or size == ("medium" or "large" or "xlarge") or flip:
+            lvl = HullTemplate.findopenmodule(modules, 1, 3, 1, 0)
+            if lvl != "":
+                eqmodules.append(Module("Medlab", lvl, 1))
+                modules[lvl] -= 1
             
         flip = coin()
-        if category == "science" or size == ("large" or "xlarge") or flip or type == ("exploration" or "research"):
-            unit, modules = HullTemplate.setmodulehelper(modules, "Science Lab", 2, 3)
-            if unit:
-                eqmodules.append(unit)
+        if category == ("exploration" or "research" or "science") or size == ("large" or "xlarge") or flip:
+            lvl = HullTemplate.findopenmodule(modules, 2, 3, 1, 0)
+            if lvl != "":
+                eqmodules.append(Module("Science Lab", lvl, 1))
+                modules[lvl] -= 1
+                
 
         r = random.randint(1,100)
-        if type == "yacht" or r < 90:
-            unit, modules = HullTemplate.setmodulehelper(modules, "Corp Suite", 1, 2)
-            if unit:
-                eqmodules.append(unit)
+        if category == "luxury" or r < 90:
+            lvl = HullTemplate.findopenmodule(modules, 1, 2, 1, 0)
+            if lvl != "":
+                eqmodules.append(Module("Corp Suite", lvl, 1))
+                modules[lvl] -= 1
 
         r = random.randint(1, 100)
-        if category == "cargo" or (category == "military" and (size == "small" or "smedium")) or (size != "xlarge" and r > 70):
-            unit, modules = HullTemplate.setmodulehelper(modules, "Tractor Hitch", 2, 3)
-            if unit:
-                eqmodules.append(unit)
+        if category == "cargo" or (category == "warship" and (size == "small" or "smedium")) or (size != "xlarge" and r > 70):
+            lvl = HullTemplate.findopenmodule(modules, 2, 3, 1, 0)
+            if lvl != "":
+                eqmodules.append(Module("Tractor", lvl, 1))
+                modules[lvl] -= 1
 
         flip = coin()
+        crane = False
         if flip and category == "cargo":
-            unit, modules = HullTemplate.setmodulehelper(modules, "Salvage Crane", 2, 3)
-            if unit:
-                eqmodules.append(unit)
-
+            crane = True
+        if crane == True or priority == "salvage":
+            lvl = HullTemplate.findopenmodule(modules, 2, 3, 1, 0)
+            if lvl != "":
+                eqmodules.append(Module("Crane", lvl, 1))
+                modules[lvl] -= 1
         
-        passes = 0
-        while passes < 3:
-            unit, modules = HullTemplate.setmodulehelper(modules, "Cargo Bay", 4, 0, 1, cargo)
-            if unit:
-                eqmodules.append(unit)
-            passes += 1
-        flip = coin()
-        if flip:
+        for i in range(2):
+            lvl = HullTemplate.findopenmodule(modules, 4, 0, 1, 0)
+            if lvl != "":
+                eqmodules.append(Module("Cargo Bay", lvl, 1))
+                modules[lvl] -= 1
+        
+        for i in range(1):
             flip = coin()
-            unit = False
-            if flip:
-                unit, modules = HullTemplate.setmodulehelper(modules, "Vehicle Bay", 4, 0, 1, numlist)
-            else:
-                unit, modules = HullTemplate.setmodulehelper(modules, "Hangar", 4, 0, 1, numlist)
-            if unit:
-                eqmodules.append(unit)
-        self.modules = modules
+            if flip == 1:
+                flip = coin()
+                if flip == 1:
+                    type = "Vehicle Bay"
+                else:
+                    type = "Hangar"
+                lvl = HullTemplate.findopenmodule(modules, 3, 0, 1, 0)
+                if lvl != "":
+                    eqmodules.append(Module(type, lvl, 1))
+                    modules[lvl] -= 1
+    
         return eqmodules  
         
     @property
@@ -797,7 +828,7 @@ class HullModel:
                 raise ValueError(f"Invalid weapon {weapon}.")
         self._eqweapons = eqweapons
 
-    def genweapons(self, ordenance, hardpoints):
+    def genweapons(self, ordenance, hardpoints, priority):
         eqweapons = []
         ratio = 0
         match ordenance:
@@ -823,11 +854,11 @@ class HullModel:
                         offense = True
                     else:
                         offense = False
-                    eqweapons.append(HullModel.getweapons(self, offense, i))
+                    eqweapons.append(HullModel.getweapons(self, offense, i, priority))
         return eqweapons
 
 #level starts at 0 due to computers
-    def getweapons(cls, offensive, level):
+    def getweapons(cls, offensive, level, priority):
         tlist = ""
         if level == 0:
             if offensive:
@@ -836,11 +867,21 @@ class HullModel:
                 tlist = HullModel.hp1def
         elif level == 1:
             if offensive:
+                if priority == "rail":
+                    return "Medium Railgun"
+                elif priority == "missiles":
+                    return "Short Missiles (8)"
+                elif priority == "mines":
+                    return "Mines"
                 tlist = HullModel.hp2weapons
             else:
                 tlist = HullModel.hp2def
         else:
             if offensive:
+                if priority == "rail":
+                    return "Heavy Railgun"
+                elif priority == "missiles":
+                    return "Long Missiles (8)"
                 tlist = HullModel.hp3weapons
             else:
                 tlist = HullModel.hp3def
@@ -887,94 +928,72 @@ class HullModel:
         self._rooms = rooms
     
     #Assumes every ship will have a bridge and AI core and that the Galley will match the cryodeck capacity.
-    def genrooms(self, eqmodules, crew, size, category):
-        roomlist = ["Bridge", "AI Access", "Air Scrubbers", "Engine Room", "Reactor Core"]
-        bodies = 0
+    def genrooms(self, eqmodules, crew, shipsize, category, squads):
+        roomdefault = ["Bridge", "Engine Room", "Reactor Core"]
+        roomlist = []
         qtype = ""
         #Find capacity of ship
         r = 1
+
+        for room in roomdefault:
+            roomlist.append(ShipRoomType(room, 0, 1, shipsize))
         for module in eqmodules:
-            match module:
-                case "Cryo 1":
-                    bodies += 1
-                case "Cryo 10":
-                    bodies += 10
-                case "Cryo 50":
-                    bodies += 50
-                    r += 1
-                case "Cryo 500":
-                    bodies += 500
-                    r += 3
-                case "Cryo 2500":
-                    bodies += 2500
-                    r += 6
-        if bodies > 0:
-            roomlist.append(f"Cryo Deck x{str(r)}")
+            for room in module.rooms:
+                roomlist.append(ShipRoomType(room, module.lvl, module.quantity, shipsize))
+        bodies = crew[1] + (squads * 26)
+        
         if bodies / crew[1] > 2:
             qtype = "tight"
         else:
             qtype = "accom"
-        roomlist = roomlist + HullModel.genroomlivquarters(self, qtype, bodies, crew[1], category)
-        if size != ("xsmall" or "small"):
-            roomlist.append("Quarantine Bunk")
-            roomlist.append("Quarantine Rec")
-            roomlist.append("Decontamination")
-            roomlist.append("AI Core")
-            roomlist.append("Workroom x2")
-            roomlist.append("Reactor Core")
-            roomlist.append("Coolant Tanks")
-            roomlist.append("Air Scrubbers")
-            roomlist.append("Captain's Quarters")
-            roomlist.append("Admin")
-            roomlist.append("Briefing Room")
-            roomlist.append("Comm Array")
-        elif size == ("small"):
-            roomlist.append("Workroom")
+        roomlist = roomlist + HullModel.genroomlivquarters(self, qtype, bodies, shipsize)
+        if shipsize != ("xsmall" or "small"):
+            roomlist.append(ShipRoomType("Quarantine Bunk", 0, 1, shipsize))
+            roomlist.append(ShipRoomType("Quarantine Rec", 0, 1, shipsize))
+            roomlist.append(ShipRoomType("Decontamination", 0, 1, shipsize))
+            roomlist.append(ShipRoomType("AI Core", 0, 1, shipsize))
+            roomlist.append(ShipRoomType("Workroom", 0, 2, shipsize))
+            roomlist.append(ShipRoomType("Coolant Tanks", 0, 1, shipsize))
+            roomlist.append(ShipRoomType("Briefing Room", 0, 1, shipsize))
+            roomlist.append(ShipRoomType("Comm Array", 0, 1, shipsize))
+        elif shipsize == ("small"):
+            roomlist.append(ShipRoomType("Workroom", 0, 1, shipsize))
+            flip = coin()
+            if flip or (category == "science" or "research" or "exploration"):
+                roomlist.append(ShipRoomType("Decontamination", 0, 1, shipsize))
             flip = coin()
             if flip:
-                roomlist.append("Quarantine Bunk")
-        rooms = HullModel.genroomscimed(self, eqmodules, size)
+                roomlist.append(ShipRoomType("Comm Array", 0, 1, shipsize))
+        if shipsize == ("large" or "xlarge"):
+            r = random.randint(1,4)
+            roomlist.append(ShipRoomType("Private Quarters", 0, r, shipsize))
+            roomlist.append(ShipRoomType("Admin Office", 0, 1, shipsize))
+        
+        rooms = HullModel.genroommilitary(self, category, shipsize)
         if rooms:
             roomlist += rooms
         rooms = ""
-        rooms = HullModel.genroomhangar(self, eqmodules)
-        if rooms:
-            roomlist += rooms
-        rooms = ""
-        rooms = HullModel.genroommilitary(self, category, size)
-        if rooms:
-            roomlist += rooms
-        rooms = ""
-        rooms = HullModel.genroomcargo(self, eqmodules)
-        if rooms:
-            roomlist += rooms
-        rooms = ""
-        roomlist = roomlist + HullModel.genroomairlocks(self, size)
+        r = HullModel.genroomairlocks(self, shipsize)
+        roomlist.append(ShipRoomType("Airlock", 0, r, shipsize))
+        roomlist.append(ShipRoomType("EEV Suit Storage", 0, r, shipsize))
         return roomlist
     
-    def genroomcargo(self, eqmodules):
-        rooms = []
-        for module in eqmodules:
-            if module == ("Cargo Bay .5" or "Cargo Bay 10" or "Cargo Bay 250" or "Cargo Bay 5000" or "Cargo Bay 100000"):
-                rooms.append(module)
-        if rooms:
-            return rooms
 
-    def genroommilitary(self, category, size):
+    def genroommilitary(self, category, shipsize):
         rooms = []
-        if category == "military":
-            if size != ("xsmall" or "small"):
-                rooms.append("Brig")
-                rooms.append("Munitions Storage")
-            if size == ("large" or "xlarge"):
-                rooms.append("Munitions Storage")
+        if category == "warship":
+            if shipsize != ("xsmall" or "small"):
+                rooms.append(ShipRoomType("Brig", 0, 1, shipsize))
+                quant = 1
+                if shipsize == ("large" or "xlarge"):
+                    quant = 2
+                rooms.append(ShipRoomType("Munitions Storage", 0, quant, shipsize))
         if rooms:
             return rooms
 
     #Not all airlocks are going to have suit storage
     def genroomairlocks(self, size):
         r =  1
-        rooms = []
         match size: 
             case "smedium":
                 r += 1
@@ -988,68 +1007,23 @@ class HullModel:
             flip = coin()
             if flip:
                     r += 1
-        rooms.append(f"Airlock x{str(r)}")
-        rooms.append(f"EEV Suit Storage x{str(r)}")
-        return rooms
-
-    
-    def genroomhangar(self, eqmodules):
-        rooms = []
-        for module in eqmodules:
-            span = re.search("Hangar", module)
-            if span:
-                rooms.append(module)
-            span = re.search("Vehicle", module)
-            if span:
-                rooms.append(module)
-        if rooms:
-            rooms.append("Ready Room")
-            rooms.append("Vehicle Workshop")
-            rooms.append("Parts Storage")
-            return rooms
-        
-        
-    def genroomscimed(self, eqmodules, size):
-        rooms = []
-        s = 0
-        if "Science Lab" in eqmodules:
-            s += 1
-            rooms.append("Science Stores")
-            if size != ("small" or "xsmall"):
-                s += 1
-            if size == ("large" or "xlarge"):
-                s += 1
-            if s > 0:
-                rooms.append(f"Science Lab x{str(s)}")
-        if "Medlab" in eqmodules:
-            if size == ("large" or "xlarge"):
-                rooms.append("Infirmary x2")
-            else:
-                rooms.append("Infirmary")
-        if rooms:
-            return rooms
-
-            
-        
+        return r
 
 
     #Creates bunks, bathrooms, and lockers
-    def genroomlivquarters(self, qtype, bodies, crew, category):
+    def genroomlivquarters(self, qtype, bodies, shipsize):
         rooms = []
-        if qtype == "tight" and (category != "colony" or bodies != 2500):
+        if qtype == "tight":
             split = math.ceil(bodies/6)
-            rooms.append(f"Dorm Bunks x{str(split)}")
-            rooms.append(f"Lockers x{str(math.ceil(split/4))}")
-            rooms.append(f"Bathroom x{str(math.ceil(split/15))}")
+            rooms.append(ShipRoomType("Dorm Bunks", 0, split, shipsize))
+            rooms.append(ShipRoomType("Locker Room", 1, math.ceil(split/4), shipsize))
+            rooms.append(ShipRoomType("Bathroom", 1, math.ceil(split/15), shipsize))
         else:
-            split = math.ceil(crew/4)
-            rooms.append(f"Bunks x{str(split)}")
-            rooms.append(f"Lockers x{str(math.ceil(split/4))}")
-            rooms.append(f"Bathroom x{str(math.ceil(split/10))}")
+            split = math.ceil(bodies/4)
+            rooms.append(ShipRoomType("Bunks", 0, split, shipsize))
+            rooms.append(ShipRoomType("Lockers", 0, math.ceil(split/4), shipsize))
+            rooms.append(ShipRoomType("Bathroom", 0, math.ceil(split/10), shipsize))
         return rooms
-
-
-
 
 
     def __str__(self):
@@ -1067,9 +1041,6 @@ class HullModel:
             count += 1
         description += "\nOriginal Modules: "
         count = 1
-        for module in self.pregenmodules:
-            description += f"{count}: {module} "
-            count += 1
         description += "\nModules Set: "
         for module in self.eqmodules:
             description += f"{module}, "
@@ -1093,46 +1064,45 @@ class HullSpecs:
 
 
 def initializehulls():
-    HullSpecs.hulls.append(HullTemplate("xsmall", "lifeboat", "emergency", "none", False, "light"))
-    HullSpecs.hulls.append(HullTemplate("xsmall", "shuttle", "any", "none", False, "light"))
-    HullSpecs.hulls.append(HullTemplate("small", "skiff", "any", "none", False, "light"))
-    HullSpecs.hulls.append(HullTemplate("xsmall", "fighter", "military", "medium", False, "light"))
-    HullSpecs.hulls.append(HullTemplate("small", "dropship", "military", "none", True, "light"))
-    HullSpecs.hulls.append(HullTemplate("small", "heavy dropship", "military", "light", True, "heavy"))
-    HullSpecs.hulls.append(HullTemplate("small", "assault transport", "military", "light", True, "medium"))
-    HullSpecs.hulls.append(HullTemplate("medium", "frigate", "military", "medium", True, "medium"))
-    HullSpecs.hulls.append(HullTemplate("smedium", "light frigate", "military", "light", False, "light"))
-    HullSpecs.hulls.append(HullTemplate("smedium", "escort frigate", "military", "medium", False, "light"))
-    HullSpecs.hulls.append(HullTemplate("medium", "carrier frigate", "military", "defensive", True, "light"))
-    HullSpecs.hulls.append(HullTemplate("smedium", "corvette", "military", "medium", False, "light"))
-    HullSpecs.hulls.append(HullTemplate("smedium", "light corvette", "military", "light", False, "light"))
-    HullSpecs.hulls.append(HullTemplate("smedium", "heavy corvette", "military", "heavy", False, "medium"))
-    HullSpecs.hulls.append(HullTemplate("smedium", "stealth corvette", "military", "defensive", False, "light"))
-    HullSpecs.hulls.append(HullTemplate("medium", "destroyer", "military", "heavy", False, "heavy"))
-    HullSpecs.hulls.append(HullTemplate("medium", "heavy destroyer", "military", "heavy", False, "heavy"))
-    HullSpecs.hulls.append(HullTemplate("medium", "cruiser", "military", "heavy", False, "heavy"))
-    HullSpecs.hulls.append(HullTemplate("medium", "surveillance cruiser", "military", "support", False, "medium"))
-    HullSpecs.hulls.append(HullTemplate("large", "carrier", "military", "support", True, "medium"))
-    HullSpecs.hulls.append(HullTemplate("medium", "assault carrier", "military", "medium", True, "medium"))
-    HullSpecs.hulls.append(HullTemplate("large", "heavy carrier", "military", "medium", True, "heavy"))
-    HullSpecs.hulls.append(HullTemplate("large", "battleship", "military", "heavy", False, "heavy"))
-    HullSpecs.hulls.append(HullTemplate("medium", "minehunter", "military", "support", False, "light")) 
-    HullSpecs.hulls.append(HullTemplate("small", "monitor", "military", "heavy", False, "heavy"))
-    HullSpecs.hulls.append(HullTemplate("smedium", "patrol", "military", "light", False, "light"))
-    HullSpecs.hulls.append(HullTemplate("smedium", "patrol", "government", "light", False, "light"))
-    HullSpecs.hulls.append(HullTemplate("smedium", "research", "science", "none", False, "light"))
-    HullSpecs.hulls.append(HullTemplate("smedium", "yacht", "private", "none", False, "light"))
-    HullSpecs.hulls.append(HullTemplate("small", "miner", "cargo", "none", False, "light"))
-    HullSpecs.hulls.append(HullTemplate("smedium", "cargo freighter", "cargo", "none", False, "light"))
-    HullSpecs.hulls.append(HullTemplate("medium", "cargo freighter", "cargo", "none", False, "light"))
-    HullSpecs.hulls.append(HullTemplate("xlarge", "transport", "colony", "none", True, "light"))
-    HullSpecs.hulls.append(HullTemplate("smedium", "exploration", "science", "defensive", False, "light"))
-    HullSpecs.hulls.append(HullTemplate("smedium", "exploration", "private", "defensive", False, "light"))
-    HullSpecs.hulls.append(HullTemplate("smedium", "exploration", "government", "defensive", False, "light"))
-    HullSpecs.hulls.append(HullTemplate("large", "mobile dockyard", "any", "defensive", True, "light"))
-    HullSpecs.hulls.append(HullTemplate("xlarge", "galleon", "cargo", "defensive", False, "medium"))
+    HullSpecs.hulls.append(HullTemplate("small", "skiff", "industrial", "none", "light", False))
+    HullSpecs.hulls.append(HullTemplate("small", "dropship", "warship", "none", "light", True, "lander"))
+    HullSpecs.hulls.append(HullTemplate("small", "dropship", "warship", "light", "heavy", True, "lander"))
+    HullSpecs.hulls.append(HullTemplate("small", "transport", "warship", "light", "medium", True, "lander"))
+    HullSpecs.hulls.append(HullTemplate("medium", "frigate", "warship", "medium", "medium", True))
+    HullSpecs.hulls.append(HullTemplate("smedium", "frigate", "warship", "light", "light", False))
+    HullSpecs.hulls.append(HullTemplate("smedium", "frigate", "warship", "medium", "light", True))
+    HullSpecs.hulls.append(HullTemplate("medium", "frigate", "warship", "defensive", "light", True))
+    HullSpecs.hulls.append(HullTemplate("smedium", "corvette", "warship", "medium", "light", True))
+    HullSpecs.hulls.append(HullTemplate("smedium", "corvette", "warship", "light", "light", True))
+    HullSpecs.hulls.append(HullTemplate("smedium", "corvette", "warship", "heavy", "medium", True))
+    HullSpecs.hulls.append(HullTemplate("smedium", "corvette", "warship", "defensive", "light", True))
+    HullSpecs.hulls.append(HullTemplate("medium", "destroyer", "warship", "heavy", "heavy", True))
+    HullSpecs.hulls.append(HullTemplate("medium", "destroyer", "warship", "heavy", "heavy", True))
+    HullSpecs.hulls.append(HullTemplate("medium", "cruiser", "warship", "heavy", "heavy", True))
+    HullSpecs.hulls.append(HullTemplate("medium", "cruiser", "warship", "support", "medium", True))
+    HullSpecs.hulls.append(HullTemplate("large", "carrier", "warship", "support", "medium", True))
+    HullSpecs.hulls.append(HullTemplate("medium", "carrier", "warship", "medium", "medium", True))
+    HullSpecs.hulls.append(HullTemplate("large", "carrier", "warship", "medium", "heavy", True))
+    HullSpecs.hulls.append(HullTemplate("large", "battleship", "warship", "heavy", "heavy", True))
+    HullSpecs.hulls.append(HullTemplate("medium", "minehunter", "warship", "support", "light", False)) 
+    HullSpecs.hulls.append(HullTemplate("small", "monitor", "warship", "heavy", "heavy", False))
+    HullSpecs.hulls.append(HullTemplate("smedium", "patrol", "warship", "light", "light", False))
+    HullSpecs.hulls.append(HullTemplate("smedium", "patrol", "courier", "light", "light", False))
+    HullSpecs.hulls.append(HullTemplate("smedium", "research", "science", "none", "light", False))
+    HullSpecs.hulls.append(HullTemplate("smedium", "yacht", "luxury", "none", "light", False))
+    HullSpecs.hulls.append(HullTemplate("small", "miner", "cargo", "none", "light", False))
+    HullSpecs.hulls.append(HullTemplate("smedium", "freighter", "cargo", "none", "light", False))
+    HullSpecs.hulls.append(HullTemplate("medium", "freighter", "cargo", "none", "light", False))
+    HullSpecs.hulls.append(HullTemplate("xlarge", "transport", "colony", "none", "light", False))
+    HullSpecs.hulls.append(HullTemplate("smedium", "exploration", "science", "defensive", "light", False))
+    HullSpecs.hulls.append(HullTemplate("smedium", "exploration", "lander", "defensive", "light", False))
+    HullSpecs.hulls.append(HullTemplate("smedium", "exploration", "luxury", "defensive", "light", False))
+    HullSpecs.hulls.append(HullTemplate("large", "mobile dockyard", "industrial", "defensive", "light", False))
+    HullSpecs.hulls.append(HullTemplate("xlarge", "galleon", "cargo", "defensive", "medium", False))
 
-
+#initializehulls()
+#for hull in HullSpecs.hulls:
+    #print(hull)
 
 #hull = HullTemplate("small", "heavy dropship", "military", "light", True, "heavy")
 #print(HullModel(hull))
