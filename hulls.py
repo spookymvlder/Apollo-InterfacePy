@@ -3,17 +3,182 @@ from gencorp import Corp
 import namelists
 import string, copy, re
 from helpers import coin
-from shipparts import Module, ShipRoomType
+from shipparts import Module, ShipRoomType, ShipRooms, ModuleList
 
 #Size of small not currently supported as it will not receive modules.
 #Types do not drive any behavior, but can be used to assign other variables if they are not present upon building class.
 #Categories have some 
+
+
+
+
+
+
+class HullType:
+    types = ["skiff", "dropship", "transport", "frigate", "corvette", "destroyer", "cruiser", 
+            "carrier", "battleship", "mobile dockyard", "minehunter", "monitor", 
+            "patrol", "research", "yacht", "miner", "freighter", "colony", "exploration", "courier"]
+    
+    def __init__(self, type=""):
+        if type == "":
+            type = random.choice(HullType.types)
+        self.type = type
+        self.category = HullType.gencategory(self.type)
+        self.size = HullType.gensize(self.type)
+        self.ordenance = HullType.genordenance(self.type, self.category)
+        self.armor = HullType.genarmorcat(self.type, self.category)
+        self.troops = HullType.gentroop(self.type, self.category)
+        self.priority = HullType.genpriority(self.type, self.troops)
+        
+    def gencategory(type):
+        match type:
+            case "skiff":
+                category = random.choice(["industrial", "cargo", "support"])
+            case "dropship":
+                category = "lander"
+            case "transport":
+                category = random.choice(["transport", "passenger"])
+            case "frigate"|"corvette"|"destroyer"|"cruiser"|"battleship"|"minehunter"|"monitor":
+                category = "warship"
+            case "carrier":
+                category = "carrier"
+            case "mobile dockyard":
+                category = random.choice(["industrial", "support"])
+            case "freighter":
+                category = "cargo"
+            case "patrol":
+                category = random.choice(["courier", "warship"])
+            case "research":
+                category = random.choice(["research", "exploration", "science"])
+            case "yacht":
+                category = "luxury"
+            case "miner":
+                category = "industrial"
+            case "colony":
+                category = "colony"
+            case "exploration":
+                category = "exploration"
+            case "courier":
+                category = "courier"
+            case __:
+                category = random.choice(HullTemplate.shipcategories)
+        return category    
+    
+    def gensize(type):
+        match type:
+            case "skiff"|"dropship"|"patrol"|"courier"|"monitor"|"minehunter":
+                size = random.choice(["small", "smedium"])
+            case "transport"|"research":
+                size = random.choice(HullTemplate.sizes)
+            case "frigate":
+                size = random.choice(["smedium", "medium"])
+            case "corvette":
+                size = "smedium"
+            case "destroyer"|"cruiser":
+                size = "medium"
+            case "carrier"|"freighter"|"miner":
+                size = random.choice(["smedium", "medium", "large", "xlarge"])
+            case "battleship":
+                size = "large"
+            case "mobile dockyard":
+                size = random.choice(["medium", "large", "xlarge"])
+            case "colony":
+                size = random.choice(["large", "xlarge"])
+            case "exploration":
+                size = random.choice(["small", "smedium", "medium", "large"])
+            case "yacht":
+                size = random.choice(["small", "smedium", "medium"])
+            case __:
+                size = random.choice(HullTemplate.sizes)
+        return size
+            
+    def genordenance(type, category):
+        match type:
+            case "skiff"|"miner":
+                ordenance = "none"
+            case "dropship"|"research"|"yacht"|"freighter"|"colony"|"courier"|"mobile dockyard"|"exploration":
+                ordenance = random.choice(["none", "light", "defensive"])
+            case "transport":
+                if category == "passenger":
+                    ordenance = random.choice(["none", "defensive"])
+                else:
+                    ordenance = random.choice(["light", "medium", "defensive"])
+            case "frigate"|"corvette":
+                ordenance = random.choice(["light", "medium", "defensive", "heavy", "support"])
+            case "cruiser":
+                ordenance = random.choice(["heavy", "support"])
+            case "destroyer"|"battleship"|"monitor":
+                ordenance = "heavy"
+            case "carrier":
+                ordenance = random.choice(["light", "medium", "defensive", "support"])
+            case "minehunter":
+                ordenance = random.choice(["light", "support", "defensive"])
+            case "patrol":
+                ordenance = "light"
+        return ordenance
+            
+    def genarmorcat(type, category):
+        match type:
+            case "skiff"|"minehunter"|"courier":
+                armor = "light"
+            case "dropship"|"frigate"|"carrier"|"freighter"|"colony"|"exploration"|"research"|"yacht"|"miner":
+                armor = random.choice(HullTemplate.armorlevels)
+            case "transport":
+                if category == "passenger":
+                    armor = "light"
+                else:
+                    armor = random.choice(HullTemplate.armorlevels)
+            case "corvette"|"patrol":
+                armor = random.choice(["light", "medium"])
+            case "destroyer"|"battleship":
+                armor = "heavy"
+            case "cruiser"|"monitor":
+                armor = random.choice(["medium", "heavy"])
+            case __:
+                armor = "light"
+        return armor
+    
+    def gentroop(type, category):
+        troops = False
+        if category == "warship":
+            if type not in ("monitor", "minehunter"):
+                flip = coin()
+                if flip == 1:
+                    troops = True
+        elif category == "transport" or type == "carrier":
+            troops = True
+        return troops
+
+    def genpriority(type, troops):
+        priority = ""
+        match type:
+            case "transport"|"dropship":
+                priority = "lander"
+            case "freighter":
+                priority = "cargo"
+            case "courier":
+                priority = "speed"
+            case "frigate"|"corvette"|"carrier":
+                flip = coin()
+                if flip == 1:
+                    if troops:
+                        priority = random.choice(["speed", "stealth", "signal", "rail", "missile", "lander", "carrier", "troops"])
+                    else:
+                        priority = random.choice(["speed","stealth", "signal", "rail", "missile", "lander", "carrier"])
+            case "destroyer"|"cruiser"|"battleship"|"monitor"|"patrol":
+                flip = coin()
+                if flip == 1:
+                    priority = random.choice(["signal", "rail", "missile", "carrier", "speed"])
+            case "yacht":
+                priority = "quality"
+            case "research"|"exploration":
+                flip = coin()
+                if flip == 1:
+                    priority = random.choice(["speed", "stealth", "quality", "signal"])
+        return priority
+
 class HullTemplate:
     sizes = ["small", "smedium", "medium", "large", "xlarge"]
-    types = ["skiff", "dropship", "transport", "frigate", "corvette", "destroyer", "cruiser", 
-            "carrier", "battleship", "mobile dockyard",
-            "minehunter", "galleon", "monitor", "patrol", "research", "yacht", 
-            "miner", "freighter", "colony", "exploration"]
     shipcategories = ["courier", "cargo", "warship", "passenger", "science", "luxury",  
                       "colony", "industrial", "support", "lander", "transport", "carrier", "exploration", "research"]
     ordenancelevels = ["none", "light", "defensive", "medium", "heavy", "support"]
@@ -26,12 +191,10 @@ class HullTemplate:
     newshipcategories = []
     newordenancelevels = []
     newarmorlevesl =[]
-    
 
 #TODO new variable for getsmodules. Can then skip for things like dropships and escape pods
-#checks for carrier and armor
 #TODO defaults for variables should be a randomizing function
-    def __init__(self, size, hulltype, category, ordenance, armorcat, troops, priority=""):
+    def __init__(self, size, hulltype, category, ordenance, armorcat, troops="", priority=""):
         self.size = size
         self.hulltype = hulltype
         self.category = category
@@ -45,6 +208,8 @@ class HullTemplate:
         self.hullval = HullTemplate.genhullval(self, self.size, self.category)
         self.armorval = HullTemplate.genarmorval(self, self.armorcat, self.hullval)
         self.modules = HullTemplate.genmodules(self, self.size, self.priority)
+        if troops == "":
+            troops = HullTemplate.randomtroops(self.category)
         self.squads = HullTemplate.gensquadcount(size, troops, self.priority, category)
         #More robust manufacturer functionality, choose from Corps once gencorp is more built out. If new, save to list
         self.manufacturer = Corp.gencorpname()
@@ -52,7 +217,14 @@ class HullTemplate:
         self.eqmodules = HullTemplate.geninitmodules(self, self.modules, self.category, self.crew, self.size, self.squads)
         self.availmodules = HullTemplate.countavailmodules(self.modules, self.eqmodules, 1)
         self.thrusters = HullTemplate.genthrusters(self, self.size, self.armorcat, self.ordenance, self.category)
-    
+
+    @staticmethod
+    def randomtroops(category):
+        if category == "warship":
+            return True
+        else:
+            return False
+
     @property
     def size(self):
         return self._size
@@ -69,7 +241,7 @@ class HullTemplate:
     
     @hulltype.setter
     def hulltype(self, hulltype):
-        if hulltype == "" or hulltype not in HullTemplate.types:
+        if hulltype == "" or hulltype not in HullType.types:
             raise ValueError(f"Invalid hull type {hulltype}.")
         self._hulltype = hulltype
     
@@ -191,21 +363,7 @@ class HullTemplate:
             signature = -3
         return signature
     
-    '''@property
-    def FTL(self):
-        return self._FTL
-    
-    @FTL.setter
-    def FTL(self, FTL):
-        if FTL < 20 or not isinstance(FTL, int):
-            raise ValueError(f"Invalid FTL value {FTL}.")
-        self._FTL = FTL'''
 
-    #Need to add variables later to input, not a priority for now. Likely needs some extra trait like speed or indication of how advanced the hardware should be.
-    '''def genFTL(self, size):
-        if size == "small":
-            FTL = 0
-        elif '''
 
     @property
     def crew(self):
@@ -371,20 +529,20 @@ class HullTemplate:
         choices = []
         match category:
             case "courier":
-                choices.append(namelists.returnNamelist("courier"))
+                choices.append(namelists.returnNameList("courier"))
             case "cargo":
-                choices.append(namelists.returnNamelist("cargo"))
+                choices.append(namelists.returnNameList("cargo"))
             case "warship":
-                choices.append(namelists.returnNamelist("mythical"))
-                choices.append(namelists.returnNamelist("fantasy"))
-                choices.append(namelists.returnNamelist("predator"))
-                choices.append(namelists.returnNamelist("weather"))
+                choices.append(namelists.returnNameList("mythical"))
+                choices.append(namelists.returnNameList("fantasy"))
+                choices.append(namelists.returnNameList("predator"))
+                choices.append(namelists.returnNameList("weather"))
             case "luxury":
-                choices.append(namelists.returnNamelist("yacht"))
+                choices.append(namelists.returnNameList("yacht"))
             case "exploration":
-                choices.append(namelists.returnNamelist("explorer"))
+                choices.append(namelists.returnNameList("explorer"))
         if choices == []:
-            choices.append(namelists.returnNamelist("animal"))
+            choices.append(namelists.returnNameList("animal"))
         choices = random.choice(choices)
         #could end up with multiple lists stored to choices so guarantee we return a single value
         if isinstance(choices, list):
@@ -445,14 +603,15 @@ class HullTemplate:
     #Cargo requires at least one cargo bay, may split off each type to own function.
     #Also changes value for modules
     def geninitmodules(self, modules, category, crew,  priority, squads):
-        initmodules = []
+        initmodules = ModuleList()
         # Retains original module count for troubleshooting
-        cmodules = copy.copy(modules)
+        cmodules = copy.deepcopy(modules)
         
         #set AI in smallest slot
         lvl = HullTemplate.findopenmodule(cmodules, 0, 4, 1, direction=0)
         if lvl != "":
-            initmodules.append(Module("AI", lvl, 1))
+            #initmodules.append(Module("AI", lvl, 1))
+            initmodules = ModuleList.addmodule(initmodules, "AI", lvl, 1)
             cmodules[lvl] -= 1
 
         passengers = HullTemplate.genpassengers(modules, category, priority)
@@ -460,20 +619,22 @@ class HullTemplate:
             passengers -= crew[1]
         capacity = passengers + (squads*26) + crew[1]
         capacitylvl = HullTemplate.findpopmodule(capacity)
-        if category == "passenger" or "colony":
+        if category == "passenger" or category == "colony":
             quant = 1
         else:
             quant = 2
         lvl = HullTemplate.findopenmodule(cmodules, capacitylvl, 4, quant, 0)
         if lvl != "":
-            initmodules.append(Module("Cryo", lvl, 1))
+            #initmodules.append(Module("Cryo", lvl, 1))
+            initmodules = ModuleList.addmodule(initmodules, "Cryo", lvl, 1)
             cmodules[lvl] -= 1
             if capacitylvl != 0:
                 airlvl = capacitylvl - 1
             else:
                 airlvl = capacitylvl
             airlvl = HullTemplate.findopenmodule(cmodules, airlvl, 4, 1, 0)
-            initmodules.append(Module("Air Scrubbers", airlvl, 1))
+            #initmodules.append(Module("Air Scrubbers", airlvl, 1))
+            initmodules = ModuleList.addmodule(initmodules, "Air Scrubbers", lvl, 1)
             cmodules[airlvl] -= 1
         else:
             raise ValueError("Unable to set appropriate cryo module level for hull template.")
@@ -481,7 +642,8 @@ class HullTemplate:
             capacitylvl = HullTemplate.findpopmodule(crew[1])
         lvl = HullTemplate.findopenmodule(cmodules, capacitylvl, 4, 1, 0) #confirm there is still galley room in case air scrubbers somehow stole slot.
         if lvl != "":
-            initmodules.append(Module("Galley", lvl, 1))
+            #initmodules.append(Module("Galley", lvl, 1))
+            initmodules = ModuleList.addmodule(initmodules, "Galley", lvl, 1)
             cmodules[lvl] -= 1
         else:
             raise ValueError("Unable to set appropriate galley level for hull template.")
@@ -491,19 +653,22 @@ class HullTemplate:
             dropships = HullTemplate.dropshipcalc(cmodules, priority, squads)
             for i, dropship in enumerate(dropships):
                 if dropship > 0:
-                    initmodules.append(Module("Hangar", i, dropship))
+                    #initmodules.append(Module("Hangar", i, dropship))
+                    initmodules = ModuleList.addmodule(initmodules, "Hangar", i, dropship)
                     cmodules[i] -= 1
         
         elif category == "carrier" or priority == "carrier":
             lvl = HullTemplate.findopenmodule(cmodules, 4, 1, 1, 1)
             if lvl != "":
-                initmodules.append(Module("Hangar", lvl, 1))
+                #initmodules.append(Module("Hangar", lvl, 1))
+                initmodules = ModuleList.addmodule(initmodules, "Hangar", lvl, 1)
                 cmodules[lvl] -= 1
         
         if category == "cargo" or priority == "cargo":
             lvl = HullTemplate.findopenmodule(cmodules, 4, 0, 2, 1)
             if lvl != "":
-                initmodules.append(Module("Cargo Bay", lvl, 2))
+                #initmodules.append(Module("Cargo Bay", lvl, 2))
+                initmodules = ModuleList.addmodule(initmodules, "Cargo Bay", lvl, 2)
                 cmodules[lvl] -= 2
     
             #can maybe revamp the dropship function, but also the previous logic isn't awful. Would be good to have a function that could permutate through 
@@ -513,20 +678,22 @@ class HullTemplate:
         eevs = HullTemplate.eevcalc(cmodules, crew[1])
         for i, eev in enumerate(eevs):
             if eev > 0:
-                initmodules.append(Module("EEV", i, eev))
+                #initmodules.append(Module("EEV", i, eev))
+                initmodules = ModuleList.addmodule(initmodules, "EEV", i, eev)
                 cmodules[i] -= eev
 
         lvl = HullTemplate.findopenmodule(cmodules, 1, 4, 1, direction=0)
         if lvl != "":
-            initmodules.append(Module("Docking", lvl, 1))
+            #initmodules.append(Module("Docking", lvl, 1))
+            initmodules = ModuleList.addmodule(initmodules, "Docking", lvl, 1)
             cmodules[lvl] -= 1
 
-        if category == ("exploration" or "lander" or "colony"):
+        if category == "exploration" or category == "lander" or category == "colony":
                 lvl = HullTemplate.findopenmodule(cmodules, 3, 1, 1, 1)
                 if lvl != "":
-                    cmodules.append(Module("Vehicle Bay", lvl, 1))
+                    #cmodules.append(Module("Vehicle Bay", lvl, 1))
+                    initmodules = ModuleList.addmodule(initmodules, "Vehicle Bay", lvl, 1)
                     modules[lvl] -= 1
-
         return initmodules
 
     @staticmethod
@@ -582,7 +749,7 @@ class HullTemplate:
     #TODO Need to make it so that civilian transport and military transport are mutually exclusive.
     #Gets the highest amount of passengers the ship can support using all modules of the same level.
     def genpassengers(modules, category, priority):
-        if category == ("passenger" or "colony"): #Cryo, Air
+        if category == "passenger" or category == "colony": #Cryo, Air
             quant = 2
         elif priority == "transport": #Cryo, air, galley
             quant = 3
@@ -645,7 +812,7 @@ class HullTemplate:
                 thrusters = -3
         if armorcat == "heavy" or ordenance == "heavy":
             thrusters -= 1
-        if category == "cargo" or "colony":
+        if category == "cargo" or category == "colony":
             thrusters -= 1
         if category == "courier":
             thrusters += 1
@@ -666,19 +833,22 @@ class HullTemplate:
                 raise ValueError(f"Module count must be greater than or equal to 0, not {module}.")
         self._availmodules = availmodules
 
-    #Initmodules is a list of module slots that the ship had before having modules equipped. 
+    #Modules is a list of module slots that the ship had before having modules equipped. 
     #Savedmodules is a list of module classes assigned to the ship.
     #Guard will set the number of available modueles to 0 rather than returning a negative number. Ensures it is possible to generate a ship
     #that meets all ship requirements despite having a random module count. Set to 1 to ignore.
     @staticmethod
-    def countavailmodules(initmodules, savedmodules, guard=0):
-        for module in savedmodules:
-            initmodules[module.lvl] -= module.quantity
+    def countavailmodules(modules, savedmodules, guard=0):
+        availmodules = [0, 0, 0, 0, 0]
+        for i, module in enumerate(modules):
+            availmodules[i] = module
+        for module in savedmodules.modulelist:
+            availmodules[module.lvl] -= module.quantity
         if guard == 1:
-            for i, module in enumerate(initmodules):
+            for i, module in enumerate(availmodules):
                 if module < 0:
-                    initmodules[i] = 0
-        return initmodules
+                    availmodules[i] = 0
+        return availmodules
 
                     
 
@@ -732,12 +902,12 @@ class HullModel:
         self.priority = template.priority
         self.availmodules = template.availmodules
         self.squads = template.squads
-        eqmodules = HullModel.genmodules(self, self.eqmodules, self.modules, self.priority, self.category, self.size)
-        if eqmodules:
-            self.eqmodules = self.eqmodules + eqmodules
+        self.eqmodules = HullModel.genmodules(self, self.eqmodules, self.availmodules, self.priority, self.category, self.size)
+        self.availmodules = HullTemplate.countavailmodules(self.modules, self.eqmodules, 1)
         self.thrusters = template.thrusters
         self.eqweapons = HullModel.genweapons(self, self.ordenance, self.hardpoints, self.priority)
         self.rooms = HullModel.genrooms(self, self.eqmodules, self.crew, self.size, self.category, self.squads)
+        self.ftl = HullModel.genFTL(self, self.priority, self.size, self.category)
 
     @property
     def eqmodules(self):
@@ -745,7 +915,7 @@ class HullModel:
     
     @eqmodules.setter
     def eqmodules(self, eqmodules):
-        for module in eqmodules:
+        for module in eqmodules.modulelist:
             if module.type not in Module.all:
                 raise ValueError(f"Invalid module {module.name}.")
         self._eqmodules = eqmodules
@@ -755,51 +925,57 @@ class HullModel:
 # If it can, returns level of slot, else returns false.
 #TODO actual list for modules.
     def genmodules(self, eqmodules, modules, priority, category, size):
-        if "None" in eqmodules:
+        if "None" in eqmodules.modulelist:
             return False
         flip = coin()
-        if category == ("science" or "warship" or "exploration" or "research") or size == ("medium" or "large" or "xlarge") or flip:
+        if category in ("science", "warship", "exploration", "research") or size in ("medium", "large", "xlarge") or flip:
             lvl = HullTemplate.findopenmodule(modules, 1, 3, 1, 0)
             if lvl != "":
-                eqmodules.append(Module("Medlab", lvl, 1))
+                #eqmodules.append(Module("Medlab", lvl, 1))
+                eqmodules = ModuleList.addmodule(eqmodules, "Medlab", lvl, 1)
                 modules[lvl] -= 1
             
         flip = coin()
-        if category == ("exploration" or "research" or "science") or size == ("large" or "xlarge") or flip:
+        if category in ("exploration", "research", "science") or size in ("large", "xlarge") or flip:
             lvl = HullTemplate.findopenmodule(modules, 2, 3, 1, 0)
             if lvl != "":
-                eqmodules.append(Module("Science Lab", lvl, 1))
+                #eqmodules.append(Module("Science Lab", lvl, 1))
+                eqmodules = ModuleList.addmodule(eqmodules, "Science Lab", lvl, 1)
                 modules[lvl] -= 1
                 
 
         r = random.randint(1,100)
-        if category == "luxury" or r < 90:
+        if category == "luxury" or r > 90:
             lvl = HullTemplate.findopenmodule(modules, 1, 2, 1, 0)
             if lvl != "":
-                eqmodules.append(Module("Corp Suite", lvl, 1))
+                #eqmodules.append(Module("Corp Suite", lvl, 1))
+                eqmodules = ModuleList.addmodule(eqmodules, "Corp Suite", lvl, 1)
                 modules[lvl] -= 1
 
         r = random.randint(1, 100)
-        if category == "cargo" or (category == "warship" and (size == "small" or "smedium")) or (size != "xlarge" and r > 70):
+        if category == "cargo" or (category == "warship" and (size == "small" or size == "smedium")) or (size != "xlarge" and r > 70):
             lvl = HullTemplate.findopenmodule(modules, 2, 3, 1, 0)
             if lvl != "":
-                eqmodules.append(Module("Tractor", lvl, 1))
+                #eqmodules.append(Module("Tractor", lvl, 1))
+                eqmodules = ModuleList.addmodule(eqmodules, "Tractor", lvl, 1)
                 modules[lvl] -= 1
 
         flip = coin()
         crane = False
-        if flip and category == "cargo":
+        if flip == 1 and category == "cargo":
             crane = True
         if crane == True or priority == "salvage":
             lvl = HullTemplate.findopenmodule(modules, 2, 3, 1, 0)
             if lvl != "":
-                eqmodules.append(Module("Crane", lvl, 1))
+                #eqmodules.append(Module("Crane", lvl, 1))
+                eqmodules = ModuleList.addmodule(eqmodules, "Crane", lvl, 1)
                 modules[lvl] -= 1
         
         for i in range(2):
-            lvl = HullTemplate.findopenmodule(modules, 4, 0, 1, 0)
+            lvl = HullTemplate.findopenmodule(modules, 4, 0, 1, 1)
             if lvl != "":
-                eqmodules.append(Module("Cargo Bay", lvl, 1))
+                #eqmodules.append(Module("Cargo Bay", lvl, 1))
+                eqmodules = ModuleList.addmodule(eqmodules, "Cargo Bay", lvl, 1)
                 modules[lvl] -= 1
         
         for i in range(1):
@@ -810,11 +986,11 @@ class HullModel:
                     type = "Vehicle Bay"
                 else:
                     type = "Hangar"
-                lvl = HullTemplate.findopenmodule(modules, 3, 0, 1, 0)
+                #lvl = HullTemplate.findopenmodule(modules, 3, 0, 1, 1)
                 if lvl != "":
-                    eqmodules.append(Module(type, lvl, 1))
+                    #eqmodules.append(Module(type, lvl, 1))
+                    eqmodules = ModuleList.addmodule(eqmodules, type, lvl, 1)
                     modules[lvl] -= 1
-    
         return eqmodules  
         
     @property
@@ -930,66 +1106,82 @@ class HullModel:
     #Assumes every ship will have a bridge and AI core and that the Galley will match the cryodeck capacity.
     def genrooms(self, eqmodules, crew, shipsize, category, squads):
         roomdefault = ["Bridge", "Engine Room", "Reactor Core"]
-        roomlist = []
+        roomlist = ShipRooms()
+        #roomlist = roomlist.roomlist
         qtype = ""
         #Find capacity of ship
         r = 1
 
         for room in roomdefault:
-            roomlist.append(ShipRoomType(room, 0, 1, shipsize))
-        for module in eqmodules:
+            #roomlist.append(ShipRoomType(room, 0, 1, shipsize))
+            roomlist = ShipRooms.addroom(roomlist, room, 0, 1, shipsize)
+        for module in eqmodules.modulelist:
             for room in module.rooms:
-                roomlist.append(ShipRoomType(room, module.lvl, module.quantity, shipsize))
+                #roomlist.append(ShipRoomType(room, module.lvl, module.quantity, shipsize))
+                roomlist = ShipRooms.addroom(roomlist, room, module.lvl, module.quantity, shipsize)
         bodies = crew[1] + (squads * 26)
         
         if bodies / crew[1] > 2:
             qtype = "tight"
         else:
             qtype = "accom"
-        roomlist = roomlist + HullModel.genroomlivquarters(self, qtype, bodies, shipsize)
-        if shipsize != ("xsmall" or "small"):
-            roomlist.append(ShipRoomType("Quarantine Bunk", 0, 1, shipsize))
-            roomlist.append(ShipRoomType("Quarantine Rec", 0, 1, shipsize))
-            roomlist.append(ShipRoomType("Decontamination", 0, 1, shipsize))
-            roomlist.append(ShipRoomType("AI Core", 0, 1, shipsize))
-            roomlist.append(ShipRoomType("Workroom", 0, 2, shipsize))
-            roomlist.append(ShipRoomType("Coolant Tanks", 0, 1, shipsize))
-            roomlist.append(ShipRoomType("Briefing Room", 0, 1, shipsize))
-            roomlist.append(ShipRoomType("Comm Array", 0, 1, shipsize))
+        roomlist = HullModel.genroomlivquarters(self, roomlist, qtype, bodies, shipsize)
+        if shipsize not in ("xsmall", "small"):
+            #roomlist.append(ShipRoomType("Quarantine Bunk", 0, 1, shipsize))
+            #roomlist.append(ShipRoomType("Quarantine Rec", 0, 1, shipsize))
+            #roomlist.append(ShipRoomType("Decontamination", 0, 1, shipsize))
+            #roomlist.append(ShipRoomType("AI Core", 0, 1, shipsize))
+            #roomlist.append(ShipRoomType("Workroom", 0, 2, shipsize))
+            #roomlist.append(ShipRoomType("Coolant Tanks", 0, 1, shipsize))
+            #roomlist.append(ShipRoomType("Briefing Room", 0, 1, shipsize))
+            #roomlist.append(ShipRoomType("Comm Array", 0, 1, shipsize))
+            roomlist = ShipRooms.addroom(roomlist, "Quarantine Bunk", 0, 1, shipsize)
+            roomlist = ShipRooms.addroom(roomlist, "Quarantine Rec", 0, 1, shipsize)
+            roomlist = ShipRooms.addroom(roomlist, "Decontamination", 0, 1, shipsize)
+            roomlist = ShipRooms.addroom(roomlist, "AI Core", 0, 1, shipsize)
+            roomlist = ShipRooms.addroom(roomlist, "Workroom", 0, 2, shipsize)
+            roomlist = ShipRooms.addroom(roomlist, "Coolant Tanks", 0, 1, shipsize)
+            roomlist = ShipRooms.addroom(roomlist, "Briefing Room", 0, 1, shipsize)
+            roomlist = ShipRooms.addroom(roomlist, "Comm Array", 0, 1, shipsize)
         elif shipsize == ("small"):
-            roomlist.append(ShipRoomType("Workroom", 0, 1, shipsize))
+            #roomlist.append(ShipRoomType("Workroom", 0, 1, shipsize))
+            roomlist = ShipRooms.addroom(roomlist, "Workroom", 0, 1, shipsize)
             flip = coin()
-            if flip or (category == "science" or "research" or "exploration"):
-                roomlist.append(ShipRoomType("Decontamination", 0, 1, shipsize))
+            if flip or category in ("science", "research", "exploration"):
+                #roomlist.append(ShipRoomType("Decontamination", 0, 1, shipsize))
+                roomlist = ShipRooms.addroom(roomlist, "Decontamination", 0, 1, shipsize)
             flip = coin()
-            if flip:
-                roomlist.append(ShipRoomType("Comm Array", 0, 1, shipsize))
-        if shipsize == ("large" or "xlarge"):
+            if flip == 1:
+                #roomlist.append(ShipRoomType("Comm Array", 0, 1, shipsize))
+                roomlist = ShipRooms.addroom(roomlist, "Comm Array", 0, 1, shipsize)
+        if shipsize in ("large", "xlarge"):
             r = random.randint(1,4)
-            roomlist.append(ShipRoomType("Private Quarters", 0, r, shipsize))
-            roomlist.append(ShipRoomType("Admin Office", 0, 1, shipsize))
+            #roomlist.append(ShipRoomType("Private Quarters", 0, r, shipsize))
+            #roomlist.append(ShipRoomType("Admin Office", 0, 1, shipsize))
+            roomlist = ShipRooms.addroom(roomlist, "Private Quarters", 0, r, shipsize)
+            roomlist = ShipRooms.addroom(roomlist, "Admin Office", 0, 1, shipsize)
         
-        rooms = HullModel.genroommilitary(self, category, shipsize)
-        if rooms:
-            roomlist += rooms
-        rooms = ""
+        roomlist = HullModel.genroommilitary(self, roomlist, category, shipsize)
         r = HullModel.genroomairlocks(self, shipsize)
-        roomlist.append(ShipRoomType("Airlock", 0, r, shipsize))
-        roomlist.append(ShipRoomType("EEV Suit Storage", 0, r, shipsize))
+        #roomlist.append(ShipRoomType("Airlock", 0, r, shipsize))
+        #roomlist.append(ShipRoomType("EEV Suit Storage", 0, r, shipsize))
+        roomlist = ShipRooms.addroom(roomlist, "Airlock", 0, r, shipsize)
+        roomlist = ShipRooms.addroom(roomlist, "EEV Suit Storage", 0, r, shipsize)
         return roomlist
     
 
-    def genroommilitary(self, category, shipsize):
-        rooms = []
+    def genroommilitary(self, roomlist, category, shipsize):
+        #rooms = []
         if category == "warship":
-            if shipsize != ("xsmall" or "small"):
-                rooms.append(ShipRoomType("Brig", 0, 1, shipsize))
+            if shipsize not in ("xsmall", "small"):
+                #rooms.append(ShipRoomType("Brig", 0, 1, shipsize))
+                roomlist = ShipRooms.addroom(roomlist, "Brig", 0, 1, shipsize)
                 quant = 1
-                if shipsize == ("large" or "xlarge"):
+                if shipsize in ("large", "xlarge"):
                     quant = 2
-                rooms.append(ShipRoomType("Munitions Storage", 0, quant, shipsize))
-        if rooms:
-            return rooms
+                #rooms.append(ShipRoomType("Munitions Storage", 0, quant, shipsize))
+                roomlist = ShipRooms.addroom(roomlist, "Munitions Storage", 0, quant, shipsize)
+        return roomlist
 
     #Not all airlocks are going to have suit storage
     def genroomairlocks(self, size):
@@ -1005,30 +1197,77 @@ class HullModel:
                 r += 8
         if size != "xsmall":
             flip = coin()
-            if flip:
+            if flip == 1:
                     r += 1
         return r
 
 
     #Creates bunks, bathrooms, and lockers
-    def genroomlivquarters(self, qtype, bodies, shipsize):
-        rooms = []
+    def genroomlivquarters(self, roomlist, qtype, bodies, shipsize):
+        #rooms = []
         if qtype == "tight":
             split = math.ceil(bodies/6)
-            rooms.append(ShipRoomType("Dorm Bunks", 0, split, shipsize))
-            rooms.append(ShipRoomType("Locker Room", 1, math.ceil(split/4), shipsize))
-            rooms.append(ShipRoomType("Bathroom", 1, math.ceil(split/15), shipsize))
+            #rooms.append(ShipRoomType("Dorm Bunks", 0, split, shipsize))
+            #rooms.append(ShipRoomType("Locker Room", 1, math.ceil(split/4), shipsize))
+            #rooms.append(ShipRoomType("Bathroom", 1, math.ceil(split/15), shipsize))
+            roomlist = ShipRooms.addroom(roomlist, "Dorm Bunks", 0, split, shipsize)
+            roomlist = ShipRooms.addroom(roomlist, "Locker Room", 1, math.ceil(split/4), shipsize)
+            roomlist = ShipRooms.addroom(roomlist, "Bathroom", 1, math.ceil(split/15), shipsize)
         else:
             split = math.ceil(bodies/4)
-            rooms.append(ShipRoomType("Bunks", 0, split, shipsize))
-            rooms.append(ShipRoomType("Lockers", 0, math.ceil(split/4), shipsize))
-            rooms.append(ShipRoomType("Bathroom", 0, math.ceil(split/10), shipsize))
-        return rooms
+            #rooms.append(ShipRoomType("Bunks", 0, split, shipsize))
+            #rooms.append(ShipRoomType("Lockers", 0, math.ceil(split/4), shipsize))
+            #rooms.append(ShipRoomType("Bathroom", 0, math.ceil(split/10), shipsize))
+            roomlist = ShipRooms.addroom(roomlist, "Bunks", 0, split, shipsize)
+            roomlist = ShipRooms.addroom(roomlist, "Lockers", 0, math.ceil(split/4), shipsize)
+            roomlist = ShipRooms.addroom(roomlist, "Bathroom", 0, math.ceil(split/10), shipsize)
+        return roomlist
+    
+    @property
+    def ftl(self):
+        return self._ftl
+    
+    @ftl.setter
+    def ftl(self, ftl):
+        if ftl < 1:
+            raise ValueError(f"Invalid ftl rating {ftl}.")
+        self._ftl = ftl
+
+    #Generates an FTL rating for the ship. Smaller ships have smaller engines and are slower.
+    # Then modifies those ranges based on category and priority.
+    def genFTL(self, priority, size, category):
+        min = 99
+        max = 99
+        if size == "small":
+            min = 20
+            max = 12
+        elif size == "smedium":
+            min = 18
+            max = 8
+        elif size == "medium":
+            min = 16
+            max = 6
+        elif size == "large" or size == "xlarge":
+            min = 16
+            max = 4
+        if category == "courier":
+            min = math.ceil(min/2)
+            max = math.ceil(max/2)
+        elif priority == "speed":
+            min -= 4
+        elif priority == "quality" or category == "luxury":
+            min -= 2
+            max -= 4
+        elif category == "colony":
+            min += 8
+            max += 4
+        return random.randint(max, min)
+        
 
 
     def __str__(self):
         description = f"This is a {self.manufacturer} {self.shipmodel}, a {self.category} {self.hulltype} ship. \n"
-        description += f"Crew: {self.crew} \nLength: {self.hullen} \nSignature: {self.signature} \nHull: {self.hullval} \nArmor: {self.armorval} \n"
+        description += f"Crew: {self.crew} \nLength: {self.hullen} \nSignature: {self.signature} \nHull: {self.hullval} \nArmor: {self.armorval} \nFTL: {self.ftl}\n"
         description += "Hardpoints: "
         count = 1
         for hardpoint in self.hardpoints:
@@ -1061,7 +1300,12 @@ class HullModel:
 class HullSpecs:
     hulls = []
     
+class HullModels:
+    models = []
 
+def initializemodels():
+    for hull in HullSpecs.hulls:
+        HullModels.models.append(HullModel(hull))
 
 def initializehulls():
     HullSpecs.hulls.append(HullTemplate("small", "skiff", "industrial", "none", "light", False))
@@ -1098,7 +1342,7 @@ def initializehulls():
     HullSpecs.hulls.append(HullTemplate("smedium", "exploration", "lander", "defensive", "light", False))
     HullSpecs.hulls.append(HullTemplate("smedium", "exploration", "luxury", "defensive", "light", False))
     HullSpecs.hulls.append(HullTemplate("large", "mobile dockyard", "industrial", "defensive", "light", False))
-    HullSpecs.hulls.append(HullTemplate("xlarge", "galleon", "cargo", "defensive", "medium", False))
+
 
 #initializehulls()
 #for hull in HullSpecs.hulls:
@@ -1106,6 +1350,6 @@ def initializehulls():
 
 #hull = HullTemplate("small", "heavy dropship", "military", "light", True, "heavy")
 #print(HullModel(hull))
-initializehulls()
-for hull in HullSpecs.hulls:
-    print(HullModel(hull))
+#initializehulls()
+#for hull in HullSpecs.hulls:
+#    HullModel(hull)

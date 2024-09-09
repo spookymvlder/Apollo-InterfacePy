@@ -1,5 +1,5 @@
 import random
-from load_initial import factionlist
+from factions import FactionList
 from helpers import coin
 
 class Moon:
@@ -55,12 +55,12 @@ class Moon:
             else:
                 self.populated = False
         if self.populated:
-            faction1 = random.choice(factionlist)
+            faction1 = random.choice(FactionList.factionlist)
             flip = coin()
             if flip == 1:
                 faction2 = faction1
                 while faction2 == faction1:
-                    faction2 = random.choice(factionlist)
+                    faction2 = random.choice(FactionList.factionlist)
                 self.factions.append(faction1.name)
                 self.factions.append(faction2.name)
             else:
