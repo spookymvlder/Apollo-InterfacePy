@@ -1,0 +1,25 @@
+body {
+    font-family: 'Anta', 'Courier New', Courier, monospace;
+    background-color: rgb(11, 29, 14);
+    color: white; 
+}
+
+.navbar {
+    background-color: rgb(4, 162, 88) !important;
+}
+
+.headsec {
+    color:rgb(11, 29, 14) !important;
+    background-color: rgb(4, 162, 88) !important;
+    border-style: solid !important;
+    border-color: rgb(4, 162, 88) !important;
+    border-width: thin;
+}
+
+.bodysec {
+    background-color: rgb(11, 29, 14) !important;
+    color: white !important;
+    border-style: solid !important;
+    border-color: rgb(4, 162, 88) !important;
+    border-width: thin;
+}

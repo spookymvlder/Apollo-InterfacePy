@@ -1,22 +1,35 @@
 import sys, random, os
 
+from factions import Faction, FactionList, initializeall
+initializeall()
 from gennpc import Npc, statlist
-from load_initial import nationlist, factionlist, Faction
 from location import Location
 from genmeow import Cat
 from genstar import Star
 from genplanet import Planet
 from genmoon import Moon
+from hulls import HullTemplate, HullSpecs, HullModel, HullModels, HullType
+from genship import Ship
+from namelists import NationNameTable
+
 
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 
 app = Flask(__name__)
 
+
+
+def idtoname(id):
+    return Faction.idtoname(id)
+
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
+app.jinja_env.globals.update(idtoname=idtoname)
 
 Session(app)
+
+
 
 #Generate initial location to save any potential NPCs
 #defaultplace = Location("Unassigned", "Default")
@@ -29,9 +42,9 @@ npclist = []
 def index():
     sexes = ["M", "F"]
     types = ["HUMAN", "SYNTH"]
-    factionnames = []
-    for faction in factionlist:
-        factionnames.append(faction.name)
+    #factionnames = []
+    #for faction in FactionList.factionlist:
+    #    factionnames.append(faction.name)
     if request.method == "GET":
         npc = Npc()
     if request.method =="POST":
@@ -57,7 +70,7 @@ def index():
         npc = Npc(sex=sex, factionid=postfaction, pstat=pstat, type=type, nation=nation)
     npcfactionname = Faction.idtoname(npc.factionid)
     pstat = statlist[npc.pstat]
-    return render_template("index.html", namelist=nationlist, sexes=sexes, factions=factionnames, types=types, statlist=statlist, npc=npc, npcfaction=npcfactionname, pstat=pstat)
+    return render_template("index.html", namelist=NationNameTable.nationlist, sexes=sexes, factions=FactionList.factionlist, types=types, statlist=statlist, npc=npc, npcfaction=npcfactionname, pstat=pstat)
             
 
 @app.route("/validatenpc", methods=["POST"])
@@ -105,6 +118,12 @@ def solar():
                 for moon in planet.moons:
                     moons.append(moon)
     return render_template("solar.html", sun=sun, planets=planets, moons=moons)
+
+@app.route("/ships")
+def ships():
+    hulltype = HullType()
+    ship = Ship(HullModel(HullTemplate(hulltype.size, hulltype.type, hulltype.category, hulltype.ordenance, hulltype.armor, hulltype.troops, hulltype.priority)))
+    return render_template("ships.html", ship=ship)
 
 
 

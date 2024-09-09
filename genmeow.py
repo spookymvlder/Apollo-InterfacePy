@@ -1,7 +1,7 @@
 import random
-from helpers import coin
+from helpers import coin, hisher, heshe
 from gennpc import Npc
-from load_initial import catnametable
+from namelists import CatNames
 #https://www.reddit.com/media?url=https%3A%2F%2Fi.redd.it%2Fjk1hor2f5hf11.jpg
 
 
@@ -11,10 +11,10 @@ class Cat:
         self.eye1 = Cat.geneyes()
         self.color1 = Cat.gencatcolor()
         self.color2 = False
-        if self.color1 != ("white" or "bald"):
+        if self.color1 not in ("white", "bald"):
             self.tort = Cat.gentort()
             if self.tort:
-                while self.color2 == (False or "bald"):
+                while self.color2 == False or self.color2 == "bald":
                     self.color2 = Cat.gencatcolor()
             self.tabby = Cat.gentabby()
             self.colorpoint = Cat.gencolorpoint()
@@ -40,7 +40,7 @@ class Cat:
         self.name = Cat.genname(self)
             
     def __str__(self):
-            description = f"{self.name} is a very good kitty. They are "
+            description = f"{self.name} is a very good kitty. {heshe(self.sex, 1)} is "
             if self.mutation == "albino":
                 description += "an albino cat with "
             elif self.color1 == "bald":
@@ -55,15 +55,15 @@ class Cat:
             else:
                 description += f"{self.eye1} eyes. "
             if self.tabby:
-                description += f"It is a {self.tabby} tabby with darker {self.color1} markings. "
+                description += f"{heshe(self.sex, 1)} is a {self.tabby} tabby with darker {self.color1} markings. "
             if self.tort:
-                description += f"It has a {self.tort} tortoiseshell pattern. "
+                description += f"{heshe(self.sex, 1)} has a {self.tort} tortoiseshell pattern. "
             if self.whitespot:
-                description += f"It has patches of white in a {self.whitespotpatt} pattern. " 
+                description += f"{heshe(self.sex, 1)} has patches of white in a {self.whitespotpatt} pattern. " 
             if self.sex == "M":
-                description += "It is a male cat."
+                description += f"{heshe(self.sex, 1)} is a male cat."
             else:
-                description += "It is a female cat."
+                description += f"{heshe(self.sex, 1)} is a female cat."
 
             return description
     
@@ -78,7 +78,7 @@ class Cat:
             case 100:
                 self.mutation = "albino"
                 self.eye2 = False
-                Cat.buildalbino()
+                Cat.buildalbino(self)
             case _:
                 self.mutation = False
                 self.eye2 = False
@@ -240,7 +240,7 @@ class Cat:
                 else:
                     name = Npc.genname(x[2])
             case _:
-                x = catnametable()
+                x = CatNames.catnametable()
                 flip = coin()
                 if flip == 1:
                     name = random.choice(x[0]) #Not going in to Npc for these calls as the lists are purely random names and the Npc.chance would skew results of a short list to the top.

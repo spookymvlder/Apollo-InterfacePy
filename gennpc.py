@@ -1,6 +1,7 @@
 import random
 from helpers import coin
-from load_initial import nationlist, factioncountry, factionlist, nametable, Faction
+from namelists import NationNameTable
+from factions import Faction, FactionList, CountryList
 
 strjob = ['Marine', 'Soldier', 'Mercenary', 'Security Guard', 'Bounty Hunter', 'Roughneck', 'Miner', 'Factory Worker', 'Machinist', 'Mechanic', 'Engineer', 'Farmer', 'Technician']
 agljob = ['Pilot', 'Smuggler', 'Wildcatter', 'Prospector', 'Surveyor']
@@ -9,14 +10,9 @@ empjob = ['Medic', 'Paramedic', 'Doctor', 'Combat Medic', 'Officer', 'Captain', 
 statlist = ["Strength", "Agility", "Wits", "Empathy"]
 
 
-class Npc():
+class Npc:
     def __init__(self, forename="", surname="", type="", sex="", factionid="", job="", stats="", pstat="", nation=""):
         self.sex = sex
-        '''if not factionid:
-            if not nation:
-                factionid = Npc.genfactionrand()
-            else:
-                factionid = Npc.genfactioninformed(nation)'''
         #If faction is empty or invalid, check if nation exists.
         if not bool(Faction.idtoname(factionid)):
             if bool(Npc.validatenation):
@@ -52,7 +48,7 @@ class Npc():
         else:
             sex = sex[0]
             sex = sex.upper()
-            if sex != ("M" or "F"):
+            if sex not in ("M", "F"):
                 sex = Npc.gensexrand()
         self._sex = sex
     
@@ -60,21 +56,23 @@ class Npc():
     def genfactioninformed(nation=""):
         if not nation:
             faction = Npc.genfactionrand()
+        elif nation not in NationNameTable.nationlist:
+            raise ValueError(f"Nation {nation} does not have a name table set.")
         else:
             try:
-                faction = factioncountry[nation]
+                faction = random.choice(CountryList.countrylist[nation])
             except:
                 faction = Npc.genfactionrand()
         return faction
 
     @staticmethod
     def genfactionrand():
-        faction = random.choice(factionlist)
+        faction = random.choice(FactionList.factionlist)
         return faction.id
     
     @staticmethod
     def validatenation(nation):
-        if nation in nationlist:
+        if nation in NationNameTable.nationlist:
             return True
         else:
             return False
@@ -86,30 +84,22 @@ class Npc():
     @factionid.setter
     def factionid(self, factionid):
         if not bool(Faction.idtoname(factionid)):
-            factionid = Npc.genfactionrand()
+            raise ValueError(f"Invalid NPC factionid {factionid}.")
         self._factionid = factionid
     
     @staticmethod
     def gennationrand():
-        return random.choice(nationlist)
+        return random.choice(NationNameTable.nationlist)
 
     @staticmethod
     def gennationinformed(faction=""):
         if not faction:
             return Npc.gennationrand()  
-        for fact in factionlist:
+        for fact in FactionList.factionlist:
             if fact.id == faction:
-                if fact.nations:
-                    templist = []
-                    for lang in fact.nations:
-                        if lang in nationlist:
-                            templist.append(lang)
-                    if templist:
-                        return random.choice(templist)
-                    else:
-                        break
-                else:
-                    break
+                if fact.nameset != []:
+                    return random.choice(fact.nameset)
+                return Npc.gennationrand()
         return Npc.gennationrand()
     
     @property
@@ -128,9 +118,9 @@ class Npc():
 
     @staticmethod
     def gennametable(nation=""):
-        if not nation or nation not in nationlist:
+        if not nation or nation not in NationNameTable.nationlist:
             nation = Npc.gennationrand()
-        return nametable(nation)
+        return NationNameTable.nametable(nation)
 
     @staticmethod
     def genname(namelist):
@@ -192,7 +182,7 @@ class Npc():
     
     @type.setter
     def type(self, type):
-        if not type or type.upper != ("HUMAN" or "SYNTH"):
+        if not type or type.upper not in ("HUMAN", "SYNTH"):
             self._type = Npc.gentype()
         else:
             self._type = type.upper()

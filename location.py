@@ -1,4 +1,3 @@
-from load_initial import factioncountry, factionlist
 import random
 
 class Location():

@@ -2,7 +2,35 @@ import random
 
 #Collection of rooms for a ship
 class ShipRooms:
-    roomlist = []
+    def __init__(self):
+        self.shiproomlist = []
+
+    @staticmethod
+    def addroom(roomlist, type, lvl, quantity, shipsize):
+        found = False
+        for room in roomlist.shiproomlist:
+            if type == room.type and lvl == room.lvl:
+                room.quantity += 1
+                found = True
+                break
+        if found == False:
+            roomlist.shiproomlist.append(ShipRoomType(type, lvl, quantity, shipsize))
+        return roomlist
+
+    @staticmethod
+    def subroom(roomlist, type, lvl, quantity):
+        found = False
+        for room in roomlist.shiproomlist:
+            if type == room.type and lvl == room.lvl:
+                if room.quantity > quantity:
+                    room.quantity -= quantity
+                else:
+                    roomlist.shiproomlist.remove(room)
+                found = True
+                break
+        if found == False:
+            return False
+        return roomlist
 
 class ShipRoomType:
     roomtypes = ["Bridge", "AI Access", "Air Scrubbers", "Engine Room", 
@@ -21,6 +49,7 @@ class ShipRoomType:
 
     def __init__(self, type, lvl, quantity, shipsize):
         self.type = type
+        self.lvl = lvl
         self.size = ShipRoomType.assesssize(type, lvl, shipsize)
         self.quantity = quantity
 
@@ -90,7 +119,7 @@ class ShipRoomType:
                 size = "L"
             else:
                 size = "M"
-        elif type == ("EEV Access" or "Bathroom"):
+        elif type in ("EEV Access", "Bathroom"):
             match lvl:
                 case 0:
                     size = "S"
@@ -110,6 +139,38 @@ class ShipRoomType:
                     size = "XXL"
         return size
 
+
+class ModuleList:
+    def __init__(self):
+        self.modulelist = []
+    
+    @staticmethod
+    def addmodule(modulelist, type, lvl, quantity):
+        found = False
+        for module in modulelist.modulelist:
+            if type == module.type and lvl == module.lvl:
+                module.quantity += 1
+                found = True
+                break
+        if found == False:
+            modulelist.modulelist.append(Module(type, lvl, quantity))
+        return modulelist
+
+    @staticmethod
+    def submodule(modulelist, type, lvl, quantity):
+        found = False
+        for module in modulelist.modulelist:
+            if type == module.type and lvl == module.lvl:
+                if module.quantity > quantity:
+                    module.quantity -= quantity
+                else:
+                    modulelist.modulelist.remove(module)
+                found = True
+                break
+        if found == False:
+            return False
+        return modulelist
+                    
 
 #Pass in modules and then spit out which rooms should be added. For each room pass that room to ShipRoomType.
 #Then collect in room lists.
@@ -183,7 +244,7 @@ class Module:
     
     @capacity.setter
     def capacity(self, capacity):
-        if not isinstance(capacity, int):
+        if not isinstance(capacity, (float, int, complex)):
             raise ValueError(f"Invalid capacity {capacity}.")
         self._capacity = capacity
     
@@ -279,5 +340,3 @@ class Module:
             
             
 
-class ModuleList:
-    modulelist = []

@@ -19,7 +19,7 @@
                 <select class="form-select mx-auto w-auto" name="faction">
                     <option selected value="">Faction</option>
                     {% for faction in factions %}
-                    <option value="{{ faction }}">{{ faction }}</option>
+                    <option value="{{ faction.name }}">{{ faction.name }}</option>
                     {% endfor %}
                 </select>
                 <select class="form-select mx-auto w-auto" name="pstat">
@@ -88,7 +88,7 @@
                     <select class="form-select" id="genfaction" name="genfaction">
                         <option selected value="{{ npcfaction }}">{{ npcfaction }}</option>
                         {% for faction in factions if faction != npcfaction %}
-                        <option value="{{faction}}">{{faction}}</option>
+                        <option value="{{faction.name}}">{{faction.name}}</option>
                         {% endfor %}
                     </select>
                 </div>
