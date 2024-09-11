@@ -3,6 +3,8 @@ from helpers import coin
 from factions import FactionList
 from genmoon import Moon
 
+
+
 class Planet:
     def __init__(self, name="", gzone="", ptype=""):
         climate = ''
@@ -26,6 +28,134 @@ class Planet:
         Planet.setplanet(self, self.ptype)
         Planet.setlife(self)
         Planet.setmoons(self)
+        self.symbols = Planet.typesymbol(self, self.ptype) + " " + Planet.gzonesymbol(self, self.gzone) + " " + Planet.ringsymbol(self, self.rings) + " " + Planet.lwatersymbol(self, self.lwater) + " " + Planet.lifesymbol(self, self.life) + " " + Planet.moonsymbol(self, self.mooncount)
+        self.tooltip = Planet.buildtooltip(self)
+
+    def buildtooltip(self):
+        tooltip = self.ptype + " Planet, "
+        if self.gzone == True:
+            tooltip += "Goldilocks Zone, "
+        if self.rings == True:
+            tooltip += "Rings, "
+        if self.lwater == True:
+            tooltip += "Liquid Water, "
+        if self.life == True:
+            tooltip += "Life, "
+        tooltip += str(self.mooncount) + " Moons"
+        return tooltip
+
+    def lwatersymbol(self, lwater):
+        symbol = ""
+        if lwater == True:
+            symbol = "🌢"
+        return symbol
+    
+    def gzonesymbol(self, gzone):
+        symbol = ""
+        if gzone == True:
+            symbol = "⚖"
+        return symbol
+    
+    def ringsymbol(self, rings):
+        symbol = ""
+        if rings == True:
+            symbol = "⍉"
+        return symbol
+
+    def lifesymbol(self, life):
+        symbol = ""
+        if life == True:
+            symbol = "🧬"
+        return symbol
+
+
+    def typesymbol(self, ptype):
+        match ptype:
+            case "Chthonian":
+                symbol = 'Ⓒ'
+            case "Carbon":
+                symbol = 'ⓒ'
+            case "Coreless":
+                symbol = "⊚"
+            case "Desert":
+                symbol = "ⓓ"
+            case "Gas dwarf":
+                symbol = "ⓖ"
+            case "Gas giant":
+                symbol = "Ⓖ"
+            case "Helium":
+                symbol = "ⓗ"
+            case "Hycean":
+                symbol = "☵"
+            case "Ice giant":
+                symbol = "Ⓘ"
+            case "Ice":
+                symbol = "ⓘ"
+            case "Iron":
+                symbol = "ⓕ"
+            case "Lava":
+                symbol = "ⓛ"
+            case "Ocean":
+                symbol = "䷜"
+            case "Protoplanet":
+                symbol = "⨷"
+            case "Puffy":
+                symbol = "ⓟ"
+            case "Super-puff":
+                symbol = "Ⓟ"
+            case "Silicate":
+                symbol = "ⓢ"
+            case "Terrestrial":
+                symbol = "ⓣ"
+        return symbol
+
+    def moonsymbol(self, mooncount):
+        symbol = ""
+        match mooncount:
+            case 0:
+                symbol = "⓪"
+            case 1:
+                symbol = "①"
+            case 2:
+                symbol = "②"
+            case 3:
+                symbol = "③"
+            case 4:
+                symbol = "④"
+            case 5:
+                symbol = "⑤"
+            case 6:
+                symbol = "⑥"
+            case 7:
+                symbol = "⑦"
+            case 8:
+                symbol = "⑧"
+            case 9:
+                symbol = "⑨"
+            case 10:
+                symbol = "⑩"
+            case 11:
+                symbol = "⑪"
+            case 12:
+                symbol = "⑫"
+            case 13:
+                symbol = "⑬"
+            case 14:
+                symbol = "⑭"
+            case 15:
+                symbol = "⑮"
+            case 16:
+                symbol = "⑯"
+            case 17:
+                symbol = "⑰"
+            case 18:
+                symbol = "⑱"
+            case 19:
+                symbol = "⑲"
+            case 20:
+                symbol = "⑳"
+        return symbol
+            
 
     @property
     def pname(self):
@@ -107,12 +237,12 @@ class Planet:
     def setplanet(self, ptype):
         if not ptype:
             raise ValueError("Planet type missing.")
-        lwater = ""
+        lwater = False
         sundistance = ""
         atmosphere = ""
         pressure = "regular"
         mooncandidate = True
-        rings = ""
+        rings = False
         temperature = ""
         size = "any"
         match ptype:
@@ -223,7 +353,7 @@ class Planet:
             else:
                 tlist = ["breathable", "thin", "toxic", "dense", "corrosive", "infiltrating", "none"]
                 atmosphere = random.choice(tlist)
-        if rings == "":
+        if rings == False:
             r = random.randint(1, 100)
             if r > 90:
                 rings = True
@@ -239,6 +369,7 @@ class Planet:
         if size == ("" or "any"):
             tlist = ["small", "medium", "large", "giant"]
             size = random.choice(tlist)
+        self.rings = rings
         self.size = size
         self.temperature = temperature
         self.sundistance = sundistance

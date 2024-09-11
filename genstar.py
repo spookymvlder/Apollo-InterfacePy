@@ -59,6 +59,8 @@ class Star:
         if pcount != 0:
             for i in range(pcount):
                 self.solarobjects.append(Planet())
+        #self.solarobjects.sort(key=lambda x: x.distance)
+    
 
 
     def gencolor(self, color):

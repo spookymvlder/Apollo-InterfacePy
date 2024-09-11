@@ -1,0 +1,222 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Factions
+{% endblock %}
+
+{% block main %}
+
+<div class="container">
+    <h1>Factions</h1>
+    <div class="container col-sm-10 headsec">
+        <div>Faction List</div>
+        {% for faction in factions %}
+        <form method="post" action="/factions">
+            <div class="row bodysec">
+                <div class="col-sm-6">
+                    {{ faction.name }}
+                    <div class="row">
+                        <div class="col-sm-3 list group text-end">
+                            <div class="list-group-item">Type: </div>
+                            <div class="list-group-item">Abbreviation: </div>
+                            <div class="list-group-item">Parent Org: </div>
+                        </div>
+                        <div class="col-sm-3 list group text-start">
+                            <div class="list-group-item">
+                                {{faction.type|title}}
+                            </div>
+                            <div class="list-group-item">{{faction.abbr}}</div>
+                            {% for parent in faction.parents %}
+                            <div class="list-group-item">{{parent.name}}</div>
+                            {% endfor %}
+                            {% if faction.parents|length < 1 %}
+                            <div class="list-group-item">-</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-sm-4 text-end">Name Lists:</div>
+                        <div class="col-sm-2 text-start">
+                        {% for nation in faction.nameset %}
+                        <div>{{nation}}</div>
+                        {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                        <div class="row mt-1 mb-1">
+                            <textarea class="form-control" rows="2" name="notes" id="notes">{{faction.notes}}</textarea>
+                        </div>
+                </div>
+                <div class="col-sm">
+                    <div class="row">
+                        <button class="btn img-wrapper" name="savebtn" value="{{faction.id}}" type="submit" data-toggle="tooltip" title="Save Changes"><img class="" src="static\icons\save.png"></button>
+                    </div>
+                    {% if faction.name != "Unaligned" %}
+                    <div class="row">
+                        <button class="btn img-wrapper" name="delbtn" value="{{faction.id}}" type="submit" data-toggle="tooltip" title="Remove Faction"><img class="" src="static\icons\trashcanOpen.png"></button>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-sm text-start">
+                    <button class="btn img-wrapper" type="button" data-bs-toggle="collapse" data-bs-target="#{{faction.id}}" aria-expanded="false" aria-controls="{{faction.id}}" data-toggle="tooltip" title="Edit Faction"><img class="" src="static\icons\unlocked.png"></button>
+                </div>
+            </div>
+        </form>
+        <div class="collapse" id="{{faction.id}}" name="editfaction">
+            <form method="post" action="/factionedit">
+                <div class="row bodysec">
+                    <div class="row">
+                        <div class="col-4">
+                            <label class="form-label" for="factionname">Name</label>
+                            <input type="text" class="form-control" id="factionname" value="{{faction.name}}">
+                            
+                        </div>
+                        <div class="col-3">
+                            <label class="form-label" for="factiontype">Type</label>
+                            <select class="form-select" id="factiontype" name="factiontype">
+                                {% for type in types %}
+                                <option value="{{type}}">{{type}}</option>
+                                {% endfor %}
+                            </select>
+                            <label class="form-label" for="abbreviation">Abbreviation</label>
+                            <input type="text" class="form-control" id="abbreviation" value="{{faction.abbr}}">
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label" for="factionparent1">Faction Parents</label>
+                            <select class="form-select" id="factionparent1" name="factionparent1">
+                                <option selected>-</option>
+                                {% for faction in factions %}
+                                <option value="{{faction.id}}">{{faction.name}}</option>
+                                {% endfor %}
+                            </select>
+                            <label class="visually-hidden" for="factionparent2">Faction Parents</label>
+                            <select class="form-select" id="factionparent2" name="factionparent1">
+                                <option selected>-</option>
+                                {% for faction in factions %}
+                                <option value="{{faction.id}}">{{faction.name}}</option>
+                                {% endfor %}
+                            </select>
+                            <label class="visually-hidden" for="factionparent3">Faction Parents</label>
+                            <select class="form-select" id="factionparent3" name="factionparent1">
+                                <option selected>-</option>
+                                {% for faction in factions %}
+                                <option value="{{faction.id}}">{{faction.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4 text-start">
+                            <label>Name Lists</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" value="" id="default" checked>
+                                <label class="form-check-label" for="default">Any</label>
+                            </div>
+                            {% for nation in nationlist %}
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" value="{{nation}}" id="{{nation}}" name="getnation">
+                                <label class="form-check-label" for="{{nation}}">{{nation}}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-6">
+                            <div class="row mt-1 mb-1">
+                                <label class="form-label" for="notes">Notes</label>
+                                <textarea class="form-control" rows="3" name="notes" id="notes">{{faction.notes}}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" style="padding-bottom: 5px;">
+                        <div class="col-4">
+                            <label class="form-label" for="shippre" data-toggle="tooltip" title="Ships created by this faction will use this prefix.">Ship Prefix</label>
+                            <input type="text" class="form-control" id="shippre" value="{{faction.shipprefix}}">
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label" for="ordlevel">Ordenance Level</label>
+                            <select class="form-select" id="ordlevel" name="ordlevel">
+                                <option selected>{{faction.ordenance}}</option>
+                                {% for level in ordenance %}
+                                <option value="{{level}}">{{level|title}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" value="science" id="science" name="science">
+                                <label class="form-check-label" for="science" data-toggle="tooltip" title="Faction is interested in science and therefore will produce things like research ships.">Science</label>
+                            </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" value="colony" id="colony" name="colony">
+                                    <label class="form-check-label" for="colony" data-toggle="tooltip" title="Faction is capable of generating colony ships or establishing new colonies.">Colony Source</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" value="mgmt" id="mgmt" name="mgmt">
+                                    <label class="form-check-label" for="mgmt" data-toggle="tooltip" title="Faction is capable of being in control of a settlement or space station.">Manages Settlements</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" value="ships" id="ships" name="ships" checked>
+                                    <label class="form-check-label" for="ships" data-toggle="tooltip" title="Faction is capable of owning ships.">Generates Ships</label>
+                                </div>
+                                
+                            
+                        </div>
+                    </div>
+                </div>
+            </form>
+          </div>
+        {% endfor %}
+    </div>
+    <div class="container col-sm-10 headsec">
+        <div>New Faction</div>
+        <form method="post" action="/addfaction">
+                <div class="row bodysec">
+                    <div class="col-2">
+                        <label class="input-group-text" for="factionname">Name</label>
+                        <label class="input-group-text" for="factiontype">Type</label>
+                        <label class="input-group-text" for="parentorg">Parent Org</label>
+                        <label class="input-group-text" for="abbr">Abbreviation</label>   
+                    </div>
+                    <div class="col-4">
+                        <input type="text" class="form-control" name="factionname">
+                        <select class="form-select" id="factiontype" name="factiontype">
+                            {% for type in types %}
+                            <option value="{{type}}">{{type}}</option>
+                            {% endfor %}
+                        </select>
+                        <select class="form-select" id="parentorg" name="parentorg">
+                            <option selected>-</option>
+                            {% for faction in factions %}
+                            <option value="{{faction.id}}">{{faction.name}}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="text" class="form-control" name="abbr">
+                    </div>
+                    <div class="col-4 text-start">
+                        <label>Name Lists</label>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" value="" id="default" checked>
+                            <label class="form-check-label" for="default">Any</label>
+                        </div>
+                        {% for nation in nationlist %}
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" value="{{nation}}" id="{{nation}}" name="getnation">
+                            <label class="form-check-label" for="{{nation}}">{{nation}}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-sm">
+                        <div class="row">
+                            <button class="btn img-wrapper" name="savebtn" value="newfaction" type="submit" data-toggle="tooltip" title="Save Changes"><img class="" src="static\icons\save.png"></button>
+                        </div>
+                    </div>
+                </div>
+        </form>
+    </div>
+
+</div>
+<script>
+    $(document).ready(function(){
+      $('[data-toggle="tooltip"]').tooltip();
+    });
+    </script>
+
+{% endblock %}

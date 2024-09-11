@@ -10,6 +10,8 @@ empjob = ['Medic', 'Paramedic', 'Doctor', 'Combat Medic', 'Officer', 'Captain', 
 statlist = ["Strength", "Agility", "Wits", "Empathy"]
 
 
+
+
 class Npc:
     def __init__(self, forename="", surname="", type="", sex="", factionid="", job="", stats="", pstat="", nation=""):
         self.sex = sex

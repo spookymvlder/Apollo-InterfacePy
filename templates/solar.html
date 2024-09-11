@@ -147,6 +147,53 @@
         </table>
     </div>
 </div>
-
-
+<div>
+    <div class="container col-sm-12 headsec">
+        <div>Solar System</div>
+        <div class="row bodysec">
+            <div class="col">Star: {{sun.name}}</div>
+            <div class="col">
+                {% if sun.color == "white" %}
+                <div class="box white"> </div>
+                {% elif sun.color == "blueish white" %}
+                <div class="box bluewhite"> </div>
+                {% elif sun.color == "blue" %}
+                <div class="box blue"> </div>
+                {% elif sun.color == "yellow white" %}
+                <div class="box yellwhite"> </div>
+                {% elif sun.color == "yellow" %}
+                <div class="box yellow"> </div>
+                {% elif sun.color == "light orange" %}
+                <div class="box lightoran"> </div>
+                {% elif sun.color == "orange" %}
+                <div class="box orange"> </div>
+                {% elif sun.color == "orangish red" %}
+                <div class="box orangered"> </div>
+                {% elif sun.color == "red" %}
+                <div class="box red"> </div>
+                {% endif %}
+                <div class="text-start"> {{sun.color|title}}</div>
+            </div>
+            <div class="col">Type: {{sun.type}}</div>
+            <div class="col">Size: {{sun.size|title}}</div>
+            <div class="col">Planet Count: {{sun.pcount}}</div>
+        </div>
+        <div class="row bodysec">
+            {% for planet in planets %}
+            <div class="row text-start">
+                <div class="col" data-toggle="tooltip" title="{{planet.tooltip}}"><h5>{{planet.pname}} {{planet.symbols}}</h5></div>
+                <div class="col">Distance: {{planet.sundistance|title}}</div>
+                <div class="col">Size: {{planet.size|title}}</div>
+                <div class="col">Atmosphere: {{planet.atmosphere|title}}</div>
+                <div class="col">{% for faction in planet.factions %}<div>{{faction}}</div>{% endfor %}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function(){
+      $('[data-toggle="tooltip"]').tooltip();
+    });
+    </script>
 {% endblock %}

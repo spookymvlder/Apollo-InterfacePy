@@ -23,3 +23,58 @@ body {
     border-color: rgb(4, 162, 88) !important;
     border-width: thin;
 }
+
+.box {
+    float: left;
+    height: 20px;
+    width: 20px;
+    border: 1px solid black;
+    margin-right: 5px;
+    margin-top: 2px;
+    clear: both;
+}
+
+.white {
+    background-color: white;
+}
+
+.bluewhite {
+    background-color: lightskyblue;
+}
+
+.blue {
+    background-color: blue;
+}
+
+.yellwhite {
+    background-color: palegoldenrod;
+}
+
+.yellow {
+    background-color: yellow;
+}
+
+.lightoran {
+    background-color:sandybrown
+}
+
+.orange {
+    background-color: orange;
+}
+
+.orangered {
+    background-color: orangered;
+}
+
+.red {
+    background-color: red;
+}
+
+.save_button {
+    width: 20 px;
+    height: 20 px;
+}
+
+.img-wrapper {
+    width: 30px !important;
+}

@@ -1,4 +1,5 @@
-from namelists import NationNameTable
+from namelists import NationNameTable, NationNameTable
+from savedobjects import NpcList, ShipList
 import csv
 
 def initializefactionlist():
@@ -7,7 +8,13 @@ def initializefactionlist():
         for row in reader:
             namelist = list((row['NameList'].split(",")))
             parents = list((row['Parents'].split(",")))
-            FactionList.addfaction(row['FactionName'], row['EntityType'], namelist, parents, row['Abbr'])
+            parentlist = []
+            if parents != [""]:
+                for parent in parents:
+                    for faction in FactionList.factionlist:
+                        if faction.id == int(parent):
+                            parentlist.append(faction)
+            FactionList.addfaction(row['FactionName'], row['EntityType'], namelist, parentlist, row['Abbr'])
 
 class CountryList:
     countrylist = {}
@@ -42,25 +49,50 @@ class FactionList:
     
     @staticmethod
     def addfaction(name, type, nameset, parents, abbr):
+        parentlist = []
+        parentsnew = []
+        try:
+            for parent in parents:
+                parentsnew.append(int(parent))
+        except:
+            parentsnew = []
         for faction in FactionList.factionlist:
             if name == faction.name:
                 return False
-        FactionList.factionlist.append(Faction(name, type, nameset, parents, abbr))
+            if parentsnew != []:
+                for parent in parentsnew:
+                    if int(faction.id) == parent:
+                        parentlist.append(faction)
+        FactionList.factionlist.append(Faction(name, type, nameset, parentlist, abbr))
         return True
 
     @staticmethod
     def removefaction(id):
         found = False
+        if id == 0:
+            raise ValueError(f"Unable to delete Unaligned faction.")
         for faction in FactionList.factionlist:
-            if id == faction.id:
+            for npc in NpcList.npclist: #Remove all saved npc references to faction and make them unaligned.
+                if npc.factionid == id:
+                    npc.factionid = 0
+            for ship in ShipList.shiplist:
+                if ship.factionid == id:
+                    ship.factionid = 0
+                    for crew in ship.crewlist:
+                        crew.factionid = id
+            for parent in faction.parents:
+                if parent.id == id:
+                    faction.parents.remove(parent)
+        for faction in FactionList.factionlist: #Have to loop twice because if a faction is removed before the loop finished can no longer validate remaining data.
+            if faction.id == id:
                 FactionList.factionlist.remove(faction)
                 found = True
-                break
         return found
 
 class Faction:
     typelist = ['gov', 'corp', 'settlement', 'religion', 'outlaw', 'guild', 'military', 'alliance', 'agency', 'ngo', 'cooperative', 'none']
     masterid = 0
+    ordenancelevel = ['none', 'security', 'black ops', 'military']
 
     def __init__(self, name, type, nameset=[], parents=[], abbr=""):
         self.name = name
@@ -69,6 +101,7 @@ class Faction:
         self.nameset = nameset
         self.parents = parents
         self.abbr = abbr
+        self.notes = ""
 
 
     @classmethod
@@ -133,14 +166,30 @@ class Faction:
     def nameset(self):
         return self._nameset
 
+    @property
+    def notes(self):
+        return self._notes
+
+    @notes.setter
+    def notes(self, notes):
+        if len(notes) > 999:
+            raise ValueError(f"Faction notes are too long.")
+        self._notes = notes
+
+
+# For now it is only actually valuable to save the namelists that are populated. 
+# Will change going forward when more namelists are available.
     @nameset.setter
     def nameset(self, nameset):
+        names2 = []
         if nameset != ['']:
             for nation in nameset:
                 if nation not in CountryList.countrylist.keys():
                     raise ValueError(f"Invalid name list {nation} for faction.")
                 Faction.addfactioncountry(nation, self.id)
-        self._nameset = nameset
+                if nation in NationNameTable.nationlist:
+                    names2.append(nation)
+        self._nameset = names2
         
     @classmethod
     def addfactioncountry(cls, nation, id):
@@ -166,8 +215,8 @@ class Faction:
     def parents(self, parents):
         if parents != ['']:
             for parent in parents:
-                if not FactionList.checkfactionname(parent):
-                    raise ValueError(f"Invalid parent faction {parent}.")
+                if parent.id == self.id:
+                    raise ValueError(f"Unable to assign same faction parent {parent.name} multiple times.")
         self._parents = parents
 
     @property

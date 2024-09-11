@@ -24,10 +24,10 @@
                 </div>
                 <div class="col-sm-5">
                     <ul class="list group">
-                        <li class="list-group-item">Length: {{ship.hullen}}</li>
+                        <li class="list-group-item">Length: {{ship.hullen}} m</li>
                         <li class="list-group-item">Crew Capacity: [{{ship.crew[0]}} - {{ship.crew[1]}}]</li>
                         <li class="list-group-item">Crew Size: {{ship.crewsize}}</li>
-                        <li class="list-group-item">Faction: {{ship.faction.name}}</li>
+                        <li class="list-group-item">Faction: {{idtoname(ship.factionid)}}</li>
                         <li class="list-group-item">Available Modules: {{ship.availmodules}}</li>
                         <li class="list-group-item">Total Modules: {{ship.modules}}</li>
                     </ul>

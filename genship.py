@@ -2,10 +2,9 @@ import random
 from hulls import HullModel, HullModels, initializehulls, initializemodels
 from helpers import coin
 import namelists, genmeow, gennpc
-from factions import FactionList
+from factions import FactionList, Faction
 
-class Ships:
-    shiplist = []
+
 
 class Ship:
     def __init__(self, model):
@@ -28,11 +27,11 @@ class Ship:
         self.eqweapons = model.eqweapons
         self.rooms = model.rooms
         self.ftl = model.ftl
-        self.faction = Ship.genfaction()
-        self.name = Ship.genname(self.faction)
+        self.factionid = Ship.genfaction().id
+        self.name = Ship.genname(self.factionid)
         self.crewsize = Ship.getcrewsize(self, self.crew)
         self.cat = Ship.genshipcat(self, self.category)
-        self.crewlist = Ship.gencrewmembers(self, self.crewsize, self.eqmodules, self.faction.id)
+        self.crewlist = Ship.gencrewmembers(self, self.crewsize, self.eqmodules, self.factionid)
 
 
     def genfaction():
@@ -41,10 +40,11 @@ class Ship:
     @staticmethod
     def genname(faction):
         name = ""
-        if faction.name in ("United Americas", "Three World Empire", "Union of Progressive Peoples"):
+        factionname = Faction.idtoname(faction)
+        if factionname in ("United Americas", "Three World Empire", "Union of Progressive Peoples"):
             flip = coin()
             if flip == 1:
-                match faction.name:
+                match factionname:
                     case "United Americas":
                         search = "usname"
                     case "Three World Empire":

@@ -11,6 +11,7 @@ from genmoon import Moon
 from hulls import HullTemplate, HullSpecs, HullModel, HullModels, HullType
 from genship import Ship
 from namelists import NationNameTable
+from savedobjects import NpcList
 
 
 from flask import Flask, flash, redirect, render_template, request, session
@@ -90,16 +91,12 @@ def validatenpc():
         job = request.form.get("genjob")
         type = request.form.get("gentype")
         stats = [request.form.get("genstr"), request.form.get("genagl"), request.form.get("genwit"), request.form.get("genemp"), request.form.get("genhp")]
-        npclist.append(Npc(sex=sex, factionid=postfaction, pstat=pstat, type=type, forename=forename, surname=surname, job=job, stats=stats))
+        NpcList.npclist.append(Npc(sex=sex, factionid=postfaction, pstat=pstat, type=type, forename=forename, surname=surname, job=job, stats=stats))
         return redirect("/npcs")
 
 @app.route("/npcs", methods=["GET", "POST"])
 def npcs():
-    if request.method == "GET" or "POST":
-        npcstrings = []
-        for x in range(len(npclist)):
-            npcstrings.append(npclist[x])
-    return render_template("npcs.html", npcstrings=npcstrings)
+    return render_template("npcs.html", npcstrings=NpcList.npclist)
 
 @app.route("/cats")
 def cats():
@@ -126,4 +123,31 @@ def ships():
     return render_template("ships.html", ship=ship)
 
 
+
+@app.route("/factions", methods=["GET", "POST"])
+def factions():
+    nationlist = NationNameTable.nationlist
+    if request.method == "POST":
+        notesid = request.form.get("savebtn")
+        deleteid = request.form.get("delbtn")
+        if notesid:
+            notes = request.form.get("notes")
+            for faction in FactionList.factionlist:
+                if faction.id == int(notesid):
+                    faction.notes = notes
+        elif deleteid:
+            FactionList.removefaction(int(deleteid))
+    return render_template("factions.html", factions=FactionList.factionlist, types=Faction.typelist, nationlist=nationlist, ordenance=Faction.ordenancelevel)
+
+@app.route("/addfaction", methods=["POST"])
+def addfaction():
+    name = request.form.get("factionname")
+    parent = request.form.getlist("parentorg")
+    if parent == "-":
+        parent = ""
+    factiontype = request.form.get("factiontype")
+    abbr = request.form.get("abbr")
+    nations = request.form.getlist("getnation")
+    FactionList.addfaction(name, factiontype, nations, parent, abbr)
+    return redirect("/factions")
 

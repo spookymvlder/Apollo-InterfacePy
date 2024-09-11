@@ -1,4 +1,5 @@
 FactionName,Abbr,EntityType,NameList,Parents
+Unaligned,,none,,
 United Americas,UA,gov,"ATG,ARG,BHS,BRB,BOL,BVT,BRA,BLZ,VGB,CAN,CYM,CHL,COL,CRI,CUB,DMA,DOM,ECU,SLV,FLK,SGS,GUF,GRD,GLP,GTM,GUY,HTI,HND,JAM,MTQ,MEX,MSR,CUW,ABW,SXM,BES,NIC,UMI,PAN,PRY,PER,PRI,BLM,SHN,KNA,AIA,LCA,MAF,VCT,SUR,TTO,TCA,USA,VIR,URY,VEN",
 Three World Empire,3WE,gov,"AUS,FJI,IND,IDN,JPN,KEN,PNG",
 Union of Progressive Peoples,UPP,gov,"AZE,DEU,RUS,VNM,ESP",
@@ -6,7 +7,6 @@ Independent Core System Colonies,ICSC,gov,"FRA,IRN",
 United Nations,UN,gov,,
 Interstellar Commerce Commission,ICC,ngo,,
 Generic Corporate,,corp,,
-Unaligned,,none,,
 Weyland-Yutani Corporation,W-Y,corp,,
 Lasalle Bionational,LB,corp,,
 Seegson,,corp,,
