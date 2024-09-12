@@ -78,3 +78,12 @@ body {
 .img-wrapper {
     width: 30px !important;
 }
+
+.spacer {
+    height: 24px;
+}
+
+.vertical-text {
+    transform: rotate(-90deg);
+    transform-origin: left top 0;
+}

@@ -1,13 +1,16 @@
-FactionName,Abbr,EntityType,NameList,Parents
-Unaligned,,none,,
-United Americas,UA,gov,"ATG,ARG,BHS,BRB,BOL,BVT,BRA,BLZ,VGB,CAN,CYM,CHL,COL,CRI,CUB,DMA,DOM,ECU,SLV,FLK,SGS,GUF,GRD,GLP,GTM,GUY,HTI,HND,JAM,MTQ,MEX,MSR,CUW,ABW,SXM,BES,NIC,UMI,PAN,PRY,PER,PRI,BLM,SHN,KNA,AIA,LCA,MAF,VCT,SUR,TTO,TCA,USA,VIR,URY,VEN",
-Three World Empire,3WE,gov,"AUS,FJI,IND,IDN,JPN,KEN,PNG",
-Union of Progressive Peoples,UPP,gov,"AZE,DEU,RUS,VNM,ESP",
-Independent Core System Colonies,ICSC,gov,"FRA,IRN",
-United Nations,UN,gov,,
-Interstellar Commerce Commission,ICC,ngo,,
-Generic Corporate,,corp,,
-Weyland-Yutani Corporation,W-Y,corp,,
-Lasalle Bionational,LB,corp,,
-Seegson,,corp,,
-Hyperdyne Corporation,HC,corp,,
+Id,FactionName,EntityType,Abbr,Notes,ShipPre,OrdLvl,Science,Colony,MGMT,Ships,Scope,NameList,Parents
+1,United Americas,gov,UA,,USCSS,security,True,True,True,True,pervasive,"ATG,ARG,BHS,BRB,BOL,BVT,BRA,BLZ,VGB,CAN,CYM,CHL,COL,CRI,CUB,DMA,DOM,ECU,SLV,FLK,SGS,GUF,GRD,GLP,GTM,GUY,HTI,HND,JAM,MTQ,MEX,MSR,CUW,ABW,SXM,BES,NIC,UMI,PAN,PRY,PER,PRI,BLM,SHN,KNA,AIA,LCA,MAF,VCT,SUR,TTO,TCA,USA,VIR,URY,VEN",
+2,Three World Empire,gov,3WE,,HMCSS,security,True,True,True,True,pervasive,"AUS,FJI,IND,IDN,JPN,KEN,PNG",
+3,Union of Progressive Peoples,gov,UPP,,PSV,security,True,True,True,True,pervasive,"AZE,DEU,RUS,VNM,ESP",
+4,Independent Core System Colonies,gov,ICSC,,CSCSS,military,True,True,True,True,pervasive,"FRA,IRN",
+5,United Nations,gov,UN,,UNS,military,True,True,True,True,pervasive,,
+6,Interstellar Commerce Commission,ngo,ICC,,ICC,black ops,True,False,False,True,pervasive,,
+7,Generic Corporate,corp,,,STSV,black ops,True,False,True,True,pervasive,,
+8,Weyland-Yutani Corporation,corp,W-Y,,STSV,black ops,True,False,True,True,pervasive,,
+9,Lasalle Bionational,corp,LB,,STSV,black ops,True,False,True,True,pervasive,,
+10,Seegson,corp,,,STSV,black ops,True,False,True,True,pervasive,,
+11,Hyperdyne Corporation,corp,HC,,STSV,black ops,True,True,True,True,pervasive,,
+12,United Americas Military,military,UAM,,UAS,military,True,False,False,True,pervasive,,1
+13,United States Military,military,USM,,USS,military,True,False,False,True,pervasive,,1
+14,UPP Military,military,UPM,,SSV,military,True,False,False,True,pervasive,,3
+15,3WE Military,military,3WM,,HMS,military,True,False,False,True,pervasive,,2

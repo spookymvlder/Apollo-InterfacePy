@@ -23,3 +23,8 @@ def hisher(sex, start):
         pronoun = pronoun.title()
     return pronoun
 
+def convertbool(value):
+    if value == "True" or value == True or value == 1:
+        return True
+    return False
+    

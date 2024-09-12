@@ -1,7 +1,7 @@
 import random
 from helpers import coin
 from namelists import NationNameTable
-from factions import Faction, FactionList, CountryList
+from factions import FactionList, CountryList, Faction
 
 strjob = ['Marine', 'Soldier', 'Mercenary', 'Security Guard', 'Bounty Hunter', 'Roughneck', 'Miner', 'Factory Worker', 'Machinist', 'Mechanic', 'Engineer', 'Farmer', 'Technician']
 agljob = ['Pilot', 'Smuggler', 'Wildcatter', 'Prospector', 'Surveyor']
@@ -13,6 +13,8 @@ statlist = ["Strength", "Agility", "Wits", "Empathy"]
 
 
 class Npc:
+    masterid = 0
+
     def __init__(self, forename="", surname="", type="", sex="", factionid="", job="", stats="", pstat="", nation=""):
         self.sex = sex
         #If faction is empty or invalid, check if nation exists.
@@ -29,7 +31,23 @@ class Npc:
         self.pstat = pstat
         self.job = job
         self.stats = stats
+        self.id = 0
     
+    @property
+    def id(self):
+        return self._id
+
+    @id.setter
+    def id(self, id):
+        if not isinstance(id, int):
+            raise ValueError(f"Invalid npc id.")
+        self._id = id
+
+    def gennpcid(self):
+        id = Npc.masterid
+        Npc.masterid += 1
+        return id
+
     @staticmethod
     def gensexrand():
         flip = coin()

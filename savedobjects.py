@@ -1,35 +1,15 @@
-
-
-class NpcList:
-    npclist = []
-    npcid = 0
-
-
-    @staticmethod
-    def savenpc(npc):
-        NpcList.npclist.append(npc)
-        npc.id = NpcList.npcid
-        NpcList.npcid += 1
-
-    @staticmethod
-    def removenpc(npcid):
-        found = False
-        for npc in NpcList.npclist:
-            if npcid == npc.id:
-                NpcList.npclist.remove(npc)
-                found = True
-                break
-        return found
-
 class ShipList:
     shiplist = []
-    shipid = 0
+    masterid = 1
+    tempship = ""
 
     @staticmethod
     def saveship(ship):
         ShipList.shiplist.append(ship)
-        ship.id = ShipList.shipid
-        ShipList.shipid += 1
+        ship.id = ShipList.masterid
+        ShipList.masterid += 1
+        for crew in ship.crewlist.values():
+            NpcList.savenpc(crew)
 
     @staticmethod
     def removenpc(shipid):
@@ -37,6 +17,30 @@ class ShipList:
         for ship in ShipList.shiplist:
             if shipid == ship.id:
                 ShipList.shiplist.remove(ship)
+                found = True
+                break
+        return found
+
+
+
+class NpcList:
+    npclist = []
+    masterid = 1
+
+
+    @staticmethod
+    def savenpc(npc):
+        NpcList.npclist.append(npc)
+        npc.id = NpcList.masterid
+        NpcList.masterid += 1
+        
+
+    @staticmethod
+    def removenpc(npcid):
+        found = False
+        for npc in NpcList.npclist:
+            if npcid == npc.id:
+                NpcList.npclist.remove(npc)
                 found = True
                 break
         return found

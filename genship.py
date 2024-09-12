@@ -1,5 +1,4 @@
 import random
-from hulls import HullModel, HullModels, initializehulls, initializemodels
 from helpers import coin
 import namelists, genmeow, gennpc
 from factions import FactionList, Faction
@@ -7,6 +6,7 @@ from factions import FactionList, Faction
 
 
 class Ship:
+
     def __init__(self, model):
         self.size = model.size
         self.hulltype = model.hulltype
@@ -32,10 +32,22 @@ class Ship:
         self.crewsize = Ship.getcrewsize(self, self.crew)
         self.cat = Ship.genshipcat(self, self.category)
         self.crewlist = Ship.gencrewmembers(self, self.crewsize, self.eqmodules, self.factionid)
+        self.prefix = FactionList.getprefix(self.factionid)
+        self.id = 0
+        
+    @property
+    def id(self):
+        return self._id
+
+    @id.setter
+    def id(self, id):
+        if not isinstance(id, int):
+            raise ValueError(f"Ship id invalid.")
+        self._id = id
 
 
     def genfaction():
-            return random.choice(FactionList.factionlist)
+            return random.choice(FactionList.factionshiplist)
         
     @staticmethod
     def genname(faction):
@@ -105,8 +117,9 @@ class Ship:
         description = f"This is a {self.manufacturer} {self.shipmodel}, a {self.category} {self.hulltype} ship named {self.name}.\n"
         description += f"Crew size: {self.crewsize} \nLength: {self.hullen} \nSignature: {self.signature} \nHull: {self.hullval} \nArmor: {self.armorval} \nFTL: {self.ftl}\n"
         description += "Hardpoints: "
-        count = 1
-        for hardpoint in self.hardpoints:
+        return description
+        #count = 1
+        ''' for hardpoint in self.hardpoints:
             description += f"{count}: {hardpoint} "
             count += 1
         description += "\nModules Total: "
@@ -130,8 +143,8 @@ class Ship:
         description += "\n Crew Members: \n"
         for role, crew in self.crewlist.items():
             description += f"{role} {crew.forename} {crew.surname}\n"
-        description += "\n"
-        return description
+        description += "\n"'''
+        
 
 '''initializehulls()
 initializemodels()

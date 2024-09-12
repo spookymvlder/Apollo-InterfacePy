@@ -11,7 +11,8 @@ from genmoon import Moon
 from hulls import HullTemplate, HullSpecs, HullModel, HullModels, HullType
 from genship import Ship
 from namelists import NationNameTable
-from savedobjects import NpcList
+from savedobjects import ShipList, NpcList
+
 
 
 from flask import Flask, flash, redirect, render_template, request, session
@@ -30,12 +31,6 @@ app.jinja_env.globals.update(idtoname=idtoname)
 
 Session(app)
 
-
-
-#Generate initial location to save any potential NPCs
-#defaultplace = Location("Unassigned", "Default")
-
-npclist = []
 
 
 #Break out posts so a banner appears if invalid combination attempted to be saved. Or warning that invalid combinations will be automatically resolved
@@ -116,28 +111,58 @@ def solar():
                     moons.append(moon)
     return render_template("solar.html", sun=sun, planets=planets, moons=moons)
 
-@app.route("/ships")
+@app.route("/ships", methods=["GET", "POST"])
 def ships():
+    if request.method=='POST':
+        if request.form['rollbtn']:
+            return redirect("/ships")
     hulltype = HullType()
     ship = Ship(HullModel(HullTemplate(hulltype.size, hulltype.type, hulltype.category, hulltype.ordenance, hulltype.armor, hulltype.troops, hulltype.priority)))
+    ShipList.tempship = ship
     return render_template("ships.html", ship=ship)
 
-
+@app.route("/saveship", methods=["POST"])
+def saveship():
+    ShipList.saveship(ShipList.tempship)
+    return redirect("/ships")
 
 @app.route("/factions", methods=["GET", "POST"])
 def factions():
     nationlist = NationNameTable.nationlist
-    if request.method == "POST":
-        notesid = request.form.get("savebtn")
+    if request.method == "POST":  
         deleteid = request.form.get("delbtn")
-        if notesid:
-            notes = request.form.get("notes")
-            for faction in FactionList.factionlist:
-                if faction.id == int(notesid):
-                    faction.notes = notes
-        elif deleteid:
-            FactionList.removefaction(int(deleteid))
+        FactionList.removefaction(int(deleteid))
     return render_template("factions.html", factions=FactionList.factionlist, types=Faction.typelist, nationlist=nationlist, ordenance=Faction.ordenancelevel)
+
+@app.route("/editfaction", methods=["POST"])
+def editfaction():
+    editid = request.form.get("savebtn")
+    name = request.form.get("factionname")
+    type = request.form.get("factiontype")
+    abbr = request.form.get("abbr")
+    parent1 = FactionList.getclassfromid(request.form.get("factionparent1"))
+    parent2 = FactionList.getclassfromid(request.form.get("factionparent2"))
+    parent3 = FactionList.getclassfromid(request.form.get("factionparent3"))
+    parentlist = []
+    if parent1 != False:
+        parentlist.append(parent1)
+    if parent2 != False:
+        parentlist.append(parent2)
+    if parent3 != False:
+        parentlist.append(parent3)
+    nameset = request.form.getlist("getnation")
+    notes = request.form.get("notes")
+    shippre = request.form.get("shippre")
+    ordlvl = request.form.get("ordlevel")
+    science = request.form.get("science")
+    colony = request.form.get("colony")
+    mgmt = request.form.get("mgmt")
+    ships = request.form.get("ships")
+    scope = request.form.get("scope")
+    FactionList.editfaction(editid, name, type, abbr, notes, shippre, ordlvl, science, colony, mgmt, ships, scope, nameset, parentlist)
+    return redirect("/factions")
+            
+
 
 @app.route("/addfaction", methods=["POST"])
 def addfaction():
@@ -151,3 +176,7 @@ def addfaction():
     FactionList.addfaction(name, factiontype, nations, parent, abbr)
     return redirect("/factions")
 
+#FactionList.editfaction(1, "United Americas", "gov", "UA", "", "USCSS", "security", True, True, True, True, "pervasive", [], [FactionList.getclassfromid(4)])
+#hulltype = HullType()
+#ship = Ship(HullModel(HullTemplate(hulltype.size, hulltype.type, hulltype.category, hulltype.ordenance, hulltype.armor, hulltype.troops, hulltype.priority)))
+#ShipList.saveship(ship)

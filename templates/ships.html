@@ -15,7 +15,7 @@
                 
                 <div class="col-sm-4">
                     <ul class="list group">
-                        <li class="list-group-item">Name: {{ship.name}}</li>
+                        <li class="list-group-item">Name: {{ship.prefix}} {{ship.name}}</li>
                         <li class="list-group-item">Type: {{ship.hulltype|title}}</li>
                         <li class="list-group-item">Category: {{ship.category|capitalize}}</li>
                         <li class="list-group-item">Manufacturer: {{ship.manufacturer}}</li>
@@ -41,6 +41,20 @@
                         <li class="list-group-item">Thrusters: {{ship.thrusters}}</li>
                         <li class="list-group-item">Squads: {{ship.squads}}</li>
                     </ul>
+                </div>
+                <div class="col-sm">
+                    <form method="post" action="/saveship">
+                    <div class="row">
+                        <button class="btn img-wrapper" name="savebtn" value="{{ship}}" type="submit" data-toggle="tooltip" title="Save new ship"><img class="" src="static\icons\save.png"></button>
+                    </div>
+                    </form>
+                    <form method="post" action="/ships">
+                        <div class="row">
+                            <button class="btn img-wrapper" name="rollbtn" value="roll" type="submit" data-toggle="tooltip" title="Generate new ship"><img class="" src="static\icons\dice_out.png"></button>
+                        </div>
+                    </form>
+                    
+                    
                 </div>
             </div>
         </div>
