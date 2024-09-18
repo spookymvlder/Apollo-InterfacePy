@@ -28,3 +28,17 @@ def convertbool(value):
         return True
     return False
     
+# +/- 10%
+def skewvalue(value):
+    r = random.uniform(0, .10)
+    flip = coin()
+    if flip == 1:
+        value = value - (value * r)
+    else:
+        value = value + (value * r)
+    return value
+
+def isbool(value):
+    if value == True or value == False:
+        return True
+    return False

@@ -340,10 +340,7 @@ class Faction:
 
     @science.setter
     def science(self, science):
-        if science == "" or science == "False" or science == None:
-            science = False
-        elif science == "True":
-            science = True
+        science = convertbool(science)
         if not isinstance(science, bool):
             raise ValueError("Invalid science level {science}, bool value expected.")
         self._science = science
@@ -354,10 +351,7 @@ class Faction:
 
     @colony.setter
     def colony(self, colony):
-        if colony == "" or colony == "False" or colony == None:
-            colony = False
-        elif colony == "True":
-            colony = True
+        colony = convertbool(colony)
         if not isinstance(colony, bool):
             raise ValueError("Invalid colony level, bool value expected.")
         self._colony = colony
@@ -368,10 +362,7 @@ class Faction:
 
     @ships.setter
     def ships(self, ships):
-        if ships == "" or ships == "False" or ships == None:
-            ships = False
-        elif ships == "True":
-            ships = True
+        ships = convertbool(ships)
         if not isinstance(ships, bool):
             raise ValueError("Invalid ship level, bool value expected.")
         self._ships = ships
@@ -382,10 +373,7 @@ class Faction:
 
     @mgmt.setter
     def mgmt(self, mgmt):
-        if mgmt == "" or mgmt == "False" or mgmt == None:
-            mgmt = False
-        elif mgmt == "True":
-            mgmt = True
+        mgmt = convertbool(mgmt)
         if not isinstance(mgmt, bool):
             raise ValueError("Invalid mgmt level, bool value expected.")
         self._mgmt = mgmt

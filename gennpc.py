@@ -7,13 +7,13 @@ strjob = ['Marine', 'Soldier', 'Mercenary', 'Security Guard', 'Bounty Hunter', '
 agljob = ['Pilot', 'Smuggler', 'Wildcatter', 'Prospector', 'Surveyor']
 witjob = ['Colonial Marshal', 'Security Chief', 'Marshal', 'Deputy', 'Sheriff', 'Bounty Hunter', 'Guard', 'Company Agent', 'Executive', 'Junior Executive', 'Manager', 'Division Head', 'Supervisor', 'Journalist', 'Researcher', 'Inventor', 'Scientist', 'Biologist', 'Chemist']
 empjob = ['Medic', 'Paramedic', 'Doctor', 'Combat Medic', 'Officer', 'Captain', 'Bridge Officer', 'Inspector', 'Facility Manager', 'Counselor', 'Quartermaster','Performer', 'Club Owner', 'Waiter', 'Bartender']
-statlist = ["Strength", "Agility", "Wits", "Empathy"]
+
 
 
 
 
 class Npc:
-    masterid = 0
+    statlist = ["Strength", "Agility", "Wits", "Empathy"]
 
     def __init__(self, forename="", surname="", type="", sex="", factionid="", job="", stats="", pstat="", nation=""):
         self.sex = sex
@@ -43,10 +43,6 @@ class Npc:
             raise ValueError(f"Invalid npc id.")
         self._id = id
 
-    def gennpcid(self):
-        id = Npc.masterid
-        Npc.masterid += 1
-        return id
 
     @staticmethod
     def gensexrand():
@@ -226,7 +222,7 @@ class Npc:
     def getjob(stat):
         if not stat or not (stat >= 0 and stat <= 3):
             stat = Npc.genprimarystat()
-        match statlist[stat]:
+        match Npc.statlist[stat]:
             case "Strength":
                 jlist = strjob
             case "Agility":

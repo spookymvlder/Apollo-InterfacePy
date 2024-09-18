@@ -2,16 +2,17 @@ import sys, random, os
 
 from factions import Faction, FactionList, initializeall
 initializeall()
-from gennpc import Npc, statlist
+from gennpc import Npc
 from location import Location
 from genmeow import Cat
-from genstar import Star
+from genstar import Star, StarList
 from genplanet import Planet
 from genmoon import Moon
 from hulls import HullTemplate, HullSpecs, HullModel, HullModels, HullType
 from genship import Ship
 from namelists import NationNameTable
 from savedobjects import ShipList, NpcList
+from helpers import convertbool
 
 
 
@@ -55,8 +56,8 @@ def index():
         '''if pstat not in statlist:
             pstat = ""
         else:'''
-        for x in range(len(statlist)):
-            if pstat == statlist[x]:
+        for x in range(len(Npc.statlist)):
+            if pstat == Npc.statlist[x]:
                 pstat = x
                 break
         '''if type not in types:
@@ -65,16 +66,16 @@ def index():
             nation = ""'''
         npc = Npc(sex=sex, factionid=postfaction, pstat=pstat, type=type, nation=nation)
     npcfactionname = Faction.idtoname(npc.factionid)
-    pstat = statlist[npc.pstat]
-    return render_template("index.html", namelist=NationNameTable.nationlist, sexes=sexes, factions=FactionList.factionlist, types=types, statlist=statlist, npc=npc, npcfaction=npcfactionname, pstat=pstat)
+    pstat = Npc.statlist[npc.pstat]
+    return render_template("index.html", namelist=NationNameTable.nationlist, sexes=sexes, factions=FactionList.factionlist, types=types, statlist=Npc.statlist, npc=npc, npcfaction=npcfactionname, pstat=pstat)
             
 
 @app.route("/validatenpc", methods=["POST"])
 def validatenpc():
         sex = request.form.get("gensex")
         pstat = request.form.get("genpstat")
-        for x in range(len(statlist)):
-            if pstat == statlist[x]:
+        for x in range(len(Npc.statlist)):
+            if pstat == Npc.statlist[x]:
                 pstat = x
                 break
         type = request.form.get("gentype")
@@ -103,13 +104,56 @@ def solar():
     sun = Star()
     planets = []
     moons = []
-    if sun.pcount != 0:
-        for planet in sun.solarobjects:
-            planets.append(planet)
-            if planet.mooncount > 0:
-                for moon in planet.moons:
-                    moons.append(moon)
-    return render_template("solar.html", sun=sun, planets=planets, moons=moons)
+    StarList.tempstar = sun
+    return render_template("solar.html", sun=sun, factionlist=FactionList.factionlist)
+
+@app.route("/editplanet", methods=["POST"])
+def editplanet():
+    sun = StarList.tempstar
+    id = int(request.form['saveplanet'])
+    planet=""
+    for obj in sun.solarobjects:
+        if obj.id == id:
+            planet = obj
+            break
+    pname = request.form.get('planetname')
+    distance = float(request.form.get('planetdistance'))
+    ptype = request.form.get('planettype')
+    atmo = request.form.get('planetatmo')
+    mass = float(request.form.get('planetsize'))
+    radius = float(request.form.get('planetradius'))
+    basetemp = float(request.form.get('planettemp'))
+    pressure = request.form.get('planetpressure')
+    mooncount = int(request.form.get('mooncount'))
+    factionlist = []
+    faction1 = FactionList.getclassfromid(request.form.get("faction1"))
+    faction2 = FactionList.getclassfromid(request.form.get("faction2"))
+    if faction1 != False:
+        factionlist.append(faction1)
+    if faction2 != False:
+        factionlist.append(faction2)
+    lwater = convertbool(request.form.get('lwater'))
+    rings = convertbool(request.form.get('rings'))
+    life = convertbool(request.form.get('life'))
+    notes = request.form.get('notes')
+    surveyed = float(request.form.get('planetsurvey'))
+    Planet.editplanet(planet, pname, distance, ptype, atmo, mass, radius, basetemp, pressure, mooncount, factionlist, lwater, rings, life, notes, surveyed, sun)
+    return render_template("solar.html", sun=sun, factionlist=FactionList.factionlist)
+
+@app.route("/randplanet", methods=["POST"])
+def randplanet():
+    sun = StarList.tempstar
+    id = int(request.form["rollbtn"])
+    sun.solarobjects[id] = Planet.genplanetfromstar(sun.inzone, sun.outzone, Planet.randomdistance(sun, id), sun.startemp, sun.mass, sun.lum, Planet.randomdistancelimit(sun, id), id)
+    return render_template("solar.html", sun=sun, factionlist=FactionList.factionlist)
+
+@app.route("/delplanet", methods=["POST"])
+def delplanet():
+    sun = StarList.tempstar
+    id = int(request.form["delbtn"])
+    Star.delplanet(sun, id)
+    return render_template("solar.html", sun=sun, factionlist=FactionList.factionlist)
+
 
 @app.route("/ships", methods=["GET", "POST"])
 def ships():
@@ -180,3 +224,13 @@ def addfaction():
 #hulltype = HullType()
 #ship = Ship(HullModel(HullTemplate(hulltype.size, hulltype.type, hulltype.category, hulltype.ordenance, hulltype.armor, hulltype.troops, hulltype.priority)))
 #ShipList.saveship(ship)
+'''star = Star()
+while len(star.solarobjects) < 3:
+    star = Star()
+for planet in star.solarobjects:
+    if planet.mooncount > 1:
+        mooncount = planet.mooncount - 1
+    else:
+        mooncount = 0
+    Planet.editplanet(planet, planet.pname, planet.distance, planet.ptype, planet.atmo, planet.mass, planet.radius, planet.basetemp, planet.pressure, mooncount, planet.factions, planet.lwater, planet.rings, planet.life, planet.notes, planet.surveyed, star)
+'''

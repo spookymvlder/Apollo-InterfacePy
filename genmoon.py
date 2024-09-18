@@ -3,12 +3,14 @@ from factions import FactionList
 from helpers import coin
 
 class Moon:
-    def __init__(self, pname, sundistance, number):
+    typelist = ["ocean", "terrestrial", "silicate", "hyceanth", "desert", "carbon", "coreless", "gas dwarf", "helium", "ice", "iron", "lava", "protoplanet"]
+    def __init__(self, pname, sundistance, gzone, number):
         self.name = Moon.moonname(self, pname, number)
         self.factions = []
         self.systemobjects = []
         self.pname = pname
-        Moon.habitable(self, sundistance)
+        self.number = number
+        Moon.habitable(self, sundistance, gzone)
     
     def moonname(self, pname, number):
         if number > 26:
@@ -17,17 +19,17 @@ class Moon:
         name = pname + suffix
         return name
     
-    def habitable(self, sundistance):
+    def habitable(self, sundistance, gzone):
         lwater = False
         type = ""
         life = False
-        if sundistance == "medium":
+        if gzone == "right":
             temperature = "medium"
             r = random.randint(1,100)
             if r > 80:
                 lwater = True
             if lwater:
-                tlist = ["Ocean", "Terrestrial", "Silicate", "Hyceanth", "Desert"]
+                tlist = ["ocean", "terrestrial", "silicate", "hyceanth", "desert"]
                 type = random.choice(tlist)
                 tlist = ["thin", "breathable", "toxic", "dense", "none", "corrosive", "infiltrating"]
                 atmosphere = random.choice(tlist)
@@ -35,13 +37,13 @@ class Moon:
                 if flip == 1:
                     life = True
         if not bool(type):
-            tlist = ["Carbon", "Coreless", "Gas dwarf", "Helium", "Ice", "Iron", "Lava", "Protoplanet", "Silicate", "Terrestrial"]
+            tlist = ["carbon", "coreless", "gas dwarf", "helium", "ice", "iron", "lava", "protoplanet", "silicate", "terrestrial"]
             type = random.choice(tlist)
             tlist = ["thin", "toxic", "dense", "none", "corrosive", "infiltrating"]
             atmosphere = random.choice(tlist)
-        if sundistance == "close":
+        if gzone == "hot":
             temperature = "hot"
-        elif sundistance == "far":
+        elif gzone == "cold":
             temperature = "cold"
         self.temperature = temperature
         self.atmosphere = atmosphere
