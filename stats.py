@@ -5,6 +5,7 @@ class JobList:
     agljob = ['Pilot', 'Smuggler', 'Wildcatter', 'Prospector', 'Surveyor']
     witjob = ['Colonial Marshal', 'Security Chief', 'Marshal', 'Deputy', 'Sheriff', 'Bounty Hunter', 'Guard', 'Company Agent', 'Executive', 'Junior Executive', 'Manager', 'Division Head', 'Supervisor', 'Journalist', 'Researcher', 'Inventor', 'Scientist', 'Biologist', 'Chemist']
     empjob = ['Medic', 'Paramedic', 'Doctor', 'Combat Medic', 'Officer', 'Captain', 'Bridge Officer', 'Inspector', 'Facility Manager', 'Counselor', 'Quartermaster','Performer', 'Club Owner', 'Waiter', 'Bartender']
+    joblist = [strjob, agljob, witjob, empjob]
 
     strjoblist = []
     agljoblist = []
@@ -27,3 +28,4 @@ class Job:
 
 class ItemList:
     ...
+

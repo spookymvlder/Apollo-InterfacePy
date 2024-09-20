@@ -6,38 +6,86 @@ from namelists import CatNames
 
 
 class Cat:
-    def __init__(self, mutation="", color1="", color2="", eye1="", eye2="", tort="", tabby="", colorpoint="", whitespot="", tipped="", whitespotpatt="", sex="", name=""):
-        self.mutation = Cat.genmutation(self)
-        self.eye1 = Cat.geneyes()
-        self.color1 = Cat.gencatcolor()
-        self.color2 = False
-        if self.color1 not in ("white", "bald"):
-            self.tort = Cat.gentort()
-            if self.tort:
-                while self.color2 == False or self.color2 == "bald":
-                    self.color2 = Cat.gencatcolor()
-            self.tabby = Cat.gentabby()
-            self.colorpoint = Cat.gencolorpoint()
-            self.whitespot = Cat.genwhitespotting()
-            self.tipped = Cat.gentipped()
-            if self.whitespot:
-                self.whitespotpatt = Cat.genwhitespotpatt()
+    mutationlist = ["dichoic", "albino"]
+    eyecolorlist = ["blue", "hazel", "gold", "yellow", "amber", "orange", "copper", "pink"]
+    colorlist = ["black", "blue grey", "caramel", "brown", "lilac", "cinnamon", "fawn", "orange", "cream", "apricot", "white", "bald"]
+    tortlist = ["distinct", "brindled"]
+    tabbylist = ["mackerel", "classic", "spotted", "ticked"]
+    colorpointlist = ["point", "mink", "sepia"]
+    whitespotlist = ["mitted", "tuxedo", "mask and mantle", "cap and saddle", "harlequin", "van", "magpie", "seychellois"]
+    tippedlist = ["silver chincilla", "silver shade", "silver smoke", "golden chinchilla", "golden shade", "golden smoke"]
+
+    def __init__(self, mutation, color1, color2, eye1, eye2, tort, tabby, colorpoint, whitespot, tipped, whitespotpatt, sex, name, id):
+        self.mutation = mutation
+        self.color1 = color1
+        self.color2 = color2
+        self.eye1 = eye1
+        self.eye2 = eye2
+        self.tort = tort
+        self.tabby = tabby
+        self.colorpoint = colorpoint
+        self.whitespot = whitespot
+        self.tipped = tipped
+        self.whitespotpatt = whitespotpatt
+        self.sex = sex
+        self.name = name
+        self.id = id
+
+    def genrandcat(mutation="", color1="", color2="", eye1="", eye2="", tort="", tabby="", colorpoint="", whitespot="", tipped="", whitespotpatt="", sex="", name=""):
+        if mutation == "":
+            mutation = Cat.genmutation()
+        if eye1 == "":
+            eye1 = Cat.geneyes()
+            eye1 = Cat.buildalbinoeyes(mutation, eye1)
+        if eye2 == "":
+            eye2 = Cat.gendichroic(mutation, eye1)
+        if color1 == "":  
+            color1 = Cat.gencatcolor()
+            color1 = Cat.buildalbinocolor(mutation, color1)
+        if color2 == "":
+            color2 = False
+        if color1 not in ("white", "bald"):
+            if tort == "":
+                tort = Cat.gentort()
+            if tort and color2 == False:
+                while color2 == False or color2 == "bald":
+                    color2 = Cat.gencatcolor()
+            if tabby == "":
+                tabby = Cat.gentabby()
+            if colorpoint == "":
+                colorpoint = Cat.gencolorpoint()
+            if whitespot == "":
+                whitespot = Cat.genwhitespotting()
+            if tipped == "":
+                tipped = Cat.gentipped()
+            if whitespot and whitespotpatt == "":
+                whitespotpatt = Cat.genwhitespotpatt()
         else:
-            self.tort = False
-            self.tabby = False
-            self.colorpoint = False
-            self.whitespot = False
-            self.tipped = False
-            self.whitespotpatt = False
-        if self.color1 != "orange":
-            self.sex = Npc.gensexrand()
-        else:
-            r = random.randint(1, 10)
-            if r < 9:
-                self.sex = "M"
+            if tort == "":
+                tort = False
+            if tabby == "":
+                tabby = False
+            if colorpoint == "":
+                colorpoint = False
+            if whitespot == "":
+                whitespot = False
+            if tipped == "":
+                tipped = False
+            if whitespotpatt == "":
+                whitespotpatt = False
+        if sex == "":
+            if color1 != "orange":
+                sex = Npc.gensexrand()
             else:
-                self.sex = "F"
-        self.name = Cat.genname(self)
+                r = random.randint(1, 10)
+                if r < 9:
+                    sex = "M"
+                else:
+                    sex = "F"
+        if name == "":
+            name = Cat.genname(sex)
+        id = 0
+        return Cat(mutation, color1, color2, eye1, eye2, tort, tabby, colorpoint, whitespot, tipped, whitespotpatt, sex, name, id)
             
     def __str__(self):
             description = f"{self.name} is a very good kitty. {heshe(self.sex, 1)} is "
@@ -67,166 +115,103 @@ class Cat:
 
             return description
     
+    @staticmethod
+    def gendichroic(mutation, eye1):
+        if mutation != "dichroic":
+            return eye1
+        eye2 = eye1
+        while eye2 == eye1:
+            eye2 = Cat.geneyes()
+        return eye2
 
-
-    def genmutation(self):
+    @staticmethod
+    def genmutation():
         r = random.randint(1,100)
         match r:
             case 98 | 99:
-                self.mutation = "dichroic"
-                self.eye2 = Cat.geneyes()
+                mutation = "dichroic"
             case 100:
-                self.mutation = "albino"
-                self.eye2 = False
-                Cat.buildalbino(self)
+                mutation = "albino"
             case _:
-                self.mutation = False
-                self.eye2 = False
+                mutation = False
+        return mutation
     
-    def buildalbino(self):
-        self.color1 = "white"
+    @staticmethod
+    def buildalbinoeyes(mutation, eye1):
+        if mutation != "albino":
+            return eye1
         flip = coin()
         if flip == 1:
-            self.eye1 = "blue"
+            eye1 = "blue"
         else:
-            self.eye1 = "pink"
-
-    def geneyes():
-        r = random.randint(1, 7)
-        match r:
-            case 1:
-                eyes = "blue"
-            case 2:
-                eyes = "hazel"
-            case 3:
-                eyes = "gold"
-            case 4:
-                eyes = "yellow"
-            case 5:
-                eyes = "amber"
-            case 6:
-                eyes = "orange"
-            case 7:
-                eyes = "copper"
-        return eyes
-
-    def gencatcolor():
-        r = random.randint(1, 13)
-        match r:
-            case 1:
-                color = "black"
-            case 2:
-                color = "blue grey"
-            case 3:
-                color = "caramel"
-            case 4:
-                color = "brown"
-            case 5:
-                color = "lilac"
-            case 6:
-                color = "cinnamon"
-            case 7:
-                color = "fawn"
-            case 8:
-                color = "orange"
-            case 9:
-                color = "cream"
-            case 10:
-                color = "apricot"
-            case 11:
-                color = "white"
-            case 12:
-                color = "apricot"
-            case 13:
-                color = "bald"
-        return color
+            eye1 = "pink"
+        return eye1
     
+    @staticmethod
+    def buildalbinocolor(mutation, color1):
+        if mutation == "albino":
+            color1 = "white"
+        return color1
+
+    @staticmethod
+    def geneyes():
+        return random.choice(Cat.eyecolorlist)
+
+    @staticmethod
+    def gencatcolor():
+        return random.choice(Cat.colorlist)
+    
+    @staticmethod
     def gentort():
         r = random.randint(1,9)
         if r < 5:
             tort = False
-        elif r < 7:
-            tort = "distinct"
         else:
-            tort = "brindled"
+            tort = random.choice(Cat.tortlist)
         return tort
     
+    @staticmethod
     def gentabby():
         r = random.randint(1,12)
         if r < 4:
             tabby = False
-        elif r < 6:
-            tabby = "mackerel"
-        elif r < 8:
-            tabby = "classic"
-        elif r < 10:
-            tabby = "spotted"
         else:
-            tabby = "ticked"
+            tabby = random.choice(Cat.tabbylist)
         return tabby
     
+    @staticmethod
     def gencolorpoint():
         r = random.randint(1,6)
         if r < 4:
             colorpoint = False
-        elif r < 5:
-            colorpoint = "point"
-        elif r < 6:
-            colorpoint = "mink"
         else:
-            colorpoint = "sepia"
+            colorpoint = random.choice(Cat.colorpointlist)
         return colorpoint
 
+    @staticmethod
     def genwhitespotting():
         r = random.randint(1,6)
         if r < 5:
             whitespot = False
         else:
-            whitespot = "yes"
+            whitespot = True
         return whitespot
 
+    @staticmethod
     def genwhitespotpatt():
-        r = random.randint(1,8)
-        match r:
-            case 1:
-                pattern = "mitted"
-            case 2:
-                pattern = "tuxedo"
-            case 3:
-                pattern = "mask and mantle"
-            case 4:
-                pattern = "cap and saddle"
-            case 5:
-                pattern = "harlequin"
-            case 6:
-                pattern = "van"
-            case 7:
-                pattern = "magpie"
-            case 8:
-                pattern = "seychellois"
-        return pattern
+        return random.choice(Cat.whitespotlist)
 
+    @staticmethod
     def gentipped():
         r = random.randint(1,12)
         if r < 7:
             tipped = False
         else:
-            match r:
-                case 7:
-                    tipped = "silver chinchilla"
-                case 8:
-                    tipped = "silver shade"
-                case 9:
-                    tipped = "silver smoke"
-                case 10:
-                    tipped = "golden chinchilla"
-                case 11:
-                    tipped = "golden shade"
-                case 12:
-                    tipped = "golden smoke"
+            tipped = random.choice(Cat.tippedlist)
         return tipped
     
-    def genname(self):
+    @staticmethod
+    def genname(sex):
         r = random.randint(1,5)
         name = ""
         match r:
@@ -235,7 +220,7 @@ class Cat:
                 name = Npc.genname(x[0])
             case 2 | 3:
                 x = Npc.gennametable()
-                if self.sex == "F":
+                if sex == "F":
                     name = Npc.genname(x[1])
                 else:
                     name = Npc.genname(x[2])
@@ -245,7 +230,7 @@ class Cat:
                 if flip == 1:
                     name = random.choice(x[0]) #Not going in to Npc for these calls as the lists are purely random names and the Npc.chance would skew results of a short list to the top.
                 else:
-                    if self.sex == "F":
+                    if sex == "F":
                         name = random.choice(x[1])
                     else:
                         name = random.choice(x[2])
@@ -260,7 +245,7 @@ class Cat:
             if flip == 1:
                 title = random.choice(u)
             else:
-                if self.sex == "F":
+                if sex == "F":
                     title = random.choice(f)
                 else:
                     title = random.choice(m)

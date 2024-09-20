@@ -1,15 +1,25 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Characters
+    Saved
 {% endblock %}
 
 {% block main %}
 
 <div>
+    <h1>NPCs</h1>
     {% for npc in npcstrings %}
     <p>{{ npc }}</p>
     {% endfor %}
+    <h1>Stars</h1>
+    {% for star in starstrings %}
+    <p>{{star}}</p>
+    {% endfor %}
+    <h1>Ships</h1>
+    {% for ship in shipstrings %}
+    <p>{{ship}}</p>
+    {% endfor %}
+    <h1>Cats</h1>
 </div>
 
 

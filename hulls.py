@@ -217,6 +217,7 @@ class HullTemplate:
         self.eqmodules = HullTemplate.geninitmodules(self, self.modules, self.category, self.crew, self.size, self.squads)
         self.availmodules = HullTemplate.countavailmodules(self.modules, self.eqmodules, 1)
         self.thrusters = HullTemplate.genthrusters(self, self.size, self.armorcat, self.ordenance, self.category)
+        self.id = 0
 
     @staticmethod
     def randomtroops(category):
@@ -908,6 +909,8 @@ class HullModel:
         self.eqweapons = HullModel.genweapons(self, self.ordenance, self.hardpoints, self.priority)
         self.rooms = HullModel.genrooms(self, self.eqmodules, self.crew, self.size, self.category, self.squads)
         self.ftl = HullModel.genFTL(self, self.priority, self.size, self.category)
+        self.template = template
+        self.id = 0
 
     @property
     def eqmodules(self):

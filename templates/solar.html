@@ -6,221 +6,207 @@
 
 {% block main %}
 
-<div>
+<div class="container">
+    <h1>Solar System</h1>
     <div class="container col-sm-12 headsec">
-        <div>Solar System</div>
-        <div class="row bodysec">
-            <div class="col">Star: {{sun.name}}</div>
-            <div class="col">
-                {% if sun.color == "white" %}
-                <div class="box white"> </div>
-                {% elif sun.color == "blue white" %}
-                <div class="box bluewhite"> </div>
-                {% elif sun.color == "blue" %}
-                <div class="box blue"> </div>
-                {% elif sun.color == "yellow white" %}
-                <div class="box yellwhite"> </div>
-                {% elif sun.color == "yellow" %}
-                <div class="box yellow"> </div>
-                {% elif sun.color == "orange" %}
-                <div class="box orange"> </div>
-                {% elif sun.color == "orange red" %}
-                <div class="box orangered"> </div>
-                {% elif sun.color == "red" %}
-                <div class="box red"> </div>
-                {% endif %}
-                <div class="text-start"> {{sun.color|title}}</div>
-            </div>
-            <div class="col">Class: {{sun.starclass}}</div>
-            <div class="col">Radius: {{sun.radius|round(4)}}</div>
-            <div class="col">Mass: {{sun.mass|round(4)}}</div>
-            <div class="col">Temp: {{sun.startemp|round(4)}}</div>
-            <div class="col">Lumens: {{sun.lum|round(4)}}</div>
-            <div class="col">Planet Count: {{sun.pcount}}</div>
-        </div>
-        <div class="row bodysec">
-            {% for planet in sun.solarobjects %}
-            <div class="row text-start">
-                <div class="col" data-toggle="tooltip" title="{{planet.tooltip}}">{{planet.pname}} <h3>{{planet.symbols}}</h4></div>
-                <div class="col">Distance: {{planet.distance|round(2)}} AU</div>
-                <div class="col">Mass: {{planet.mass|round(2)}} M🜨</div>
-                <div class="col">Radius: {{planet.radius|round(2)}} R🜨</div>
-                <div class="col">Atmosphere: {{planet.atmo|title}}</div>
-                <div class="col">{% for faction in planet.factions %}<div>{{faction.name}}</div>{% endfor %}</div>
+        <div>Star</div>
+        <div class="row bodysec text-start" >
+            <div class="col-sm-2">Star: {{sun.name}}</div>
+            <div class="col-sm-2">
                 <div class="col">
-                    {% if planet.mooncandidate == True %}
-                    <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#{{planet.pname}}moon" aria-expanded="false" aria-controls="{{planet.moons}}" title="Moons">Moons</button>
+                    {% if sun.color == "white" %}
+                    <div><div class="box white"></div>{{sun.color|title}}</div>
+                    {% elif sun.color == "blue white" %}
+                    <div><div class="box bluewhite"></div>{{sun.color|title}}</div>
+                    {% elif sun.color == "blue" %}
+                    <div><div class="box blue"></div>{{sun.color|title}}</div>
+                    {% elif sun.color == "yellow white" %}
+                    <div><div class="box yellwhite"></div>{{sun.color|title}}</div>
+                    {% elif sun.color == "yellow" %}
+                    <div><div class="box yellow"></div>{{sun.color|title}}</div>
+                    {% elif sun.color == "orange" %}
+                    <div><div class="box orange"></div>{{sun.color|title}}</div>
+                    {% elif sun.color == "orange red" %}
+                    <div><div class="box orangered"></div>{{sun.color|title}}</div>
+                    {% elif sun.color == "red" %}
+                    <div><div class="box red"></div>{{sun.color|title}}</div>
                     {% endif %}
-                    <form method="post" action="/delplanet">
-                        <button class="btn btn-primary btn-sm" name="delbtn" value="{{planet.id}}" type="submit" data-toggle="tooltip" title="Remove Faction">Delete</button>
-                    </div>
-                    </form>
-                <div class="col">
-                    <button class="btn btn-primary  btn-sm" type="button"  data-bs-toggle="collapse" data-bs-target="#{{planet.pname}}" aria-expanded="false" aria-controls="{{planet.pname}}" data-toggle="tooltip" title="Edit Planet">Edit</button>
-                    <form method="post" action="/randplanet">
-                        <button class="btn btn-primary  btn-sm" name="rollbtn" value="{{planet.id}}" type="submit" data-toggle="tooltip" title="Generate new planet, planet has similar relative distance from sun.">Reroll</button>
-                    </form>
                 </div>
+                <div class="col">
+                    Class: {{sun.starclass}}
+                </div>
+            </div>   
+            <div class="col-sm-2">
+                    <div class="col">Radius: {{sun.radius|round(4)}}</div>
+                    <div class="col">Mass: {{sun.mass|round(4)}}</div>
             </div>
-            <div class="collapse" id="{{planet.pname}}" name="planetdetails">
-                <form method="post" action="/editplanet">
-                    <fieldset>
-                    <div class="row bodysec" style="padding-bottom: 5px;">
-                        <div class="col">
-                            <label class="form-label" for="planetname">Name</label>
-                            <input type="text" class="form-control" id="planetname" name="planetname" value="{{planet.pname}}">
-                            <label class="form-label" for="planetdistance">Distance (AU)</label>
-                            <input type="text" class="form-control" id="planetdistance" name="planetdistance" value="{{planet.distance}}">
-                            <label class="form-label" for="planettype">Planet Type</label>
-                            <select class="form-select" id="planettype" name="planettype">
-                                <option selected value="{{planet.ptype}}">{{planet.ptype|title}}</option>
-                                {% for type in planet.ptypelist if type != planet.ptype %}
-                                <option value="{{type}}">{{type|title}}</option>
-                                {% endfor %}
-                            </select>
-                            <label class="form-label" for="planetatmo">Atmosphere</label>
-                            <select class="form-select" id="planetatmo" name="planetatmo">
-                                <option selected value="{{planet.atmo}}">{{planet.atmo|title}}</option>
-                                {% for type in planet.atmolist if type != planet.atmo %}
-                                <option value="{{type}}">{{type|title}}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col">
-                            <label class="form-label" for="planetsize">Mass (M🜨)</label>
-                            <input type="text" class="form-control" id="planetsize" name="planetsize" value="{{planet.mass}}">
-                            <label class="form-label" for="planetradius">Radius (R🜨)</label>
-                            <input type="text" class="form-control" id="planetradius" name="planetradius" value="{{planet.radius}}">
-                            <label class="form-label" for="planettemp">Temp (C)</label>
-                            <input type="text" class="form-control" id="planettemp" name="planettemp" value="{{planet.basetemp}}">
-                            <label class="form-label" for="planetpressure">Pressure</label>
-                            <select class="form-select" id="planetpressure" name="planetpressure">
-                                <option selected value="{{planet.pressure}}">{{planet.pressure|title}}</option>
-                                {% for pressure in planet.pressurelist if pressure != planet.pressure %}
-                                <option value="{{pressure}}">{{pressure|title}}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col">
-                                <label class="form-label" for="mooncount">Moons</label>
-                                <input type="number" class="form-control" id="mooncount" name="mooncount" value="{{planet.mooncount}}" {% if planet.mooncandidate == False %} disabled {% endif %} min="0" max="20">
-                                <label class="form-label" for="faction1">Factions</label>
-                                <select class="form-select" id="faction1" name="faction1">
-                                    {% if planet.factions|length > 0 %}
-                                    <option selected value="{{planet.factions[0].id}}">{{planet.factions[0].name}}</option>
-                                    <option value="None"></option>
-                                    {% else %}
-                                    <option selected value="None"></option>
-                                    {% endif %}
-                                    {% for faction in factionlist if faction != planet.factions[0] %}
-                                    <option value="{{faction.id}}">{{faction.name}}</option>
-                                    {% endfor %}
-                                </select>
-                                <label class="visually-hidden" for="faction2">Factions</label>
-                                <select class="form-select" id="faction2" name="faction2">
-                                    {% if planet.factions|length > 1 %}
-                                    <option selected value="{{planet.factions[1].id}}">{{planet.factions[1].name}}</option>
-                                    <option value="None"></option>
-                                    {% else %}
-                                    <option selected value="None"></option>
-                                    {% endif %}
-                                    {% for faction in factionlist if faction != planet.factions[1] %}
-                                    <option value="{{faction.id}}">{{faction.name}}</option>
-                                    {% endfor %}
-                                </select>
-
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="True" id="lwater" name="lwater" {%if planet.lwater == True %} checked {% endif %}>
-                                <label class="form-check-label" for="lwater">Liquid Water</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="True" id="rings" name="rings" {%if planet.rings == True %} checked {% endif %}>
-                                <label class="form-check-label" for="rings">Rings</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" disabled type="checkbox" name="gzone" value="" id="gzone" {%if planet.gzone == "right" %} checked {% endif %}>
-                                <label class="form-check-label" for="gzone">Goldilocks Zone</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="life" value="True" id="life" {%if planet.life == True %} checked {% endif %}>
-                                <label class="form-check-label" for="life">Life</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row bodysec" style="padding: 5px;">
-                        <div class="col-sm-8">
-                            <label class="form-label" for="notes">Notes</label>
-                            <textarea class="form-control" rows="3" name="notes" id="notes">{{planet.notes}}</textarea>
-                        </div>
-                        <div class="col-sm-2">
-                            <label class="form-label" for="planetsurvey">Surveyed %</label>
-                            <input type="text" class="form-control" id="planetsurvey" name="planetsurvey" value="{{planet.surveyed|round(2)}}">
-                        </div>
-                        <div class="col-sm-2">
-                            <button class="btn btn-primary btn-sm" type="submit" data-toggle="tooltip" name="saveplanet" id="saveplanet" value={{planet.id}} title="Save Planet">Save</button>
-                        </div>
-                    </div>
-                </fieldset>
+            <div class="col-sm-2">
+                    <div class="col">Temp: {{sun.startemp|round(4)}}</div>
+                    <div class="col">Lumens: {{sun.lum|round(4)}}</div>
+            </div>
+            <div class="col-sm-1">Planet Count: {{sun.pcount}}</div>
+            <div class="col">
+                <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#{{sun.id}}" aria-expanded="false" aria-controls="{{sun.id}}" title="Edit Star" style="margin-top: 10px;">Edit</button>
+            </div>
+            <div class="col">
+                <form method="get" action="/solar">
+                    <input type="hidden" name="sunid" value="{{sun.id}}">
+                    <button class="btn btn-primary  btn-sm" name="rollbtn" value="" type="submit" data-toggle="tooltip" title="Generate new sun, planets will be lost." style="margin-top: 10px;">Reroll</button>
                 </form>
             </div>
-            <div class="collapse" id="{{planet.pname}}moon" name="moons">
-                <form method="post" action="\editmoon">
-                    {% for moon in planet.moons %}
-                    <div class="bodysec">
-                        <div class="row" style="padding: 5px;">
+            <div class="collapse bodysec" id="{{sun.id}}" name="suninfo">
+                <form method="post" action="/editstar">
+                    <div class="row" style="margin-bottom: 5px; margin: top 5px;">
+                        <div class="col">
+                            <label class="form-label" for="starname">Name</label>
+                            <input type="text" class="form-control" id="starname" name="starname" value="{{sun.name}}">
+                            <label class="form-label" for="planetcount">Planets</label>
+                            <input type="number" class="form-control" id="planetcount" name="planetcount" value="{{sun.pcount}}" min="0" max="13">
+                        </div>
+                        <div class="col">
+                            <label class="form-label" for="starclass">Star Class</label>
+                            <select class="form-select" id="starclass" name="starclass">
+                                <option selected value="{{sun.starclass}}">{{sun.starclass}}</option>
+                                {% for type in sun.classlist if type != sun.starclass %}
+                                <option value="{{type}}">{{type}}</option>
+                                {% endfor %}
+                            </select>
+                            <label class="form-label" for="spectype" data-toggle="tooltip" title="Will force spectral type to 3 if a value of 0-2 is selected and starclass is 'O'">Spectral Type</label>
+                            <select class="form-select" id="spectype" name="spectype">
+                                <option selected value="{{sun.spectype}}">{{sun.spectype}}</option>
+                                {% for i in range(0, 9) if i != sun.spectype%}
+                                <option value="{{i}}">{{i}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label class="form-label" for="notes">Notes</label>
+                            <textarea class="form-control" rows="3" name="notes" id="notes">{{sun.notes}}</textarea>
+                        </div>
+                        <div class="col">
+                            <button class="btn btn-primary btn-sm" type="submit" name="savestar" value="{{sun.id}}" title="Save Star" style="margin-top: 10px;">Save</button>
+                </form>        
+                            {% if sun.id != 0 %}
+                            <form method="post" action="/delstar">
+                                <button class="btn btn-primary btn-sm" type="submit" name="delstar" value="{{sun.id}}" title="Delete Star">Delete</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>   
+            </div>
+        </div>
+        {% if sun.solarobjects|length > 0 %}
+        <div class="headersec">
+            <div>Planet List</div>
+            <div class="row bodysec">
+                {% for planet in sun.solarobjects %}
+                <div class="row text-start" style="padding-top: 5px;">
+                    <div class="col" data-toggle="tooltip" title="{{planet.tooltip}}">{{planet.pname}} <h3>{{planet.symbols}}</h4></div>
+                    <div class="col">Distance: {{planet.distance|round(2)}} AU</div>
+                    <div class="col">Mass: {{planet.mass|round(2)}} M🜨</div>
+                    <div class="col">Radius: {{planet.radius|round(2)}} R🜨</div>
+                    <div class="col">Atmosphere: {{planet.atmo|title}}</div>
+                    <div class="col">{% for faction in planet.factions %}<div>{{faction.name}}</div>{% endfor %}</div>
+                    <div class="col">
+                        {% if planet.moons|length > 0 %}
+                        <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#{{planet.pname}}moon" aria-expanded="false" aria-controls="{{planet.moons}}" title="Moons">Moons</button>
+                        {% endif %}
+                        <form method="post" action="/delplanet">
+                            <input type="hidden" name="sunid" value="{{sun.id}}">
+                            <button class="btn btn-primary btn-sm" name="delbtn" value="{{planet.id}}" data-value="{{sun.id}}" type="submit" data-toggle="tooltip" title="Delete Planet">Delete</button>
+                        </div>
+                        </form>
+                    <div class="col">
+                        <button class="btn btn-primary  btn-sm" type="button"  data-bs-toggle="collapse" data-bs-target="#{{planet.pname}}" aria-expanded="false" aria-controls="{{planet.pname}}" data-toggle="tooltip" title="Edit Planet">Edit</button>
+                        <form method="post" action="/randplanet">
+                            <input type="hidden" name="sunid" value="{{sun.id}}">
+                            <button class="btn btn-primary  btn-sm" name="rollbtn" value="{{planet.id}}" data-value="{{sun.id}}" type="submit" data-toggle="tooltip" title="Generate new planet, planet has similar relative distance from sun.">Reroll</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="collapse bodysec" id="{{planet.pname}}" name="planetdetails">
+                    <form method="post" action="/editplanet">
+                        <fieldset>
+                        <div class="row" style="padding-bottom: 5px;">
                             <div class="col">
-                                <label class="form-label" for="moonname">Name</label>
-                                <input type="text" class="form-control" id="moonname" name="planetname" value="{{moon.name}}">
+                                <label class="form-label" for="planetname">Name</label>
+                                <input type="text" class="form-control" id="planetname" name="planetname" value="{{planet.pname}}">
+                                <label class="form-label" for="planetdistance">Distance (AU)</label>
+                                <input type="text" class="form-control" id="planetdistance" name="planetdistance" value="{{planet.distance}}">
+                                <label class="form-label" for="planettype">Planet Type</label>
+                                <select class="form-select" id="planettype" name="planettype">
+                                    <option selected value="{{planet.ptype}}">{{planet.ptype|title}}</option>
+                                    {% for type in planet.ptypelist if type != planet.ptype %}
+                                    <option value="{{type}}">{{type|title}}</option>
+                                    {% endfor %}
+                                </select>
+                                <label class="form-label" for="planetatmo">Atmosphere</label>
+                                <select class="form-select" id="planetatmo" name="planetatmo">
+                                    <option selected value="{{planet.atmo}}">{{planet.atmo|title}}</option>
+                                    {% for type in planet.atmolist if type != planet.atmo %}
+                                    <option value="{{type}}">{{type|title}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col">
+                                <label class="form-label" for="planetsize">Mass (M🜨)</label>
+                                <input type="text" class="form-control" id="planetsize" name="planetsize" value="{{planet.mass}}">
+                                <label class="form-label" for="planetradius">Radius (R🜨)</label>
+                                <input type="text" class="form-control" id="planetradius" name="planetradius" value="{{planet.radius}}">
+                                <label class="form-label" for="planettemp">Temp (C)</label>
+                                <input type="text" class="form-control" id="planettemp" name="planettemp" value="{{planet.basetemp}}">
+                                <label class="form-label" for="planetpressure">Pressure</label>
+                                <select class="form-select" id="planetpressure" name="planetpressure">
+                                    <option selected value="{{planet.pressure}}">{{planet.pressure|title}}</option>
+                                    {% for pressure in planet.pressurelist if pressure != planet.pressure %}
+                                    <option value="{{pressure}}">{{pressure|title}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col">
+                                    <label class="form-label" for="mooncount">Moons</label>
+                                    <input type="number" class="form-control" id="mooncount" name="mooncount" value="{{planet.mooncount}}" {% if planet.mooncandidate == False %} disabled {% endif %} min="0" max="20">
+                                    <label class="form-label" for="faction1">Factions</label>
+                                    <select class="form-select" id="faction1" name="faction1">
+                                        {% if planet.factions|length > 0 %}
+                                        <option selected value="{{planet.factions[0].id}}">{{planet.factions[0].name}}</option>
+                                        <option value="None"></option>
+                                        {% else %}
+                                        <option selected value="None"></option>
+                                        {% endif %}
+                                        {% for faction in factionlist if faction != planet.factions[0] %}
+                                        <option value="{{faction.id}}">{{faction.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <label class="visually-hidden" for="faction2">Factions</label>
+                                    <select class="form-select" id="faction2" name="faction2">
+                                        {% if planet.factions|length > 1 %}
+                                        <option selected value="{{planet.factions[1].id}}">{{planet.factions[1].name}}</option>
+                                        <option value="None"></option>
+                                        {% else %}
+                                        <option selected value="None"></option>
+                                        {% endif %}
+                                        {% for faction in factionlist if faction != planet.factions[1] %}
+                                        <option value="{{faction.id}}">{{faction.name}}</option>
+                                        {% endfor %}
+                                    </select>
+    
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="" id="moonlwater" name="moonlwater" {%if moon.lwater == True %} checked {% endif %}>
+                                    <input class="form-check-input" type="checkbox" value="True" id="lwater" name="lwater" {%if planet.lwater == True %} checked {% endif %}>
                                     <label class="form-check-label" for="lwater">Liquid Water</label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="moonlife" value="" id="moonlife" {%if moon.life == True %} checked {% endif %}>
-                                    <label class="form-check-label" for="moonlife">Life</label>
+                                    <input class="form-check-input" type="checkbox" value="True" id="rings" name="rings" {%if planet.rings == True %} checked {% endif %}>
+                                    <label class="form-check-label" for="rings">Rings</label>
                                 </div>
-                            </div>
-                            <div class="col">
-                                <label class="form-label" for="moontype">Moon Type</label>
-                                <select class="form-select" id="moontype">
-                                    <option selected value="{{moon.type}}">{{moon.type|title}}</option>
-                                    {% for type in moon.typelist if type != moon.type %}
-                                    <option value="{{type}}">{{type|title}}</option>
-                                    {% endfor %}
-                                </select>
-                                <label class="form-label" for="moonatmo">Atmosphere</label>
-                                <select class="form-select" id="moonatmo">
-                                    <option selected value="{{moon.atmosphere}}">{{moon.atmosphere|title}}</option>
-                                    {% for type in planet.atmolist if type != moon.atmosphere %}
-                                    <option value="{{type}}">{{type|title}}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col">
-                                <label class="form-label" for="moonfaction1">Factions</label>
-                                <select class="form-select" id="moonfaction1" name="moonfaction1">
-                                    {% if moon.factions|length > 0 %}
-                                    <option selected value="{{moon.factions[0].id}}">{{moon.factions[0].name}}</option>
-                                    <option value="None"></option>
-                                    {% else %}
-                                    <option selected value="None"></option>
-                                    {% endif %}
-                                    {% for faction in factionlist if faction != moon.factions[0] %}
-                                    <option value="{{faction.id}}">{{faction.name}}</option>
-                                    {% endfor %}
-                                </select>
-                                <label class="visually-hidden" for="moonfaction2">Factions</label>
-                                <select class="form-select" id="moonfaction2" name="moonfaction2">
-                                    {% if moon.factions|length > 1 %}
-                                    <option selected value="{{moon.factions[1].id}}">{{moon.factions[1].name}}</option>
-                                    <option value="None"></option>
-                                    {% else %}
-                                    <option selected value="None"></option>
-                                    {% endif %}
-                                    {% for faction in factionlist if faction != moon.factions[1] %}
-                                    <option value="{{faction.id}}">{{faction.name}}</option>
-                                    {% endfor %}
-                                </select>
+                                <div class="form-check">
+                                    <input class="form-check-input" disabled type="checkbox" name="gzone" value="" id="gzone" {%if planet.gzone == "right" %} checked {% endif %}>
+                                    <label class="form-check-label" for="gzone">Goldilocks Zone</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="life" value="True" id="life" {%if planet.life == True %} checked {% endif %}>
+                                    <label class="form-check-label" for="life">Life</label>
+                                </div>
                             </div>
                         </div>
                         <div class="row" style="padding: 5px;">
@@ -228,14 +214,115 @@
                                 <label class="form-label" for="notes">Notes</label>
                                 <textarea class="form-control" rows="3" name="notes" id="notes">{{planet.notes}}</textarea>
                             </div>
+                            <div class="col-sm-2">
+                                <label class="form-label" for="planetsurvey">Surveyed %</label>
+                                <input type="text" class="form-control" id="planetsurvey" name="planetsurvey" value="{{planet.surveyed|round(2)}}">
+                                <label class="form-label" for="relativeg">Relative Gravity</label>
+                                <input type="text" class="form-control" id="relativeg" name="relativeg" disabled value="{{planet.relativeg|round(2)}}">
+                            </div>
+                            <div class="col-sm-2">
+                                <input type="hidden" name="sunid" value="{{sun.id}}">
+                                <button class="btn btn-primary btn-sm" type="submit" data-toggle="tooltip" name="saveplanet" id="saveplanet" value={{planet.id}} data-value="{{sun.id}}" title="Updates planet, saving star separately is necessary">Update</button>
+                            </div>
                         </div>
-                    </div>
-                    
-                    {% endfor %}
-                </form>
+                    </fieldset>
+                    </form>
+                </div>
+                <div class="collapse bodysec" id="{{planet.pname}}moon" name="moons">
+                    <form method="post" action="\editmoon">
+                        {% for moon in planet.moons %}
+                        <div>
+                            <div class="row" style="padding: 5px;">
+                                <div class="col">
+                                    <label class="form-label" for="moonname">Name</label>
+                                    <input type="text" class="form-control" id="moonname" name="moonname" value="{{moon.name}}">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="True" id="moonlwater" name="moonlwater" {%if moon.lwater == True %} checked {% endif %}>
+                                        <label class="form-check-label" for="lwater">Liquid Water</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="moonlife" value="True" id="moonlife" {%if moon.life == True %} checked {% endif %}>
+                                        <label class="form-check-label" for="moonlife">Life</label>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <label class="form-label" for="moontype">Moon Type</label>
+                                    <select class="form-select" id="moontype" name="moontype">
+                                        <option selected value="{{moon.type}}">{{moon.type|title}}</option>
+                                        {% for type in moon.typelist if type != moon.type %}
+                                        <option value="{{type}}">{{type|title}}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <label class="form-label" for="moonatmo">Atmosphere</label>
+                                    <select class="form-select" id="moonatmo" name="moonatmo">
+                                        <option selected value="{{moon.atmosphere}}">{{moon.atmosphere|title}}</option>
+                                        {% for type in planet.atmolist if type != moon.atmosphere %}
+                                        <option value="{{type}}">{{type|title}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col">
+                                    <label class="form-label" for="moonfaction1">Factions</label>
+                                    <select class="form-select" id="moonfaction1" name="moonfaction1">
+                                        {% if moon.factions|length > 0 %}
+                                        <option selected value="{{moon.factions[0].id}}">{{moon.factions[0].name}}</option>
+                                        <option value="None"></option>
+                                        {% else %}
+                                        <option selected value="None"></option>
+                                        {% endif %}
+                                        {% for faction in factionlist if faction != moon.factions[0] %}
+                                        <option value="{{faction.id}}">{{faction.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <label class="visually-hidden" for="moonfaction2">Factions</label>
+                                    <select class="form-select" id="moonfaction2" name="moonfaction2">
+                                        {% if moon.factions|length > 1 %}
+                                        <option selected value="{{moon.factions[1].id}}">{{moon.factions[1].name}}</option>
+                                        <option value="None"></option>
+                                        {% else %}
+                                        <option selected value="None"></option>
+                                        {% endif %}
+                                        {% for faction in factionlist if faction != moon.factions[1] %}
+                                        <option value="{{faction.id}}">{{faction.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row" style="padding: 5px;">
+                                <div class="col-sm-8">
+                                    <label class="form-label" for="notes">Notes</label>
+                                    <textarea class="form-control" rows="3" name="notes" id="notes">{{moon.notes}}</textarea>
+                                </div>
+                                <div class="col-sm-2">
+                                    <input type="hidden" name="sunid" value="{{sun.id}}">
+                                    <input type="hidden" name="planetid" value="{{planet.id}}">
+                                    <button class="btn btn-primary btn-sm" type="submit" data-toggle="tooltip" name="savemoon" id="savemoon" value={{moon.id}} title="Update Moon">Update</button>
+    
+                    </form>
+                                <form method="post" action="/delmoon">
+                                    <input type="hidden" name="sunid" value="{{sun.id}}">
+                                    <input type="hidden" name="planetid" value="{{planet.id}}">
+                                    <button class="btn btn-primary btn-sm" name="moondel" value="{{moon.id}}" type="submit" data-toggle="tooltip" title="Delete Moon">Delete</button>
+                                </form>
+                                </div>
+                                <div class="col-sm-2">
+                                    <form method="post" action="/randmoon">
+                                        <input type="hidden" name="sunid" value="{{sun.id}}">
+                                        <input type="hidden" name="planetid" value="{{planet.id}}">
+                                        <button class="btn btn-primary  btn-sm" name="moonroll" value="{{moon.id}}" type="submit" data-toggle="tooltip" title="Generate new moon">Reroll</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% endfor %}
+    
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
         </div>
+        {% endif %}
+        
     </div>
 </div>
 <script>

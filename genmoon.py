@@ -4,18 +4,93 @@ from helpers import coin
 
 class Moon:
     typelist = ["ocean", "terrestrial", "silicate", "hyceanth", "desert", "carbon", "coreless", "gas dwarf", "helium", "ice", "iron", "lava", "protoplanet"]
-    def __init__(self, pname, sundistance, gzone, number):
-        self.name = Moon.moonname(self, pname, number)
+    
+    def __init__(self, pname, sundistance, gzone, id):
+        self.name = Moon.moonname(self, pname, id)
         self.factions = []
         self.systemobjects = []
         self.pname = pname
-        self.number = number
+        self.id = id
         Moon.habitable(self, sundistance, gzone)
+
+    def editmoon(self, name, lwater, life, mtype, atmo, factions, notes):
+        self.name = name
+        self.lwater = lwater
+        self.life = life
+        self.type = mtype
+        self.atmosphere = atmo
+        self.factions = factions
+        self.notes = notes
+
+    @property
+    def name(self):
+        return self._name
     
-    def moonname(self, pname, number):
-        if number > 26:
+    @name.setter
+    def name(self, name):
+        self._name = name
+
+    @property
+    def type(self):
+        return self._type
+
+    @type.setter
+    def type(self, type):
+        self._type = type
+    
+    @property
+    def lwater(self):
+        return self._lwater
+
+    @lwater.setter
+    def lwater(self, lwater):
+        self._lwater = lwater
+    
+    @property
+    def life(self):
+        return self._life
+
+    @life.setter
+    def life(self, life):
+        self._life = life
+    
+    @property
+    def atmosphere(self):
+        return self._atmosphere
+
+    @atmosphere.setter
+    def atmosphere(self, atmosphere):
+        self._atmosphere = atmosphere
+
+    @property
+    def notes(self):
+        return self._notes
+
+    @notes.setter
+    def notes(self, notes):
+        self._notes = notes
+
+    @property
+    def temperature(self):
+        return self._temperature
+
+    @temperature.setter
+    def temperature(self, temperature):
+        self._temperature = temperature
+
+    @property
+    def factions(self):
+        return self._factions
+
+    @factions.setter
+    def factions(self, factions):
+        self._factions = factions
+        
+    # ID starts at 0, so to turn that in to a character need to bump the value up by 1.
+    def moonname(self, pname, id):
+        if id > 26:
             return ValueError("Too many moons.")
-        suffix = chr(ord('`') + number)
+        suffix = chr(ord('`') + (id + 1))
         name = pname + suffix
         return name
     
@@ -68,7 +143,6 @@ class Moon:
             else:
                 self.factions.append(faction1.name)
 
-    @classmethod
     def __str__(self):
-        return f"Name: {self.name}\nType: {self.type}\nTemp: {self.temperature}\nLife: {self.life}\nFactions: {self.factions}\nAtmosphere: {self.atmosphere}"
+        return f"Name: {self.name} \nType: {self.type} \nTemp: {self.temperature} \nLife: {self.life} \nFactions: {self.factions} \nAtmosphere: {self.atmosphere}"
     

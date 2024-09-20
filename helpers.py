@@ -42,3 +42,4 @@ def isbool(value):
     if value == True or value == False:
         return True
     return False
+

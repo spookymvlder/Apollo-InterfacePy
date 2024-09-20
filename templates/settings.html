@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Settings
+{% endblock %}
+
+{% block main %}
+
+<div>
+    <h1>Settings</h1>
+    <form method="post" id="export" action="/export">
+        <button class="btn btn-primary" type="submit" name="export" value="1" title="Export all saved objects">Export JSON</button>
+    </form>
+
+    <form method="post" id="import" action="/import" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".json" required>
+        <button class="btn btn-primary" type="submit" title="Import saved objects">Import JSON</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById('export').onsubmit = async function (event) {
+        event.preventDefault(); // Prevent default form submission
+        const response = await fetch('/export', { method: 'POST' });
+        const data = await response.json();
+
+        // Trigger the download
+        if (data.download_url) {
+            window.location.href = data.download_url; // Redirect to download URL
+        }
+    };
+
+    document.getElementById('import-form').onsubmit = async function (event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            const response = await fetch('/import', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            alert(data.message || data.error);
+        };
+</script>
+
+{% endblock %}

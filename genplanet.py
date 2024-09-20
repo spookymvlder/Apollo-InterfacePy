@@ -106,7 +106,23 @@ class Planet:
                     del self.moons[i]
         self.symbols = Planet.assemblesymbols(self.ptype, self.gzone, self.rings, self.lwater, self.life, self.mooncount)
         self.tooltip = Planet.buildtooltip(self.ptype, self.gzone, self.rings, self.lwater, self.life, self.mooncount)
+
+    # For editing planet's temperature and gzone data if the host star's values have changed.
+    def sunedit(self, star):
+        self.gzone = Planet.calcgzone(self.distance, star.inzone, star.outzone)
+        self.basetemp = Planet.calcbasetemp(self.distance, star.lum)
+        self.symbols = Planet.assemblesymbols(self.ptype, self.gzone, self.rings, self.lwater, self.life, self.mooncount)
+        self.tooltip = Planet.buildtooltip(self.ptype, self.gzone, self.rings, self.lwater, self.life, self.mooncount)
         
+    def delmoon(self, moonnum):
+        del self.moons[moonnum]
+        self.mooncount -= 1
+        for moon in self.moons:
+            if moon.id > moonnum:
+                moon.id -= 1
+
+    def replacemoon(self, moonnum):
+        self.moons[moonnum] = Planet.gennewmoon(self.pname, self.distance, self.gzone, moonnum)
 
     @property
     def distance(self):
@@ -558,7 +574,7 @@ class Planet:
     def genmoons(pname, mooncount, distance, gzone):
         moons = []
         for i in range(mooncount):
-            moons.append(Planet.gennewmoon(pname, distance, gzone, i + 1))
+            moons.append(Planet.gennewmoon(pname, distance, gzone, i))
         return moons
 
     # Extra step to break this out so it can be shared by edit planet.
@@ -734,6 +750,21 @@ class Planet:
             tooltip += "Life, "
         tooltip += str(mooncount) + " Moons"
         return tooltip
+
+    def __str__(self):
+        description = f"{self.pname} is a {self.ptype} planet. \n"
+        description += f"Mass: {self.mass}Me Radius: {self.radius}Re Distance: {self.distance}AU Relative Gravity: {self.relativeg} Pressure: {self.pressure} Atmosphere: {self.atmo} \n"
+        description += f"Rings: {self.rings} Liquid Water: {self.lwater} Life: {self.life} Populated: {self.populated} Surevey Percentage: {self.surveyed}% \n"
+        description += f"Your notes: {self.notes} \n"
+        if len(self.factions) > 0:
+            description += f"Factions: \n"
+            for faction in self.factions:
+                description += f"{faction.name} \n"
+        description += f"Moon Count: {self.mooncount} \n"
+        if self.mooncount > 0:
+            for moon in self.moons:
+                description += f"{moon} \n"
+        return description
 
 #initializeall()
 #factions = Planet.gensettlementfaction(True)

@@ -3,9 +3,7 @@ from genplanet import Planet
 from helpers import skewvalue
 from math import sqrt
 
-class StarList:
-    starlist = []
-    tempstar = ""
+
 
 # https://terraforming.fandom.com/wiki/Main_Sequence_A_Type_Stars_-_Habitable_Simulation
 class Star:
@@ -31,6 +29,35 @@ class Star:
         self.spacing = Star.genspacing(self.pcount)
         self.solarobjects = Star.genplanet(self, self.pcount, self.spacing, self.inzone, self.outzone, self.startemp, self.mass, self.lum, self.solarobjects)
         
+    def editstar(self, name, pcount, starclass, spectype, notes):
+        self.name = name
+        if not Star.validatestaredit(starclass, spectype):
+            spectype = 3 # OK to force change here because user warned as tooltip. TODO Ideally this could be handled client side.
+        if self.starclass != starclass or self.spectype != spectype:
+            self.starclass = starclass
+            self.spectype = spectype
+            self.color = Star.genstarcolor(self.starclass, self.spectype)
+            self.mass = Star.genstarmass(self.starclass, self.spectype)
+            self.radius = Star.genstarradius(self.starclass, self.spectype)
+            self.lum = Star.genstarlum(self.starclass, self.spectype)
+            self.startemp = Star.genstartemp(self.starclass, self.spectype)
+            self.inzone = Star.geninzone(self.lum)
+            self.outzone = Star.genoutzone(self.lum)
+            for planet in self.solarobjects:
+                Planet.sunedit(planet, self)
+        self.notes = notes
+        if self.pcount != pcount:
+            diff = pcount - self.pcount
+            self.pcount = pcount
+            self.spacing = Star.genspacing(self.pcount)
+            if diff > 0:
+                for i in range(self.pcount, self.pcount + diff):
+                    self.solarobjects.append(Planet.genplanetfromstar(self.inzone, self.outzone, Planet.randomdistance(self, i), self.startemp, self.mass, self.lum, Planet.randomdistancelimit(self, i), i))
+            else:
+                for i in reversed(range(self.pcount, self.pcount + diff, -1)):
+                    del self.solarobjects[i]
+
+    
 
     @property
     def name(self):
@@ -208,6 +235,14 @@ class Star:
         else:
             spectype = random.randint(0,9)
         return spectype
+    
+    # Changing spectral type and class will always have one changed before the other, allows for both to be changed simultaneously without worrying about race conditions.
+    @staticmethod
+    def validatestaredit(starclass, spectype):
+        if starclass == "O":
+            if spectype < 3:
+                return False
+        return True
 
     @property
     def starcolor(self):
@@ -1016,3 +1051,13 @@ class Star:
             if planet.id > planetid:
                 planet.id -= 1
         
+    def __str__(self):
+        description = f"Star system {self.name} is a {self.color} class {self.starclass}{self.spectype} star. \n"
+        description += f"Mass: {self.mass} Radius: {self.radius} Luminosity: {self.lum} Temperature: {self.startemp} \n"
+        description += f"Planets: {self.pcount} \n"
+        description += f"Your notes: {self.notes} \n"
+        if self.pcount > 0:
+            description += f"Planets: \n"
+            for planet in self.solarobjects:
+                description += f"{planet} \n"
+        return description

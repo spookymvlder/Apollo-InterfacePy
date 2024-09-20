@@ -2,6 +2,7 @@ import random
 from helpers import coin
 from namelists import NationNameTable
 from factions import FactionList, CountryList, Faction
+from stats import JobList
 
 strjob = ['Marine', 'Soldier', 'Mercenary', 'Security Guard', 'Bounty Hunter', 'Roughneck', 'Miner', 'Factory Worker', 'Machinist', 'Mechanic', 'Engineer', 'Farmer', 'Technician']
 agljob = ['Pilot', 'Smuggler', 'Wildcatter', 'Prospector', 'Surveyor']
@@ -14,15 +15,11 @@ empjob = ['Medic', 'Paramedic', 'Doctor', 'Combat Medic', 'Officer', 'Captain', 
 
 class Npc:
     statlist = ["Strength", "Agility", "Wits", "Empathy"]
+    sexlist = ["M", "F"]
+    typelist = ["HUMAN", "SYNTH"]
 
-    def __init__(self, forename="", surname="", type="", sex="", factionid="", job="", stats="", pstat="", nation=""):
+    def __init__(self, forename, surname, type, sex, factionid, job, stats, pstat, nation, id):
         self.sex = sex
-        #If faction is empty or invalid, check if nation exists.
-        if not bool(Faction.idtoname(factionid)):
-            if bool(Npc.validatenation):
-                factionid = Npc.genfactioninformed(nation)
-            else:
-                factionid = Npc.genfactionrand()
         self.factionid = factionid
         self.nation = nation
         self.forename = forename
@@ -31,8 +28,35 @@ class Npc:
         self.pstat = pstat
         self.job = job
         self.stats = stats
-        self.id = 0
-    
+        self.id = id
+
+    @staticmethod
+    def genrandomnpc(forename="", surname="", type="", sex="", factionid="", job="", stats="", pstat="", nation=""):
+        if sex == "":
+            sex = Npc.gensexrand()
+        if factionid != "" and nation == "":
+            nation = Npc.gennationinformed(factionid)
+        elif factionid == "" and nation != "":
+            factionid = Npc.genfactioninformed(nation)
+        if factionid == "":
+            factionid = Npc.genfactionrand()
+        if nation == "":
+            nation = Npc.gennationrand()
+        if forename == "":
+            forename = Npc.genforename(sex, nation)
+        if surname == "":
+            surname = Npc.gensurname(nation)
+        if type == "":
+            type = Npc.gentype()
+        if pstat == "":
+            pstat = Npc.genprimarystat()
+        if job == "":
+            job = Npc.getjob(pstat)
+        if stats == "":
+            stats = Npc.genstatsrand(pstat, type)
+        id = 0
+        return Npc(forename, surname, type, sex, factionid, job, stats, pstat, nation, id)
+
     @property
     def id(self):
         return self._id
@@ -43,6 +67,15 @@ class Npc:
             raise ValueError(f"Invalid npc id.")
         self._id = id
 
+    @property
+    def sex(self):
+        return self._sex
+    
+    @sex.setter
+    def sex(self, sex):
+        if sex not in Npc.sexlist:
+            raise ValueError(f"Invalid npc sex attribute {sex}.")
+        self._sex = sex
 
     @staticmethod
     def gensexrand():
@@ -52,21 +85,16 @@ class Npc:
         else:
             sex = "F"
         return sex
-    
+
     @property
-    def sex(self):
-        return self._sex
+    def factionid(self):
+        return self._factionid
     
-    @sex.setter
-    def sex(self, sex):
-        if not sex:
-            sex = Npc.gensexrand()
-        else:
-            sex = sex[0]
-            sex = sex.upper()
-            if sex not in ("M", "F"):
-                sex = Npc.gensexrand()
-        self._sex = sex
+    @factionid.setter
+    def factionid(self, factionid):
+        if not bool(Faction.idtoname(factionid)):
+            raise ValueError(f"Invalid NPC factionid {factionid}.")
+        self._factionid = factionid
     
     @staticmethod
     def genfactioninformed(nation=""):
@@ -85,24 +113,17 @@ class Npc:
     def genfactionrand():
         faction = random.choice(FactionList.factionlist)
         return faction.id
-    
-    @staticmethod
-    def validatenation(nation):
-        if nation in NationNameTable.nationlist:
-            return True
-        else:
-            return False
-        
+
     @property
-    def factionid(self):
-        return self._factionid
+    def nation(self):
+        return self._nation
     
-    @factionid.setter
-    def factionid(self, factionid):
-        if not bool(Faction.idtoname(factionid)):
-            raise ValueError(f"Invalid NPC factionid {factionid}.")
-        self._factionid = factionid
-    
+    @nation.setter
+    def nation(self, nation):
+        if nation not in NationNameTable.nationlist:
+            raise ValueError(f"Invalid NPC nation {nation}.")
+        self._nation = nation     
+
     @staticmethod
     def gennationrand():
         return random.choice(NationNameTable.nationlist)
@@ -119,18 +140,24 @@ class Npc:
         return Npc.gennationrand()
     
     @property
-    def nation(self):
-        return self._nation
+    def forename(self):
+        return self._forename
     
-    @nation.setter
-    def nation(self, nation):
-        if not Npc.validatenation(nation):
-            faction = self.factionid
-            if not faction:
-                nation = Npc.gennationrand()
-            else:
-                nation = Npc.gennationinformed(faction)
-        self._nation = nation
+    @forename.setter
+    def forename(self, forename):
+        if forename == "" or not isinstance(forename, str):
+            raise ValueError(f"Invalid Npc forename {forename}.")
+        self._forename = forename
+    
+    @property
+    def surname(self):
+        return self._surname
+    
+    @surname.setter
+    def surname(self, surname):
+        if surname == "" or not isinstance(surname, str):
+            raise ValueError(f"Invalid Npc forename {surname}.")
+        self._surname = surname
 
     @staticmethod
     def gennametable(nation=""):
@@ -141,35 +168,20 @@ class Npc:
     @staticmethod
     def genname(namelist):
         name = random.randint(0, Npc.chance(namelist))
-        name = namelist[name]
-        return name
+        return namelist[name]
 
-    @property
-    def forename(self):
-        return self._forename
-    
-    @forename.setter
-    def forename(self, forename):
-        if not forename:
-            tables = Npc.gennametable(self.nation)
-            if self.sex == "F":
-                self._forename = Npc.genname(tables[1])
-            else:
-                self._forename = Npc.genname(tables[2])
+    @staticmethod
+    def genforename(sex, nation):
+        tables = Npc.gennametable(nation)
+        if sex == "F":
+            return Npc.genname(tables[1])
         else:
-            self._forename = forename
+            return Npc.genname(tables[2])
 
-    @property
-    def surname(self):
-        return self._surname
-    
-    @surname.setter
-    def surname(self, surname):
-        if not surname:
-            tables = Npc.gennametable(self.nation)
-            self._surname = Npc.genname(tables[0])
-        else:
-            self._surname = surname
+    @staticmethod
+    def gensurname(nation):
+        tables = Npc.gennametable(nation)
+        return Npc.genname(tables[0])
 
     #While not as good as some sort of algorithm to consume the probability of each name table, this should skew name lists in favor of common names.
     def chance(list):
@@ -183,6 +195,16 @@ class Npc:
                 chance = int(len(list) / 2)
         return chance - 1
     
+    @property
+    def type(self):
+        return self._type
+    
+    @type.setter
+    def type(self, type):
+        if type not in Npc.typelist:
+            raise ValueError(f"Invalid Npc type {type}.")
+        self._type = type
+
     @staticmethod
     def gentype():
         rand = random.randint(1,100)
@@ -193,30 +215,34 @@ class Npc:
         return type
 
     @property
-    def type(self):
-        return self._type
+    def pstat(self):
+        return self._pstat
     
-    @type.setter
-    def type(self, type):
-        if not type or type.upper not in ("HUMAN", "SYNTH"):
-            self._type = Npc.gentype()
-        else:
-            self._type = type.upper()
-
+    @pstat.setter
+    def pstat(self, pstat):
+        if not (pstat >= 0 and pstat <= 3):
+            raise ValueError(f"Invalid primary stat {pstat}.")
+        self._pstat = pstat
+    
     @staticmethod
     def genprimarystat():
         stat = random.randint(0,3)
         return stat
     
     @property
-    def pstat(self):
-        return self._pstat
+    def job(self):
+        return self._job
     
-    @pstat.setter
-    def pstat(self, pstat):
-        if not pstat or not (pstat >= 0 and pstat <= 3):
-            pstat = Npc.genprimarystat()
-        self._pstat = pstat
+    @job.setter
+    def job(self, job):
+        found = False
+        for jobs in JobList.joblist:
+            if job in jobs:
+                found = True
+                break
+        if found == False:
+            raise ValueError(f"Invalid job type {job}.")
+        self._job = job
 
     @staticmethod
     def getjob(stat):
@@ -224,27 +250,27 @@ class Npc:
             stat = Npc.genprimarystat()
         match Npc.statlist[stat]:
             case "Strength":
-                jlist = strjob
+                jlist = JobList.strjob
             case "Agility":
-                jlist = agljob
+                jlist = JobList.agljob
             case "Wits":
-                jlist = witjob
+                jlist = JobList.witjob
             case "Empathy":
-                jlist = empjob
+                jlist = JobList.empjob
         return random.choice(jlist)
 
     @property
-    def job(self):
-        return self._job
+    def stats(self):
+        return self._stats
     
-    @job.setter
-    def job(self, job):
-        if not job or not isinstance(job, str):
-            job = Npc.getjob(self.pstat)
-        self._job = job
+    @stats.setter
+    def stats(self, stats=""):
+        if not Npc.validatestats(stats):
+            raise ValueError(f"Invalid NPC stat values.")
+        self._stats = stats
 
     @staticmethod
-    def genstatsrand(pstat="", type="HUMAN"):
+    def genstatsrand(pstat, type):
         if not pstat:
             pstat = Npc.genprimarystat()
         stats = [1, 1, 1, 1]
@@ -300,15 +326,7 @@ class Npc:
         return True
     
 
-    @property
-    def stats(self):
-        return self._stats
     
-    @stats.setter
-    def stats(self, stats=""):
-        if not Npc.validatestats(stats) or not stats:
-            stats = Npc.genstatsrand(self.pstat, self.type)
-        self._stats = stats
 
     def __str__(self):
         return f"Name: {self.forename} {self.surname}\nType: {self.type}\nFaction: {Faction.idtoname(self.factionid)}\nJob: {self.job}\nStats: {self.stats}\n"

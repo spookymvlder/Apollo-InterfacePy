@@ -1,39 +1,74 @@
 import random
 from helpers import coin
-import namelists, genmeow, gennpc
+from gennpc import Npc
+import namelists, genmeow
 from factions import FactionList, Faction
 
 
 
 class Ship:
 
-    def __init__(self, model):
-        self.size = model.size
-        self.hulltype = model.hulltype
-        self.category = model.category
-        self.hardpoints = model.hardpoints
-        self.signature = model.signature
-        self.crew = model.crew
-        self.hullen = model.hullen
-        self.hullval = model.hullval
-        self.armorval = model.armorval
-        self.modules = model.modules
-        self.manufacturer = model.manufacturer
-        self.shipmodel = model.shipmodel
-        self.eqmodules = model.eqmodules
-        self.availmodules = model.availmodules
-        self.squads = model.squads
-        self.thrusters = model.thrusters
-        self.eqweapons = model.eqweapons
-        self.rooms = model.rooms
-        self.ftl = model.ftl
-        self.factionid = Ship.genfaction().id
-        self.name = Ship.genname(self.factionid)
-        self.crewsize = Ship.getcrewsize(self, self.crew)
-        self.cat = Ship.genshipcat(self, self.category)
-        self.crewlist = Ship.gencrewmembers(self, self.crewsize, self.eqmodules, self.factionid)
-        self.prefix = FactionList.getprefix(self.factionid)
-        self.id = 0
+    def __init__(self, size, hulltype, category, hardpoints, signature, crew, hullen, hullval, armorval, modules, manufacturer, shipmodel, 
+        eqmodules, availmodules, squads, thrusters, eqweapons, rooms, ftl, factionid, name, crewsize, cat, crewlist, prefix, id):
+        self.size = size
+        self.hulltype = hulltype
+        self.category = category
+        self.hardpoints = hardpoints
+        self.signature = signature
+        self.crew = crew
+        self.hullen = hullen
+        self.hullval = hullval
+        self.armorval = armorval
+        self.modules = modules
+        self.manufacturer = manufacturer
+        self.shipmodel = shipmodel
+        self.eqmodules = eqmodules
+        self.availmodules = availmodules
+        self.squads = squads
+        self.thrusters = thrusters
+        self.eqweapons = eqweapons
+        self.rooms = rooms
+        self.ftl = ftl
+        self.factionid = factionid
+        self.name = name
+        self.crewsize = crewsize
+        self.cat = cat
+        self.crewlist = crewlist
+        self.prefix = prefix
+        self.id = id
+
+
+    @staticmethod
+    def genshipfrommodel(model):
+        size = model.size
+        hulltype = model.hulltype
+        category = model.category
+        hardpoints = model.hardpoints
+        signature = model.signature
+        crew = model.crew
+        hullen = model.hullen
+        hullval = model.hullval
+        armorval = model.armorval
+        modules = model.modules
+        manufacturer = model.manufacturer
+        shipmodel = model.shipmodel
+        eqmodules = model.eqmodules
+        availmodules = model.availmodules
+        squads = model.squads
+        thrusters = model.thrusters
+        eqweapons = model.eqweapons
+        rooms = model.rooms
+        ftl = model.ftl
+        factionid = Ship.genfaction().id
+        name = Ship.genname(factionid)
+        crewsize = Ship.getcrewsize(crew)
+        cat = Ship.genshipcat(category)
+        crewlist = Ship.gencrewmembers(crewsize, eqmodules, factionid)
+        prefix = FactionList.getprefix(factionid)
+        id = 0
+        return Ship(size, hulltype, category, hardpoints, signature, crew, hullen, hullval, armorval, modules, manufacturer, shipmodel, 
+        eqmodules, availmodules, squads, thrusters, eqweapons, rooms, ftl, factionid, name, crewsize, cat, crewlist, prefix, id)
+        
         
     @property
     def id(self):
@@ -73,42 +108,45 @@ class Ship:
         name += random.choice(namelists.returnNameList(namelists.returnNeutCategory()))
         return name
 
-    def getcrewsize(self, crew):
+    @staticmethod
+    def getcrewsize(crew):
         min = crew[0]
         max = crew[1]
         return random.randint(min, max)
     
-    def genshipcat(self, category):
+    @staticmethod
+    def genshipcat(category):
         r = random.randint(0, 100)
         if category == "warship" or r < 70:
             return "None"
-        return genmeow.Cat()
+        return genmeow.Cat.genrandcat()
 
-    def gencrewmembers(self, crewsize, eqmodules, faction):
+    @staticmethod
+    def gencrewmembers(crewsize, eqmodules, faction):
         crewlist = {}
         i = 0
         if i < crewsize:
-            crewlist["pilot"] = gennpc.Npc(forename="", surname="", type="", sex="", factionid=faction, job="pilot", stats="", pstat=1, nation="")
+            crewlist["pilot"] = Npc.genrandomnpc(factionid=faction, job="Pilot", pstat=1)
             i += 1
         if i < crewsize:
-            crewlist["captain"] = gennpc.Npc(forename="", surname="", type="", sex="", factionid=faction, job="captain", stats="", pstat=3, nation="")
+            crewlist["captain"] = Npc.genrandomnpc(factionid=faction, job="Captain", pstat=3)
             i += 1
         if i < crewsize:
-            crewlist["engineer"] = gennpc.Npc(forename="", surname="", type="", sex="", factionid=faction, job="engineer", stats="", pstat=0, nation="")
+            crewlist["engineer"] = Npc.genrandomnpc(factionid=faction, job="Engineer", pstat=0)
             i += 1
         if i < crewsize:
-            crewlist["technician"] = gennpc.Npc(forename="", surname="", type="", sex="", factionid=faction, job="technician", stats="", pstat=0, nation="")
+            crewlist["technician"] = Npc.genrandomnpc(factionid=faction, job="Technician", pstat=0)
             i += 1
         if i < crewsize:
             for module in eqmodules.modulelist:
                 if module.type == "Medlab":
-                    crewlist["medic"] = gennpc.Npc(forename="", surname="", type="", sex="", factionid=faction, job="medic", stats="", pstat=3, nation="")
+                    crewlist["medic"] = Npc.genrandomnpc(factionid=faction, job="Medic", pstat=3)
                     i += 1
                     break
         if i < crewsize:
             for module in eqmodules.modulelist:
                 if module.type == "Science Lab":
-                    crewlist["scientist"] = gennpc.Npc(forename="", surname="", type="", sex="", factionid=faction, job="scientist", stats="", pstat=2, nation="")
+                    crewlist["scientist"] = Npc.genrandomnpc(factionid=faction, job="Scientist", pstat=2)
                     i += 1
                     break
         return crewlist
