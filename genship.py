@@ -3,7 +3,8 @@ from helpers import coin
 from gennpc import Npc
 import namelists, genmeow
 from factions import FactionList, Faction
-
+from savedobjects import ShipList, CatList, NpcList
+from shipparts import ModuleList, ShipRooms
 
 
 class Ship:
@@ -59,7 +60,7 @@ class Ship:
         eqweapons = model.eqweapons
         rooms = model.rooms
         ftl = model.ftl
-        factionid = Ship.genfaction().id
+        factionid = Ship.genfaction(category).id
         name = Ship.genname(factionid)
         crewsize = Ship.getcrewsize(crew)
         cat = Ship.genshipcat(category)
@@ -69,7 +70,28 @@ class Ship:
         return Ship(size, hulltype, category, hardpoints, signature, crew, hullen, hullval, armorval, modules, manufacturer, shipmodel, 
         eqmodules, availmodules, squads, thrusters, eqweapons, rooms, ftl, factionid, name, crewsize, cat, crewlist, prefix, id)
         
-        
+    @staticmethod
+    def unpackshipsfromload(ships):
+        ShipList.shiplist.clear()
+        for ship in ships:
+            eqmodules = ModuleList()
+            for module in ship["eqmodules"]:
+                ModuleList.addmodule(eqmodules, module["type"], module["lvl"], module["quantity"])
+            cat = ship["cat"]
+            if cat != "None":
+                cat = CatList.findcatfromid(cat)
+            rooms = ShipRooms()
+            for room in ship["rooms"]:
+                ShipRooms.addroom(rooms, room["type"], room["lvl"], room["quantity"], room["size"])
+            crewlist = {}
+            for job, crew in ship["crewdict"].items():
+                crewlist[job] = NpcList.findnpcfromid(crew)
+            ShipList.shiplist.append(Ship(ship["size"], ship["hulltype"], ship["category"], ship["hardpoints"], ship["signature"], ship["crew"], ship["hullen"], 
+            ship["hullval"], ship["armorval"], ship["modules"], ship["manufacturer"], ship["shipmodel"], eqmodules, ship["availmodules"], ship["squads"], 
+            ship["thrusters"], ship["eqweapons"], rooms, ship["ftl"], ship["factionid"], ship["name"], ship["crewsize"], cat, crewlist, ship["prefix"], ship["id"]))
+            if ShipList.masterid <= ship["id"]:
+                ShipList.masterid = ship["id"] + 1
+
     @property
     def id(self):
         return self._id
@@ -81,8 +103,16 @@ class Ship:
         self._id = id
 
 
-    def genfaction():
-            return random.choice(FactionList.factionshiplist)
+    def genfaction(category):
+        if category == "colony":
+            found = False
+            while found == False:
+                faction = random.choice(FactionList.factionshiplist)
+                if faction.colony == True:
+                    found = True
+        else:
+            faction = random.choice(FactionList.factionshiplist)
+        return faction
         
     @staticmethod
     def genname(faction):

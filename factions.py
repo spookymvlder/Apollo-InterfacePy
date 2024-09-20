@@ -26,10 +26,13 @@ class CountryList:
             for row in reader:
                 CountryList.countrylist[row['Abbr']] = []
 
+
+
+# FactionList is kept separate from other saved objects to avoid circular dependencies. It may be more appropriate to move some functions to Faction.
 class FactionList:
     factionlist = []
     factionshiplist = []
-
+    masterid = 0
 
     @staticmethod
     def checkfactionid(id):
@@ -64,7 +67,7 @@ class FactionList:
         return faction.shippre
     
     @staticmethod
-    def addfaction(name, type, abbr, notes, shippre, ordlvl, science, colony, mgmt, ships, scope, nameset, parents):
+    def addfaction(name, type, abbr, notes, shippre, ordlvl, science, colony, mgmt, ships, scope, nameset, parents, id=""):
         parentlist = []
         parentsnew = []
         try:
@@ -85,12 +88,13 @@ class FactionList:
                 for nation in parent.nameset:
                     nameset.append(nation)
             nameset = list(set(nameset))
-        faction = Faction(name, type, abbr, notes, shippre, ordlvl, science, colony, mgmt, ships, scope, nameset, parentlist)
+        if id == "":
+            id = Faction.genfactionid()
+        faction = Faction(name, type, abbr, notes, shippre, ordlvl, science, colony, mgmt, ships, scope, nameset, parentlist, id)
         FactionList.factionlist.append(faction)
         if faction.ships:
             FactionList.factionshiplist.append(faction)
-            
-        return True
+        return faction
 
     @staticmethod
     def removefaction(id):
@@ -110,7 +114,7 @@ class FactionList:
                 FactionList.factionlist.remove(faction)
                 found = True
         if faction.ships == True:
-            FactionList.shiplist.remove(faction)
+            FactionList.factionshiplist.remove(faction)
         return found
 
     @staticmethod
@@ -151,17 +155,33 @@ class FactionList:
                     crew.factionid == 0
                 ship.prefix = "SS"
 
-
+    @staticmethod
+    def editparent(faction, parentlist):
+        for parent in parentlist:
+            faction.parents.append(FactionList.getclassfromid(parent))
+    
+    # Clears entire factionlist and then rebuilds. *SHOULD* be ok since every saved list will also be getting cleared.
+    # Builds all factions and then builds parent relationships in case there are order issues. Faction.parents.setter should handle any potential messes.
+    @staticmethod
+    def unpackfactionsfromload(factions):
+        FactionList.factionlist.clear()
+        FactionList.factionshiplist.clear()
+        for faction in factions:
+            factionc = FactionList.addfaction(faction["name"], faction["ftype"], faction["abbr"], faction["notes"], faction["shippre"], faction["ordlvl"], 
+            faction["science"], faction["colony"], faction["mgmt"], faction["ships"], faction["scope"], faction["nameset"], [], faction["id"])
+            FactionList.editparent(factionc, faction["parentlist"])
+            if faction["id"] >= FactionList.masterid:
+                FactionList.masterid = faction["id"] + 1
 
 class Faction:
     typelist = ['gov', 'corp', 'settlement', 'religion', 'outlaw', 'guild', 'military', 'alliance', 'agency', 'ngo', 'cooperative', 'none']
-    masterid = 0
+    
     ordenancelevel = ['none', 'security', 'black ops', 'military']
     scopelevel = ['local', 'system', 'sector', 'pervasive', 'infiltrating', 'attached']
 
-    def __init__(self, name, type, abbr, notes, shippre, ordlvl, science, colony, mgmt, ships, scope, nameset, parents):
+    def __init__(self, name, type, abbr, notes, shippre, ordlvl, science, colony, mgmt, ships, scope, nameset, parents, id):
         self.name = name
-        self.id = Faction.genfactionid()
+        self.id = id
         self.type = type
         self.nameset = nameset
         self.parents = parents
@@ -220,8 +240,8 @@ class Faction:
 
     @staticmethod
     def genfactionid():
-        id = Faction.masterid
-        Faction.masterid += 1
+        id = FactionList.masterid
+        FactionList.masterid += 1
         return id
 
     @property

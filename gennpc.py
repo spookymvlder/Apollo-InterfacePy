@@ -3,6 +3,8 @@ from helpers import coin
 from namelists import NationNameTable
 from factions import FactionList, CountryList, Faction
 from stats import JobList
+from savedobjects import NpcList
+
 
 strjob = ['Marine', 'Soldier', 'Mercenary', 'Security Guard', 'Bounty Hunter', 'Roughneck', 'Miner', 'Factory Worker', 'Machinist', 'Mechanic', 'Engineer', 'Farmer', 'Technician']
 agljob = ['Pilot', 'Smuggler', 'Wildcatter', 'Prospector', 'Surveyor']
@@ -29,6 +31,15 @@ class Npc:
         self.job = job
         self.stats = stats
         self.id = id
+
+    # TODO find a better spot for this, can't put in saved objects due to circular reference
+    @staticmethod
+    def unpacknpcsfromload(npcs):
+        NpcList.npclist.clear()
+        for npc in npcs:
+            NpcList.npclist.append(Npc(npc["forename"], npc["surname"], npc["type"], npc["sex"], npc["factionid"], npc["job"], npc["stats"], npc["pstat"], npc["nation"], npc["id"]))
+            if npc["id"] >= NpcList.masterid:
+                NpcList.masterid = npc["id"] + 1
 
     @staticmethod
     def genrandomnpc(forename="", surname="", type="", sex="", factionid="", job="", stats="", pstat="", nation=""):

@@ -24,7 +24,7 @@ def hisher(sex, start):
     return pronoun
 
 def convertbool(value):
-    if value == "True" or value == True or value == 1:
+    if value == "True" or value == True or value == 1 or value == "true":
         return True
     return False
     

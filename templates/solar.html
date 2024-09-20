@@ -217,7 +217,7 @@
                             <div class="col-sm-2">
                                 <label class="form-label" for="planetsurvey">Surveyed %</label>
                                 <input type="text" class="form-control" id="planetsurvey" name="planetsurvey" value="{{planet.surveyed|round(2)}}">
-                                <label class="form-label" for="relativeg">Relative Gravity</label>
+                                <label class="form-label" for="relativeg">% of Earth Gravity</label>
                                 <input type="text" class="form-control" id="relativeg" name="relativeg" disabled value="{{planet.relativeg|round(2)}}">
                             </div>
                             <div class="col-sm-2">
@@ -248,15 +248,15 @@
                                 <div class="col">
                                     <label class="form-label" for="moontype">Moon Type</label>
                                     <select class="form-select" id="moontype" name="moontype">
-                                        <option selected value="{{moon.type}}">{{moon.type|title}}</option>
-                                        {% for type in moon.typelist if type != moon.type %}
+                                        <option selected value="{{moon.mtype}}">{{moon.mtype|title}}</option>
+                                        {% for type in moon.typelist if type != moon.mtype %}
                                         <option value="{{type}}">{{type|title}}</option>
                                         {% endfor %}
                                     </select>
                                     <label class="form-label" for="moonatmo">Atmosphere</label>
                                     <select class="form-select" id="moonatmo" name="moonatmo">
-                                        <option selected value="{{moon.atmosphere}}">{{moon.atmosphere|title}}</option>
-                                        {% for type in planet.atmolist if type != moon.atmosphere %}
+                                        <option selected value="{{moon.atmo}}">{{moon.atmo|title}}</option>
+                                        {% for type in planet.atmolist if type != moon.atmo %}
                                         <option value="{{type}}">{{type|title}}</option>
                                         {% endfor %}
                                     </select>

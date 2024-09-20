@@ -2,6 +2,7 @@ import random, string
 from helpers import coin, isbool
 from factions import FactionList, initializeall
 from genmoon import Moon
+from planethelpers import PlanetBuilders
 
 
 # Trying something different in formatting for refactor of genplanet.
@@ -51,8 +52,8 @@ class Planet:
         basetemp = Planet.calcbasetemp(distance, lum)
         terrestrial = Planet.genplanetcategory()
         ptype = Planet.genplanettype(terrestrial, gzone)
-        lwater = Planet.genlwater(ptype, gzone)
-        atmo = Planet.genatmo(lwater, ptype)
+        lwater = PlanetBuilders.genlwater(ptype, gzone)
+        atmo = PlanetBuilders.genatmo(lwater, ptype)
         mass = Planet.genmass(ptype) # Returns Earth Mass
         radius = Planet.genradius(mass) # Returns Earth Radius
         rings = Planet.genrings()
@@ -61,12 +62,12 @@ class Planet:
         gravity = Planet.gengravity(radius, mass)
         relativeg = Planet.genrelativeg(radius, mass)
         notes = ""
-        life = Planet.genlife(lwater, gzone, atmo, ptype)
-        populated = Planet.genpopulated(atmo)
+        life = PlanetBuilders.genlife(lwater, gzone, atmo, ptype)
+        populated = PlanetBuilders.genpopulated(atmo)
         pname = Planet.genpname() # TODO update with populated when we have name lists for that.
-        factions = Planet.gensettlementfaction(populated)
-        surveyed = Planet.gensurveyed(factions)
-        pressure = Planet.genpressure(atmo, ptype)
+        factions = PlanetBuilders.gensettlementfaction(populated)
+        surveyed = PlanetBuilders.gensurveyed(factions)
+        pressure = PlanetBuilders.genpressure(atmo, ptype)
         settlements = [] # Empty list for now, may generate later to pass in
         moons = Planet.genmoons(pname, mooncount, distance, gzone)
         return Planet(distance, gzone, basetemp, terrestrial, ptype, lwater, atmo, mass, radius, rings, mooncandidate, mooncount, gravity, relativeg, notes, life, populated, pname, factions, surveyed, pressure, settlements, moons, id)
@@ -257,21 +258,7 @@ class Planet:
             raise ValueError(f"Invalid liquid water value {lwater}, must be bool.")
         self._lwater = lwater
 
-    # Planets outside the gzone wouldn't have liquid water unless some weird chemical mixing was happening. 
-    # Percentages found below have no basis in reality, but should keep things interesting.
-    @staticmethod
-    def genlwater(ptype, gzone):
-        if gzone != "right":
-            return False
-        if ptype in ["hycean", "ocean"]:
-            return True
-        elif ptype in ["terrestrial", "silicate"]:
-            if random.uniform(1, 100) > 60:
-                return True
-        elif ptype == "desert":
-            if random.uniform(1, 100) > 95:
-                return True
-        return False
+
 
     @property
     def atmo(self):
@@ -283,18 +270,7 @@ class Planet:
             raise ValueError(f"Invalid planet atmostphere {atmo}.")
         self._atmo = atmo
 
-    # Any planet with liquid water would need an atmosphere
-    # TODO replace with atmosphere composition and separate breathable air from atmosphere type
-    @staticmethod
-    def genatmo(lwater, ptype):
-        if ptype in ["chthonian"]:
-            return "none"
-        if lwater == True:
-            return random.choice(["breathable", "thin", "toxic", "dense", "corrosive", "infiltrating"])
-        if ptype in ["gas dwarf", "gas giant"]:
-            return "dense"
-        else:
-            return random.choice(["thin", "toxic", "dense", "corrosive", "infiltrating", "none"])
+
 
     @property
     def mass(self):
@@ -418,7 +394,7 @@ class Planet:
         radius = radius * (6.378 * 10**6) # Convert Earth Radius unit to M
         g = 6.67 * 10**-11
         grav = g * mass/(radius**2)
-        return grav
+        return round(grav, 2)
     
     @property
     def relativeg(self):
@@ -432,9 +408,7 @@ class Planet:
 
     @staticmethod
     def genrelativeg(radius, mass):
-        mass = mass * (5.9722 * 10**24) # Convert Earth Mass unit to KG
-        radius = radius * (6.378 * 10**6) # Convert Earth Radius unit to M
-        return mass/(radius**2)
+        return round(mass/(radius**2), 2)
     
     @property
     def notes(self):
@@ -456,20 +430,7 @@ class Planet:
             raise ValueError(f"Invalid planet life value {life}, must be bool.")
         self._life = life
 
-    # Anything with liquid water would probably have something even just a microbe. 
-    # Anything in gzone could have something weird, outside of gzone something underground is possible, but currently out of scope.
-    @staticmethod
-    def genlife(lwater, gzone, atmo, ptype):
-        life = False
-        if lwater == True and atmo in ["breathable", "thin"]:
-            life = True
-        elif lwater:
-            if random.randint(0, 100) > 60:
-                life = True
-        elif gzone == "right" and ptype in ["desert", "iron", "lava", "silicate", "terrestrial"] and atmo != "none":
-            if random.randint(0, 100) > 95:
-                life = True
-        return life
+
 
     @property
     def populated(self):
@@ -481,14 +442,7 @@ class Planet:
             raise ValueError(f"Invalid planet populated value {populated}, must be bool.")
         self._populated = populated
 
-    # Actual percent would be much lower, but that's less interesting. Will tweak later.
-    # TODO actually tweak later
-    @staticmethod
-    def genpopulated(atmo):
-        if atmo not in ["infiltrating", "dense", "corrosive"]:
-            if random.randint(0, 100) > 90:
-                return True
-        return False
+
 
     @property
     def pname(self):
@@ -533,19 +487,7 @@ class Planet:
                     raise ValueError(f"Invalid planetary faction {faction}.")
         self._factions = factions
 
-    @staticmethod
-    def gensettlementfaction(populated):
-        if not populated:
-            return []
-        limit = 1 + coin()
-        factions = []
-        count = 0
-        while count < limit:
-            faction = random.choice(FactionList.factionlist)
-            if faction not in factions:
-                factions.append(faction)
-                count += 1
-        return factions
+
 
     @property
     def surveyed(self):
@@ -557,18 +499,7 @@ class Planet:
             raise ValueError(f"Invalid planet surveyed value {surveyed}.")
         self._surveyed = surveyed
 
-    # Returns percent of planet that has been surveyed.
-    @staticmethod
-    def gensurveyed(factions):
-        surveyed = 0
-        if factions != []:
-            for faction in factions:
-                surveyed += random.uniform(20, 80)
-            while surveyed > 100:
-                surveyed -= random.uniform(10, 23)
-        elif random.randint(0, 100) > 83:
-            surveyed = random.randint(0, 100)
-        return surveyed
+
 
     @staticmethod
     def genmoons(pname, mooncount, distance, gzone):
@@ -580,7 +511,7 @@ class Planet:
     # Extra step to break this out so it can be shared by edit planet.
     @staticmethod
     def gennewmoon(pname, distance, gzone, number):
-        return Moon(pname, distance, gzone, number)
+        return Moon.genrandommoon(pname, distance, gzone, number)
 
     @property
     def pressure(self):
@@ -592,13 +523,7 @@ class Planet:
             raise ValueError(f"Invalid planet pressure {pressure}.")
         self._pressure = pressure
     
-    @staticmethod
-    def genpressure(atmo, ptype):
-        if ptype in ["gas giant", "gas dwarf", "ice giant", "puff", "super-puff", "helium"]:
-            pressure = "high"
-        else:
-            pressure = "regular"
-        return pressure
+
 
     @staticmethod
     def assemblesymbols(ptype, gzone, rings, lwater, life, mooncount):
@@ -765,6 +690,7 @@ class Planet:
             for moon in self.moons:
                 description += f"{moon} \n"
         return description
+
 
 #initializeall()
 #factions = Planet.gensettlementfaction(True)

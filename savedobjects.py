@@ -1,3 +1,5 @@
+
+
 class ShipList:
     shiplist = []
     masterid = 1
@@ -39,6 +41,7 @@ class ShipList:
         raise ValueError(f"Invalid shipid {shipid}.")
 
 
+
 class NpcList:
     npclist = []
     masterid = 1
@@ -67,6 +70,7 @@ class NpcList:
             if npcid == npc.id:
                 return npc
         raise ValueError(f"Invalid npcid {npcid}.")
+
 
 class StarList:
     starlist = []
@@ -129,3 +133,11 @@ class CatList:
             CatList.catlist.append(cat)
             cat.id = CatList.masterid
             CatList.masterid += 1
+
+    @staticmethod
+    def findcatfromid(catid):
+        if catid != 0:
+            for cat in CatList.catlist:
+                if cat.id == catid:
+                    return cat
+        raise ValueError(f"Unable to find a cat for id {catid}.")

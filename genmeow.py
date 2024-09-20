@@ -2,6 +2,7 @@ import random
 from helpers import coin, hisher, heshe
 from gennpc import Npc
 from namelists import CatNames
+from savedobjects import CatList
 #https://www.reddit.com/media?url=https%3A%2F%2Fi.redd.it%2Fjk1hor2f5hf11.jpg
 
 
@@ -86,7 +87,15 @@ class Cat:
             name = Cat.genname(sex)
         id = 0
         return Cat(mutation, color1, color2, eye1, eye2, tort, tabby, colorpoint, whitespot, tipped, whitespotpatt, sex, name, id)
-            
+
+    @staticmethod
+    def unpackcatsfromload(cats):
+        CatList.catlist.clear()
+        for cat in cats:
+            CatList.catlist.append(Cat(cat["mutation"], cat["color1"], cat["color2"], cat["eye1"], cat["eye2"], cat["tort"], cat["tabby"], cat["colorpoint"], cat["whitespot"], cat["tipped"], cat["whitespotpatt"], cat["sex"], cat["name"], cat["id"]))
+            if CatList.masterid <= cat["id"]:
+                CatList.masterid = cat["id"] + 1
+                
     def __str__(self):
             description = f"{self.name} is a very good kitty. {heshe(self.sex, 1)} is "
             if self.mutation == "albino":

@@ -1,7 +1,10 @@
 import random
 from genplanet import Planet
+from genmoon import Moon
 from helpers import skewvalue
 from math import sqrt
+from factions import FactionList
+from savedobjects import StarList
 
 
 
@@ -11,24 +14,50 @@ class Star:
     classlist = ["O", "B", "A", "F", "G", "K", "M"]
     sizelist = ["hypergiant", "supergiant", "bright giant", "giant", "subgiant", "dwarf", "subdwarf", "white dwarf"]
 
-    def __init__(self, name=False, type=False, color=False):
-        self.name = Star.genname()
-        self.starclass = Star.genstarclass()
-        self.spectype = Star.genspectraltype(self.starclass)
-        self.color = Star.genstarcolor(self.starclass, self.spectype)
-        self.mass = Star.genstarmass(self.starclass, self.spectype)
-        self.radius = Star.genstarradius(self.starclass, self.spectype)
-        self.lum = Star.genstarlum(self.starclass, self.spectype)
-        self.startemp = Star.genstartemp(self.starclass, self.spectype)
-        self.notes = ""
-        self.pcount = Star.genplanetcount()
-        self.inzone = Star.geninzone(self.lum)
-        self.outzone = Star.genoutzone(self.lum)
-        self.solarobjects = []
-        self.id = 0
-        self.spacing = Star.genspacing(self.pcount)
-        self.solarobjects = Star.genplanet(self, self.pcount, self.spacing, self.inzone, self.outzone, self.startemp, self.mass, self.lum, self.solarobjects)
+    def __init__(self, name, starclass, spectype, color, mass, radius, lum, startemp, notes, pcount, inzone, outzone, id, spacing, solarobjects):
+        self.name = name
+        self.starclass = starclass
+        self.spectype = spectype
+        self.color = color
+        self.mass = mass
+        self.radius = radius
+        self.lum = lum
+        self.startemp = startemp
+        self.notes = notes
+        self.pcount = pcount
+        self.inzone = inzone
+        self.outzone = outzone
+        self.solarobjects = solarobjects
+        self.id = id
+        self.spacing = spacing
         
+        
+    @staticmethod
+    def genrandomstar(name="", starclass="", spectype="", mass="", radius="", lum="", startemp="", notes="", pcount="", id=0, solarobjects=[]):
+        if name =="":
+            name = Star.genname()
+        if starclass == "":
+            starclass = Star.genstarclass()
+        if spectype == "":
+            spectype = Star.genspectraltype(starclass)
+        color = Star.genstarcolor(starclass, spectype)
+        if mass == "":
+            mass = Star.genstarmass(starclass, spectype)
+        if radius == "":
+            radius = Star.genstarradius(starclass, spectype)
+        if lum == "":
+            lum = Star.genstarlum(starclass, spectype)
+        if startemp == "":
+            startemp = Star.genstartemp(starclass, spectype)
+        if pcount == "":
+            pcount = Star.genplanetcount()
+        inzone = Star.geninzone(lum)
+        outzone = Star.genoutzone(lum)
+        id = id
+        spacing = Star.genspacing(pcount)
+        solarobjects = Star.genplanet(pcount, spacing, inzone, outzone, startemp, mass, lum, solarobjects)
+        return Star(name, starclass, spectype, color, mass, radius, lum, startemp, notes, pcount, inzone, outzone, id, spacing, solarobjects)
+     
     def editstar(self, name, pcount, starclass, spectype, notes):
         self.name = name
         if not Star.validatestaredit(starclass, spectype):
@@ -57,8 +86,29 @@ class Star:
                 for i in reversed(range(self.pcount, self.pcount + diff, -1)):
                     del self.solarobjects[i]
 
-    
-
+    @staticmethod
+    def unpackstarfromload(stars):
+        StarList.starlist.clear()
+        for star in stars:
+            planets = []
+            for planet in star["solarobjects"]:
+                moons = []
+                for moon in planet["moons"]:
+                    factions = []
+                    for faction in moon["factions"]:
+                        factions.append(FactionList.getclassfromid(faction))
+                    moons.append(Moon(moon["pname"], moon["gzone"], moon["id"], moon["name"], moon["mtype"], moon["lwater"], moon["atmo"], moon["life"], moon["populated"], 
+                    factions, moon["systemobjects"], moon["surveyed"], moon["pressure"]))
+                factions = []
+                for faction in planet["factions"]:
+                    factions.append(FactionList.getclassfromid(faction))
+                planets.append(Planet(planet["distance"], planet["gzone"], planet["basetemp"], planet["terrestrial"], planet["ptype"], planet["lwater"], planet["atmo"], planet["mass"], 
+                planet["radius"], planet["rings"], planet["mooncandidate"], planet["mooncount"], planet["gravity"], planet["relativeg"], planet["notes"], planet["life"], planet["populated"],
+                planet["pname"], factions, planet["surveyed"], planet["pressure"], planet["settlements"], moons, planet["id"]))
+            StarList.starlist.append(Star(star["name"], star["starclass"], star["spectype"], star["color"], star["mass"], star["radius"], star["lum"], star["startemp"], star["notes"], 
+            star["pcount"], star["inzone"], star["outzone"], star["id"], star["spacing"], planets))
+            if StarList.masterid <= star["id"]:
+                StarList.masterid = star["id"] + 1
     @property
     def name(self):
         return self._name
@@ -440,7 +490,7 @@ class Star:
                         mass = 0.085
                     case 9:
                         mass = 0.079
-        return skewvalue(mass)
+        return round(skewvalue(mass), 5)
 
     @property
     def starradius(self):
@@ -605,7 +655,7 @@ class Star:
                         radius = 0.114
                     case 9:
                         radius = 0.102
-        return skewvalue(radius)
+        return round(skewvalue(radius), 5)
 
     @property
     def starlum(self):
@@ -770,7 +820,7 @@ class Star:
                         lum = 0.00052
                     case 9:
                         lum = 0.0003
-        return skewvalue(lum)
+        return round(skewvalue(lum), 5)
 
     @property
     def startemp(self):
@@ -935,7 +985,7 @@ class Star:
                         startemp = 2570
                     case 9:
                         startemp = 2380
-        return skewvalue(startemp)
+        return round(skewvalue(startemp), 5)
 
     @property
     def pcount(self):
@@ -996,7 +1046,7 @@ class Star:
     # https://www.planetarybiology.com/calculating_habitable_zone.html
     @staticmethod
     def geninzone(lum):
-        return sqrt(lum / 1.1)
+        return round(sqrt(lum / 1.1), 4)
     
     @property
     def outzone(self):
@@ -1011,7 +1061,7 @@ class Star:
     # https://www.planetarybiology.com/calculating_habitable_zone.html
     @staticmethod
     def genoutzone(lum):
-        return sqrt(lum / 0.53)
+        return round(sqrt(lum / 0.53), 4)
 
     @property
     def spacing(self):
@@ -1031,10 +1081,11 @@ class Star:
             spacing = 40 / pcount
         else:
             spacing = 40
-        return spacing
+        return round(spacing, 4)
     
     # Generates a new planet based on characteristics of the sun.
-    def genplanet(self, pcount, spacing, inzone, outzone, startemp, starmass, lum, solarobjects=[]):
+    @staticmethod
+    def genplanet(pcount, spacing, inzone, outzone, startemp, starmass, lum, solarobjects=[]):
         for i in range(pcount):
             if i == 0:
                 min = 0.0013

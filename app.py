@@ -18,7 +18,8 @@ from helpers import convertbool
 
 
 
-from flask import Flask, flash, redirect, render_template, request, session, send_file, jsonify
+
+from flask import Flask, flash, redirect, render_template, request, session, send_file, jsonify, url_for
 from flask_session import Session
 
 app = Flask(__name__)
@@ -108,7 +109,7 @@ def cats():
 
 @app.route("/solar")
 def solar():
-    sun = Star()
+    sun = Star.genrandomstar()
     StarList.tempstar = sun
     return render_template("solar.html", sun=sun, factionlist=FactionList.factionlist)
 
@@ -309,10 +310,10 @@ def editfaction():
     notes = request.form.get("notes")
     shippre = request.form.get("shippre")
     ordlvl = request.form.get("ordlevel")
-    science = request.form.get("science")
-    colony = request.form.get("colony")
-    mgmt = request.form.get("mgmt")
-    ships = request.form.get("ships")
+    science = convertbool(request.form.get("science"))
+    colony = convertbool(request.form.get("colony"))
+    mgmt = convertbool(request.form.get("mgmt"))
+    ships = convertbool(request.form.get("ships"))
     scope = request.form.get("scope")
     FactionList.editfaction(editid, name, type, abbr, notes, shippre, ordlvl, science, colony, mgmt, ships, scope, nameset, parentlist)
     return redirect("/factions")
@@ -322,13 +323,28 @@ def editfaction():
 @app.route("/addfaction", methods=["POST"])
 def addfaction():
     name = request.form.get("factionname")
-    parent = request.form.getlist("parentorg")
-    if parent == "-":
-        parent = ""
-    factiontype = request.form.get("factiontype")
+    type = request.form.get("factiontype")
     abbr = request.form.get("abbr")
-    nations = request.form.getlist("getnation")
-    FactionList.addfaction(name, factiontype, nations, parent, abbr)
+    parent1 = FactionList.getclassfromid(request.form.get("factionparent1"))
+    parent2 = FactionList.getclassfromid(request.form.get("factionparent2"))
+    parent3 = FactionList.getclassfromid(request.form.get("factionparent3"))
+    parentlist = []
+    if parent1 != False:
+        parentlist.append(parent1)
+    if parent2 != False:
+        parentlist.append(parent2)
+    if parent3 != False:
+        parentlist.append(parent3)
+    nameset = request.form.getlist("getnation")
+    notes = request.form.get("notes")
+    shippre = request.form.get("shippre")
+    ordlvl = request.form.get("ordlevel")
+    science = convertbool(request.form.get("science"))
+    colony = convertbool(request.form.get("colony"))
+    mgmt = convertbool(request.form.get("mgmt"))
+    ships = convertbool(request.form.get("ships"))
+    scope = request.form.get("scope")
+    FactionList.addfaction(name, type, abbr, notes, shippre, ordlvl, science, colony, mgmt, ships, scope, nameset, parentlist)
     return redirect("/factions")
 
 @app.route("/settings")
@@ -449,11 +465,86 @@ def export():
             roomlist.append(roomdict)
         dict["rooms"] = roomlist
         ships.append(dict)
+    stars = []
+    for star in StarList.starlist:
+        dict = {
+            "name" : star.name,
+            "starclass" : star.starclass,
+            "spectype" : star.spectype,
+            "color" : star.color,
+            "mass" : star.mass,
+            "radius" : star.radius,
+            "lum" : star.lum,
+            "startemp" : star.startemp,
+            "notes" : star.notes,
+            "pcount" : star.pcount,
+            "inzone" : star.inzone,
+            "outzone" : star.outzone,
+            "id" : star.id,
+            "spacing" : star.spacing
+            #solarobjects
+        }
+        planets = []
+        for planet in star.solarobjects:
+            planetdict = {
+            "distance" : planet.distance,
+            "gzone" : planet.gzone,
+            "basetemp" : planet.basetemp,
+            "terrestrial" : planet.terrestrial,
+            "ptype" : planet.ptype,
+            "lwater" : planet.lwater,
+            "atmo" : planet.atmo,
+            "mass" : planet.mass,
+            "radius" : planet.radius,
+            "rings" : planet.rings,
+            "mooncandidate" : planet.mooncandidate,
+            "mooncount" : planet.mooncount,
+            "gravity" : planet.gravity,
+            "relativeg" : planet.relativeg,
+            "notes" : planet.notes,
+            "life" : planet.life,
+            "populated" : planet.populated,
+            "pname" : planet.pname,
+            "surveyed" : planet.surveyed,
+            "pressure" : planet.pressure,
+            "settlements" : planet.settlements,
+            "id" : planet.id
+            }
+            pfactions = []
+            for faction in planet.factions:
+                pfactions.append(faction.id)
+            planetdict["factions"] = pfactions
+            moonlist = []
+            for moon in planet.moons:
+                moondict = {
+                    "pname" : moon.pname,
+                    "gzone" : moon.gzone,
+                    "id" : moon.id,
+                    "name" : moon.name,
+                    "mtype" : moon.mtype,
+                    "lwater" : moon.lwater,
+                    "atmo" : moon.atmo,
+                    "life" : moon.life,
+                    "populated" : moon.populated,
+                    "systemobjects" : moon.systemobjects,
+                    "surveyed" : moon.surveyed,
+                    "pressure" : moon.pressure
+                }
+                mfactions = []
+                for faction in moon.factions:
+                    mfactions.append(faction.id)
+                moondict["factions"] = mfactions
+                moonlist.append(moondict)
+            planetdict["moons"] = moonlist
+            planets.append(planetdict)
+        dict["solarobjects"] = planets
+        stars.append(dict)
     exportlist = {
         "factions": factions,
         "npcs" : npcs,
         "cats" : cats,
-        "ships" : ships
+        "ships" : ships,
+        "stars" : stars
     }
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     json_file_name = f"saveapollodata_{timestamp}.json"
@@ -484,10 +575,25 @@ def import_file():
         
         with open(file_path, 'r') as f:
             data = json.load(f)
-        
-        return jsonify({"message": "File imported successfully", "data": data}), 200
-    
+        #session["data"] = data
+        #return jsonify({"message": "File imported successfully", "data": data}), 200
+        loadjson(data)
+        return redirect("/saved")
     return jsonify({"error": "Invalid file format"}), 400
+
+
+def loadjson(data):
+    factions = data.get("factions")
+    npcs = data.get("npcs")
+    cats = data.get("cats")
+    ships = data.get("ships")
+    stars = data.get("stars")
+    FactionList.unpackfactionsfromload(factions)
+    Npc.unpacknpcsfromload(npcs)
+    Cat.unpackcatsfromload(cats)
+    Ship.unpackshipsfromload(ships)
+    Star.unpackstarfromload(stars)
+
 #FactionList.editfaction(1, "United Americas", "gov", "UA", "", "USCSS", "security", True, True, True, True, "pervasive", [], [FactionList.getclassfromid(4)])
 #hulltype = HullType()
 #ship = Ship(HullModel(HullTemplate(hulltype.size, hulltype.type, hulltype.category, hulltype.ordenance, hulltype.armor, hulltype.troops, hulltype.priority)))

@@ -1,23 +1,49 @@
 import random
 from factions import FactionList
 from helpers import coin
+from planethelpers import PlanetBuilders
 
 class Moon:
     typelist = ["ocean", "terrestrial", "silicate", "hyceanth", "desert", "carbon", "coreless", "gas dwarf", "helium", "ice", "iron", "lava", "protoplanet"]
     
-    def __init__(self, pname, sundistance, gzone, id):
-        self.name = Moon.moonname(self, pname, id)
-        self.factions = []
-        self.systemobjects = []
+    # TODO update pname when planet name changes
+    def __init__(self, pname, gzone, id, name, mtype, lwater, atmo, life, populated, factions, systemobjects, surveyed, pressure):
         self.pname = pname
+        self.gzone = gzone
         self.id = id
-        Moon.habitable(self, sundistance, gzone)
+        self.name = name
+        self.mtype = mtype
+        self.lwater = lwater
+        self.atmo = atmo
+        self.life = life
+        self.populated = populated
+        self.factions = factions
+        self.systemobjects = systemobjects
+        self.surveyed = surveyed
+        self.pressure = pressure
+        
+        
+    def genrandommoon(pname, sundistance, gzone, id):
+        pname = pname
+        gzone = gzone
+        id = id
+        name = Moon.genmoonname(pname, id)
+        mtype = Moon.genrandomtype(gzone)
+        lwater = PlanetBuilders.genlwater(mtype, gzone)
+        atmo = PlanetBuilders.genatmo(lwater, mtype)
+        life = PlanetBuilders.genlife(lwater, gzone, atmo, mtype)
+        populated = PlanetBuilders.genpopulated(atmo)
+        factions = PlanetBuilders.gensettlementfaction(populated)
+        systemobjects = []
+        surveyed = PlanetBuilders.gensurveyed(factions)
+        pressure = PlanetBuilders.genpressure(atmo, mtype)
+        return Moon(pname, gzone, id, name, mtype, lwater, atmo, life, populated, factions, systemobjects, surveyed, pressure)
 
     def editmoon(self, name, lwater, life, mtype, atmo, factions, notes):
         self.name = name
         self.lwater = lwater
         self.life = life
-        self.type = mtype
+        self.mtype = mtype
         self.atmosphere = atmo
         self.factions = factions
         self.notes = notes
@@ -30,14 +56,33 @@ class Moon:
     def name(self, name):
         self._name = name
 
-    @property
-    def type(self):
-        return self._type
+    # ID starts at 0, so to turn that in to a character need to bump the value up by 1.
+    @staticmethod
+    def genmoonname(pname, id):
+        if id > 26:
+            return ValueError("Too many moons.")
+        suffix = chr(ord('`') + (id + 1))
+        name = pname + suffix
+        return name
 
-    @type.setter
-    def type(self, type):
-        self._type = type
-    
+    @property
+    def mtype(self):
+        return self._mtype
+
+    @mtype.setter
+    def mtype(self, mtype):
+        self._mtype = mtype
+
+    @staticmethod
+    def genrandomtype(gzone):
+        if gzone == "right":
+            typelist = ["carbon", "desert", "hycean", "iron", "ocean", "protoplanet", "silicate", "terrestrial", "gas dwarf", "helium"]
+        elif gzone == "hot":
+            typelist = ["carbon", "desert", "iron", "lava", "protoplanet", "silicate", "terrestrial", "gas dwarf", "helium"]
+        else:
+            typelist = ["carbon", "coreless", "desert", "iron", "protoplanet", "silicate", "terrestrial", "gas dwarf", "helium", "ice"]
+        return random.choice(typelist)
+
     @property
     def lwater(self):
         return self._lwater
@@ -45,7 +90,7 @@ class Moon:
     @lwater.setter
     def lwater(self, lwater):
         self._lwater = lwater
-    
+
     @property
     def life(self):
         return self._life
@@ -86,63 +131,8 @@ class Moon:
     def factions(self, factions):
         self._factions = factions
         
-    # ID starts at 0, so to turn that in to a character need to bump the value up by 1.
-    def moonname(self, pname, id):
-        if id > 26:
-            return ValueError("Too many moons.")
-        suffix = chr(ord('`') + (id + 1))
-        name = pname + suffix
-        return name
-    
-    def habitable(self, sundistance, gzone):
-        lwater = False
-        type = ""
-        life = False
-        if gzone == "right":
-            temperature = "medium"
-            r = random.randint(1,100)
-            if r > 80:
-                lwater = True
-            if lwater:
-                tlist = ["ocean", "terrestrial", "silicate", "hyceanth", "desert"]
-                type = random.choice(tlist)
-                tlist = ["thin", "breathable", "toxic", "dense", "none", "corrosive", "infiltrating"]
-                atmosphere = random.choice(tlist)
-                flip = coin()
-                if flip == 1:
-                    life = True
-        if not bool(type):
-            tlist = ["carbon", "coreless", "gas dwarf", "helium", "ice", "iron", "lava", "protoplanet", "silicate", "terrestrial"]
-            type = random.choice(tlist)
-            tlist = ["thin", "toxic", "dense", "none", "corrosive", "infiltrating"]
-            atmosphere = random.choice(tlist)
-        if gzone == "hot":
-            temperature = "hot"
-        elif gzone == "cold":
-            temperature = "cold"
-        self.temperature = temperature
-        self.atmosphere = atmosphere
-        self.lwater = lwater
-        self.type = type
-        self.life = life
-        if self.atmosphere != "dense" or self.atmosphere != "infiltrating":
-            r = random.randint(1,100)
-            if r > 90:
-                self.populated = True
-            else:
-                self.populated = False
-        if self.populated:
-            faction1 = random.choice(FactionList.factionlist)
-            flip = coin()
-            if flip == 1:
-                faction2 = faction1
-                while faction2 == faction1:
-                    faction2 = random.choice(FactionList.factionlist)
-                self.factions.append(faction1.name)
-                self.factions.append(faction2.name)
-            else:
-                self.factions.append(faction1.name)
+
 
     def __str__(self):
-        return f"Name: {self.name} \nType: {self.type} \nTemp: {self.temperature} \nLife: {self.life} \nFactions: {self.factions} \nAtmosphere: {self.atmosphere}"
+        return f"Name: {self.name} \nType: {self.mtype} \nLife: {self.life} \nFactions: {self.factions} \nAtmosphere: {self.atmo}"
     
