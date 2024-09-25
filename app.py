@@ -1,5 +1,6 @@
-import sys, random, os, json
+import sys, random, os, json, io
 from datetime import datetime
+
 
 
 from factions import Faction, FactionList, initializeall
@@ -19,7 +20,7 @@ from helpers import convertbool
 
 
 
-from flask import Flask, flash, redirect, render_template, request, session, send_file, jsonify, url_for
+from flask import Flask, flash, redirect, render_template, request, session, send_file, jsonify
 from flask_session import Session
 
 app = Flask(__name__)
@@ -41,42 +42,31 @@ Session(app)
 
 
 
-#Break out posts so a banner appears if invalid combination attempted to be saved. Or warning that invalid combinations will be automatically resolved
+# TODO Break out posts so a banner appears if invalid combination attempted to be saved. Or warning that invalid combinations will be automatically resolved.
+# Generates a random npc to be displayed in the form. Also takes input for creating a new random npc based on desired traits.
+# TODO make job list a list.
 @app.route("/", methods=["GET", "POST"])
 def index():
-    sexes = ["M", "F"]
-    types = ["HUMAN", "SYNTH"]
-    #factionnames = []
-    #for faction in FactionList.factionlist:
-    #    factionnames.append(faction.name)
     if request.method == "GET":
         npc = Npc.genrandomnpc()
+
     if request.method =="POST":
         sex = request.form.get("sex")
         postfaction = request.form.get("faction")
+        if postfaction != "":
+            postfaction = int(postfaction)
         pstat = request.form.get("pstat")
         type = request.form.get("type")
         nation = request.form.get("namelist")
-        postfaction = Faction.nametoid(postfaction)
-        '''if postfaction not in factionnames:
-            postfaction = ""'''
-        '''if pstat not in statlist:
-            pstat = ""
-        else:'''
         for x in range(len(Npc.statlist)):
             if pstat == Npc.statlist[x]:
                 pstat = x
                 break
-        '''if type not in types:
-            type = ""
-        if nation not in nationlist:
-            nation = ""'''
-        npc = Npc(sex=sex, factionid=postfaction, pstat=pstat, type=type, nation=nation)
-    npcfactionname = Faction.idtoname(npc.factionid)
-    pstat = Npc.statlist[npc.pstat]
-    return render_template("index.html", namelist=NationNameTable.nationlist, sexes=sexes, factions=FactionList.factionlist, types=types, statlist=Npc.statlist, npc=npc, npcfaction=npcfactionname, pstat=pstat)
-            
+        npc = Npc.genrandomnpc(sex=sex, factionid=postfaction, pstat=pstat, type=type, nation=nation)
 
+    return render_template("index.html", namelist=NationNameTable.nationlist, sexes=Npc.sexlist, factions=FactionList.factionlist, types=Npc.typelist, statlist=Npc.statlist, npc=npc)
+            
+# Saves user form data as a new NPC.
 @app.route("/validatenpc", methods=["POST"])
 def validatenpc():
         sex = request.form.get("gensex")
@@ -86,9 +76,7 @@ def validatenpc():
                 pstat = x
                 break
         type = request.form.get("gentype")
-        #nation = request.form.get("namelist")
-        postfaction = request.form.get("genfaction")
-        postfaction = Faction.nametoid(postfaction)
+        postfaction = int(request.form.get("genfaction"))
         forename = request.form.get("genforename")
         surname = request.form.get("gensurname")
         job = request.form.get("genjob")
@@ -97,16 +85,20 @@ def validatenpc():
         NpcList.savenpc(Npc.genrandomnpc(forename, surname, type, sex, postfaction, job, stats, pstat))
         return redirect("/saved")
 
+# Displays class strings for each saved object.
+# TODO allow objects to be edited.
 @app.route("/saved", methods=["GET", "POST"])
 def saved():
 
     return render_template("npcs.html", npcstrings=NpcList.npclist, starstrings=StarList.starlist, shipstrings=ShipList.shiplist)
 
+# Generates a random cat. Currently not saved as there's no functionality to manually attach a cat to a ship/location.
 @app.route("/cats")
 def cats():
     cat = Cat.genrandcat()
     return render_template("cats.html", cat=cat)
 
+# Generates a new star. Each star generates relevant planet and moon data. Saves star to temp star as some data isn't shown to user, but needed for editing.
 @app.route("/solar")
 def solar():
     sun = Star.genrandomstar()
@@ -115,7 +107,7 @@ def solar():
 
 @app.route("/editstar", methods=["POST"])
 def editstar():
-    sun = int(request.form["savestar"])
+    sun = int(request.form["savestar"]) # Star id
     if sun == 0:
         sun = StarList.tempstar
     else:
@@ -129,6 +121,7 @@ def editstar():
     StarList.savestar(sun)
     return render_template("solar.html", sun=sun, factionlist=FactionList.factionlist)
 
+# Functionality for the delete button, should only appear for a star that has already been saved.
 @app.route("/delstar", methods=["POST"])
 def delstar():
     sun = int(request.form["delstar"])
@@ -148,7 +141,7 @@ def editplanet():
         sun = StarList.findstarfromid(sun)
     id = int(request.form['saveplanet'])
     planet=""
-    for obj in sun.solarobjects:
+    for obj in sun.solarobjects: # Find planet id from star
         if obj.id == id:
             planet = obj
             break
@@ -160,14 +153,10 @@ def editplanet():
     radius = float(request.form.get('planetradius'))
     basetemp = float(request.form.get('planettemp'))
     pressure = request.form.get('planetpressure')
-    mooncount = int(request.form.get('mooncount'))
-    factions = []
-    faction1 = FactionList.getclassfromid(request.form.get("faction1"))
-    faction2 = FactionList.getclassfromid(request.form.get("faction2"))
-    if faction1 != False:
-        factions.append(faction1)
-    if faction2 != False:
-        factions.append(faction2)
+    mooncount = int(request.form.get('mooncount') or 0)
+    faction1 = request.form.get("faction1")
+    faction2 = request.form.get("faction2")
+    factions = Faction.factionstolist(faction1, faction2)
     lwater = convertbool(request.form.get('lwater'))
     rings = convertbool(request.form.get('rings'))
     life = convertbool(request.form.get('life'))
@@ -176,6 +165,7 @@ def editplanet():
     Planet.editplanet(planet, pname, distance, ptype, atmo, mass, radius, basetemp, pressure, mooncount, factions, lwater, rings, life, notes, surveyed, sun)
     return render_template("solar.html", sun=sun, factionlist=FactionList.factionlist)
 
+# Replaces one of a star's saved planets with a new planet in the same relative position. Planet will have a new distance from star, but will still be in a similar range band.
 @app.route("/randplanet", methods=["POST"])
 def randplanet():
     sun = int(request.form.get("sunid"))
@@ -187,6 +177,8 @@ def randplanet():
     sun.solarobjects[id] = Planet.genplanetfromstar(sun.inzone, sun.outzone, Planet.randomdistance(sun, id), sun.startemp, sun.mass, sun.lum, Planet.randomdistancelimit(sun, id), id)
     return render_template("solar.html", sun=sun, factionlist=FactionList.factionlist)
 
+
+# Planet's delete button
 @app.route("/delplanet", methods=["POST"])
 def delplanet():
     sun = int(request.form.get("sunid"))
@@ -206,8 +198,8 @@ def editmoon():
     else:
         sun = StarList.findstarfromid(sun)
     planet = int(request.form.get("planetid"))
-    moon = int(request.form["savemoon"])
-    for planetc in sun.solarobjects:
+    moon = int(request.form["savemoon"]) # Moon id.
+    for planetc in sun.solarobjects: # First find planet in a star and then find the moon for that planet.
         if planetc.id == planet:
             for moonc in planetc.moons:
                 if moonc.id == moon:
@@ -218,13 +210,9 @@ def editmoon():
     life = convertbool(request.form.get("moonlife"))
     mtype = request.form.get("moontype")
     atmo = request.form.get("moonatmo")
-    factions = []
-    faction1 = FactionList.getclassfromid(request.form.get("moonfaction1"))
-    faction2 = FactionList.getclassfromid(request.form.get("moonfaction2"))
-    if faction1 != False:
-        factions.append(faction1)
-    if faction2 != False:
-        factions.append(faction2)
+    faction1 = request.form.get("moonfaction1")
+    faction2 = request.form.get("moonfaction2")
+    factions = Faction.factionstolist(faction1, faction2)
     notes = request.form.get("notes")
     Moon.editmoon(moon, name, lwater, life, mtype, atmo, factions, notes)
     return render_template("solar.html", sun=sun, factionlist=FactionList.factionlist)
@@ -296,16 +284,10 @@ def editfaction():
     name = request.form.get("factionname")
     type = request.form.get("factiontype")
     abbr = request.form.get("abbr")
-    parent1 = FactionList.getclassfromid(request.form.get("factionparent1"))
-    parent2 = FactionList.getclassfromid(request.form.get("factionparent2"))
-    parent3 = FactionList.getclassfromid(request.form.get("factionparent3"))
-    parentlist = []
-    if parent1 != False:
-        parentlist.append(parent1)
-    if parent2 != False:
-        parentlist.append(parent2)
-    if parent3 != False:
-        parentlist.append(parent3)
+    faction1 = request.form.get("factionparent1")
+    faction2 = request.form.get("factionparent2")
+    faction3 = request.form.get("factionparent3")
+    parentlist = Faction.factionstolist(faction1, faction2, faction3)
     nameset = request.form.getlist("getnation")
     notes = request.form.get("notes")
     shippre = request.form.get("shippre")
@@ -325,16 +307,10 @@ def addfaction():
     name = request.form.get("factionname")
     type = request.form.get("factiontype")
     abbr = request.form.get("abbr")
-    parent1 = FactionList.getclassfromid(request.form.get("factionparent1"))
-    parent2 = FactionList.getclassfromid(request.form.get("factionparent2"))
-    parent3 = FactionList.getclassfromid(request.form.get("factionparent3"))
-    parentlist = []
-    if parent1 != False:
-        parentlist.append(parent1)
-    if parent2 != False:
-        parentlist.append(parent2)
-    if parent3 != False:
-        parentlist.append(parent3)
+    faction1 = request.form.get("factionparent1")
+    faction2 = request.form.get("factionparent2")
+    faction3 = request.form.get("factionparent3")
+    parentlist = Faction.factionstolist(faction1, faction2, faction3)
     nameset = request.form.getlist("getnation")
     notes = request.form.get("notes")
     shippre = request.form.get("shippre")
@@ -539,6 +515,7 @@ def export():
             planets.append(planetdict)
         dict["solarobjects"] = planets
         stars.append(dict)
+
     exportlist = {
         "factions": factions,
         "npcs" : npcs,
@@ -546,18 +523,19 @@ def export():
         "ships" : ships,
         "stars" : stars
     }
+
+    json_data = json.dumps(exportlist, indent=6)
+    return_data = io.BytesIO()
+    return_data.write(json_data.encode('utf-8'))
+    return_data.seek(0)
+
+    # Generate a filename with a timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     json_file_name = f"saveapollodata_{timestamp}.json"
-    json_file_path = os.path.join(app.config['UPLOAD_FOLDER'], json_file_name)
-    with open(json_file_path, "w") as save_file:
-        json.dump(exportlist, save_file, indent=6)
-    
-    return jsonify({"message": "File created", "download_url": f"/download_file/{json_file_name}"}), 200
-
-@app.route("/download_file/<filename>")
-def download_file(filename):
-    json_file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    return send_file(json_file_path, as_attachment=True, download_name=filename)
+    response = send_file(return_data, as_attachment=True, mimetype='application/json', download_name=json_file_name)
+    response.headers['X-Filename'] = json_file_name
+    # Send the file as an attachment with the correct MIME type
+    return response
 
 @app.route("/import", methods=["POST"])
 def import_file():
@@ -575,9 +553,8 @@ def import_file():
         
         with open(file_path, 'r') as f:
             data = json.load(f)
-        #session["data"] = data
-        #return jsonify({"message": "File imported successfully", "data": data}), 200
         loadjson(data)
+        os.remove(file_path)
         return redirect("/saved")
     return jsonify({"error": "Invalid file format"}), 400
 

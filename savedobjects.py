@@ -47,6 +47,7 @@ class NpcList:
     masterid = 1
 
 
+
     @staticmethod
     def savenpc(npc):
         NpcList.npclist.append(npc)

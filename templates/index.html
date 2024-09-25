@@ -19,7 +19,7 @@
                 <select class="form-select mx-auto w-auto" name="faction">
                     <option selected value="">Faction</option>
                     {% for faction in factions %}
-                    <option value="{{ faction.name }}">{{ faction.name }}</option>
+                    <option value="{{ faction.id }}">{{ faction.name }}</option>
                     {% endfor %}
                 </select>
                 <select class="form-select mx-auto w-auto" name="pstat">
@@ -50,11 +50,11 @@
             <div class="row mb-3">
                 <div class="col">
                     <label class="visually-hidden" for="genforename">Forename</label>
-                    <input type="text" class="form-control" id="genforename" name="genforename" value="{{ npc.forename }}">
+                    <input type="text" class="form-control" id="genforename" name="genforename" required value="{{ npc.forename }}">
                 </div>
                 <div class="col">
                     <label class="visually-hidden" for="gensurname">Surname</label>
-                    <input type="text" class="form-control" id="gensurname" name="gensurname" value="{{ npc.surname }}">
+                    <input type="text" class="form-control" id="gensurname" name="gensurname" required value="{{ npc.surname }}">
                 </div>
                 <div class="col-auto">
                     <label class="visually-hidden" for="gensex">Sex</label>
@@ -72,7 +72,7 @@
             <div class="row mb-3">
                 <div class="col">
                     <label class="visually-hidden" for="genjob">Job</label>
-                    <input type="text" class="form-control" id="genjob" name="genjob" value="{{ npc.job }}">
+                    <input type="text" class="form-control" id="genjob" name="genjob" required value="{{ npc.job }}">
                 </div>
                 <div class="col">
                     <label class="visually-hidden" for="gentype">Type</label>
@@ -86,9 +86,9 @@
                 <div class="col">
                     <label class="visually-hidden" for="genfaction">Faction</label>
                     <select class="form-select" id="genfaction" name="genfaction">
-                        <option selected value="{{ npcfaction }}">{{ npcfaction }}</option>
-                        {% for faction in factions if faction != npcfaction %}
-                        <option value="{{faction.name}}">{{faction.name}}</option>
+                        <option selected value="{{ npc.factionid }}">{{ idtoname(npc.factionid) }}</option>
+                        {% for faction in factions if faction.id != npc.factionid %}
+                        <option value="{{faction.id}}">{{faction.name}}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -99,8 +99,8 @@
                     <div class="input-group">
                         <div class="input-group-text">Primary Stat</div>
                         <select class="form-select" id="genpstat" name="genpstat">
-                            <option selected value="{{ pstat }}">{{ pstat }}</option>
-                            {% for stat in statlist if stat != pstat %}
+                            <option selected value="{{ npc.pstat }}">{{ npc.statlist[npc.pstat] }}</option>
+                            {% for stat in statlist if stat != npc.statlist[npc.pstat] %}
                             <option value="{{stat}}">{{stat}}</option>
                             {% endfor %}
                         </select>

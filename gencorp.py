@@ -2,8 +2,10 @@ import random, string
 from gennpc import Npc
 
 
-#Creates corporations, can also be called via gencorpname to get a random one that isn't saved.
-#Todo: Add tags and associate them with names like the tag transport with Shipping so the name ABC Shipping, Inc. would be possible
+# Creates corporations, can also be called via gencorpname to get a random one that isn't saved.
+# Currently only gencorpname is in use, needs updates if being used for anything else.
+# TODO: Add tags and associate them with names like the tag transport with Shipping so the name ABC Shipping, Inc. would be possible
+# TODO: Add things like board members, subsidiaries, locations
 class Corp:
     suffixes = [", Inc.", " Corporation", " Co.", " Company", " Services, Inc.", " Group, Inc.", " Materials, Inc.", 
                 " Products", " Incorporated", " and Company", " Brands Inc."]
@@ -55,8 +57,8 @@ class Corp:
         return name
     
 
-#Functionality to store a list of corps
-#Todo - improve functionality with use of tags, add prefered nations, faction allegiance
+# Functionality to store a list of corps
+# TODO - improve functionality with use of tags, add prefered nations, faction allegiance
 class Corps:
     corps = []
 

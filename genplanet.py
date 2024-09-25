@@ -1,6 +1,6 @@
 import random, string
 from helpers import coin, isbool
-from factions import FactionList, initializeall
+from factions import FactionList
 from genmoon import Moon
 from planethelpers import PlanetBuilders
 
@@ -125,6 +125,7 @@ class Planet:
     def replacemoon(self, moonnum):
         self.moons[moonnum] = Planet.gennewmoon(self.pname, self.distance, self.gzone, moonnum)
 
+    # Distance from star in AU
     @property
     def distance(self):
         return self._distance
@@ -160,6 +161,7 @@ class Planet:
             spacing -= spacing * .1
         return spacing
     
+    # Goldilocks zone, the zone that "could" host life. Just takes in temperature, doesn't account for light spectrum or safe infrared distance, ect. 
     @property
     def gzone(self):
         return self._gzone
@@ -180,6 +182,8 @@ class Planet:
             gzone = "cold"
         return gzone   
 
+    # Planetary basetemp is not entirely accurate as it doesn't account for planet's albido, which is determined by atmosphere composition and surface. Nice to have in the future
+    # TODO Incorporate albedo 
     @property
     def basetemp(self):
         return self._basetemp
@@ -196,6 +200,7 @@ class Planet:
     def calcbasetemp(distance, lum):
         return round((255 / ((distance / (lum)**0.5)**0.5)) - 273.15, 2)
     
+    # Allows us to bucket planet types to make random a little easier. Useful for improved random in the future.
     @property
     def terrestrial(self):
         return self._terrestrial
@@ -219,17 +224,18 @@ class Planet:
             return False
         return True
     
+    # https://en.wikipedia.org/wiki/List_of_planet_types
     @property
     def ptype(self):
         return self._ptype
 
     @ptype.setter
-    def ptype(self, ptype): #https://en.wikipedia.org/wiki/List_of_planet_types
+    def ptype(self, ptype): 
         if ptype not in Planet.ptypelist:
             raise ValueError(f"Invalid planet type {ptype}.")
         self._ptype = ptype
 
-    # Based on distance from sun, determines which planet types are possible for terrestrial or gas
+    # Based on distance from sun, determines which planet types are possible for terrestrial or gas. Ice may not technically be a gas planet, but treating it like one due to size.
     @staticmethod
     def genplanettype(terrestrial, gzone):
         if terrestrial:
@@ -248,6 +254,7 @@ class Planet:
                 typelist = ["gas dwarf", "gas giant", "helium", "ice", "ice giant"]
         return random.choice(typelist)
 
+    # Liquid water, doesn't account for liquid water locked under ice or water with a high methane count keeping it liquid at subzero temperatures.
     @property
     def lwater(self):
         return self._lwater
@@ -259,7 +266,8 @@ class Planet:
         self._lwater = lwater
 
 
-
+    # Atmosphere composition largely a placeholder at the moment until gas compositions can be incorporated. 
+    # https://worldbuildingpasta.blogspot.com/2019/10/an-apple-pie-from-scratch-part-ivb.html#atmospheres
     @property
     def atmo(self):
         return self._atmo
@@ -270,8 +278,7 @@ class Planet:
             raise ValueError(f"Invalid planet atmostphere {atmo}.")
         self._atmo = atmo
 
-
-
+    # Mass relative to Earth Mass.
     @property
     def mass(self):
         return self._mass
@@ -298,6 +305,7 @@ class Planet:
             max = 4132.78 # 13x size of Jupiter
         return round(random.uniform(min, max), 2)
 
+    # Radius relative to Earth Radius.
     @property
     def radius(self):
         return self._radius
@@ -319,6 +327,7 @@ class Planet:
             r = 17.745 * (mass**-0.044)
         return round(r, 2)
 
+    # Planetary rings are currently just a fun thing and don't drive anything else.
     @property
     def rings(self):
         return self._rings
@@ -336,6 +345,7 @@ class Planet:
             return True
         return False
     
+    # Currently don't remember why puff and super-puff are ineligible for moons, likely because they are not dense? Protoplanet can be anything, but for now assuming it's just a lifeless rock.
     @property
     def mooncandidate(self):
         return self._mooncandidate
@@ -352,6 +362,7 @@ class Planet:
             return False
         return True
     
+    # While more than 20 moons is possible, too messy to display.
     @property
     def mooncount(self):
         return self._mooncount
@@ -362,6 +373,7 @@ class Planet:
             raise ValueError(f"Invalid mooncount {mooncount}.")
         self._mooncount = mooncount
         
+    # Smaller planets will have less moons. Radius numbers are based on max terrestrial size.
     @staticmethod
     def genmooncount(radius, mooncandidate):
         if not mooncandidate:
@@ -396,6 +408,7 @@ class Planet:
         grav = g * mass/(radius**2)
         return round(grav, 2)
     
+    # Gravity as a % of Earth's gravity. 
     @property
     def relativeg(self):
         return self._relativeg
@@ -420,6 +433,7 @@ class Planet:
             raise ValueError(f"Faction notes are too long.")
         self._notes = notes
 
+    # Currently no functionality related to life being present other than an increased chance it's populated. 
     @property
     def life(self):
         return self._life
@@ -430,8 +444,7 @@ class Planet:
             raise ValueError(f"Invalid planet life value {life}, must be bool.")
         self._life = life
 
-
-
+    # Determines if factions are present during generation.
     @property
     def populated(self):
         return self._populated
@@ -442,8 +455,7 @@ class Planet:
             raise ValueError(f"Invalid planet populated value {populated}, must be bool.")
         self._populated = populated
 
-
-
+    # Planet Name
     @property
     def pname(self):
         return self._pname
@@ -475,6 +487,7 @@ class Planet:
             r = random.randint(1,999)
             return "Planet " + str(r) + " (Placeholder)"
 
+    # Which factions are present on the planet. Up to 2.
     @property
     def factions(self):
         return self._factions
@@ -488,7 +501,7 @@ class Planet:
         self._factions = factions
 
 
-
+    # How much has been explored. Never 100.
     @property
     def surveyed(self):
         return self._surveyed
@@ -498,8 +511,6 @@ class Planet:
         if surveyed < 0 or surveyed > 100:
             raise ValueError(f"Invalid planet surveyed value {surveyed}.")
         self._surveyed = surveyed
-
-
 
     @staticmethod
     def genmoons(pname, mooncount, distance, gzone):
@@ -513,6 +524,7 @@ class Planet:
     def gennewmoon(pname, distance, gzone, number):
         return Moon.genrandommoon(pname, distance, gzone, number)
 
+    # Pressure is currently mostly useless. Can determine accurately after atmospheres are fleshed out.
     @property
     def pressure(self):
         return self._pressure
@@ -524,7 +536,7 @@ class Planet:
         self._pressure = pressure
     
 
-
+    # What to show for the planet row of HTML to save space.
     @staticmethod
     def assemblesymbols(ptype, gzone, rings, lwater, life, mooncount):
         symbols = Planet.typesymbol(ptype) + " " + Planet.gzonesymbol(gzone) + " "
@@ -658,6 +670,7 @@ class Planet:
                 symbol = "⑳"
         return symbol
 
+    # HTML tooltip for the planet.
     @staticmethod
     def buildtooltip(ptype, gzone, rings, lwater, life, mooncount):
         tooltip = ptype + " Planet, "

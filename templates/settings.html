@@ -20,15 +20,32 @@
 
 <script>
     document.getElementById('export').onsubmit = async function (event) {
-        event.preventDefault(); // Prevent default form submission
-        const response = await fetch('/export', { method: 'POST' });
-        const data = await response.json();
+    event.preventDefault(); // Prevent default form submission
 
-        // Trigger the download
-        if (data.download_url) {
-            window.location.href = data.download_url; // Redirect to download URL
-        }
-    };
+    // Use fetch to send the POST request
+    const response = await fetch('/export', { method: 'POST' });
+
+    // Check if the response is OK (status 200)
+    if (response.ok) {
+        // Create a Blob from the response
+        const blob = await response.blob();
+        
+        // Get the filename from the response headers
+        const filename = response.headers.get('X-Filename') || 'download.json';
+
+        // Create a link element to trigger the download
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename; // Use the filename from the server
+        document.body.appendChild(a); // Append the link to the body
+        a.click(); // Trigger the download
+        a.remove(); // Clean up
+        window.URL.revokeObjectURL(url); // Release the URL object
+    } else {
+        console.error('Failed to export data:', response.statusText);
+    }
+};
 
     document.getElementById('import-form').onsubmit = async function (event) {
             event.preventDefault();

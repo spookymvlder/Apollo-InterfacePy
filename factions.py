@@ -54,10 +54,13 @@ class FactionList:
 
     @staticmethod
     def getclassfromid(id):
-        if id == "-" or id == "None":
+        print(id)
+        try:
+            id = int(id)
+        except:
             return False
         for faction in FactionList.factionlist:
-            if int(id) == faction.id:
+            if id == faction.id:
                 return faction
         return False
 
@@ -195,6 +198,20 @@ class Faction:
         self.ships = ships
         self.scope = scope
 
+    # Used to convert HTML form responses to a faction list for any objects that can have factions.
+    @staticmethod
+    def factionstolist(faction1, faction2, faction3=""):
+        factions = []
+        faction1 = FactionList.getclassfromid(faction1)
+        faction2 = FactionList.getclassfromid(faction2)
+        faction3 = FactionList.getclassfromid(faction3)
+        if faction1 != False:
+            factions.append(faction1)
+        if faction2 != False:
+            factions.append(faction2)
+        if faction3 != False:
+            factions.append(faction3)
+        return factions
 
     @classmethod
     def idtoname(cls, id):
