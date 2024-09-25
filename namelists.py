@@ -96,6 +96,7 @@ class ColorName:
     def __init__(self):
         ColorName.namelist = initializetxt(Path(r'static\other_names\colors.txt'))
 
+
 class USName:
     namelist = []
     newnamelist = []
@@ -206,7 +207,7 @@ class NationNameTable:
         "USA"
     ]
 
-
+    # Loads country names as needed. As list of available names may grow, doesn't store them all if not needed, but also won't require regenerating each time.
     def nametable(nation):
         tables = []
         match nation:

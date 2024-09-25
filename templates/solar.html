@@ -99,7 +99,7 @@
         <div class="headersec">
             <div>Planet List</div>
             <div class="row bodysec">
-                {% for planet in sun.solarobjects %}
+                {% for planet in sun.solarobjects|sort(attribute='distance') %}
                 <div class="row text-start" style="padding-top: 5px;">
                     <div class="col" data-toggle="tooltip" title="{{planet.tooltip}}">{{planet.pname}} <h3>{{planet.symbols}}</h4></div>
                     <div class="col">Distance: {{planet.distance|round(2)}} AU</div>

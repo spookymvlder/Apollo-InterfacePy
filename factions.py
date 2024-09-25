@@ -1,74 +1,34 @@
 from namelists import NationNameTable, NationNameTable
-from savedobjects import ShipList, NpcList
+from savedobjects import ShipList, FactionList, CountryList
 from helpers import convertbool
 import csv
 
-def initializefactionlist():
 
-    with open(r'static\FactionList_new.csv', newline='') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            namelist = list((row['NameList'].split(",")))
-            parents = list((row['Parents'].split(",")))
-            parentlist = []
-            if parents != [""]:
-                for parent in parents:
-                    parentlist.append(int(parent))
-            FactionList.addfaction(row['FactionName'], row['EntityType'], row['Abbr'], row['Notes'], row['ShipPre'], row['OrdLvl'], convertbool(row['Science']), convertbool(row['Colony']), convertbool(row['MGMT']), convertbool(row['Ships']), row['Scope'], namelist, parentlist)
+# Factions, initially loaded via csv. Loading code underneath this class and called by app.py
+class Faction:
+    # Types don't currently drive anything.
+    typelist = ['gov', 'corp', 'settlement', 'religion', 'outlaw', 'guild', 'military', 'alliance', 'agency', 'ngo', 'cooperative', 'none']
+    # Currently scope level and ordenance level don't do anything.
+    # TODO restrict types of ships and npc careers to appropriate ordenance/scope levels.
+    ordenancelevel = ['none', 'security', 'black ops', 'military']
+    scopelevel = ['local', 'system', 'sector', 'pervasive', 'infiltrating', 'attached']
 
-class CountryList:
-    countrylist = {}
+    def __init__(self, name, type, abbr, notes, shippre, ordlvl, science, colony, mgmt, ships, scope, nameset, parents, id):
+        self.name = name
+        self.id = id
+        self.type = type
+        self.nameset = nameset
+        self.parents = parents
+        self.abbr = abbr
+        self.notes = notes
+        self.shippre = shippre
+        self.ordlvl = ordlvl
+        self.science = science
+        self.colony = colony
+        self.mgmt = mgmt
+        self.ships = ships
+        self.scope = scope
 
-    def __init__(self):
-        fieldnames = ["Country", "Abbr", "Code"]
-        with open(r'static\iso_codes.csv', newline='') as csvfile:
-            reader = csv.DictReader(csvfile, fieldnames)
-            for row in reader:
-                CountryList.countrylist[row['Abbr']] = []
-
-
-
-# FactionList is kept separate from other saved objects to avoid circular dependencies. It may be more appropriate to move some functions to Faction.
-class FactionList:
-    factionlist = []
-    factionshiplist = []
-    masterid = 0
-
-    @staticmethod
-    def checkfactionid(id):
-        found = False
-        for faction in FactionList.factionlist:
-            if id == faction.id:
-                found = True
-                break
-        return found
-
-    @staticmethod
-    def checkfactionname(name):
-        found = False
-        for faction in FactionList.factionlist:
-            if name == faction.name:
-                found = True
-                break
-        return found
-
-    @staticmethod
-    def getclassfromid(id):
-        print(id)
-        try:
-            id = int(id)
-        except:
-            return False
-        for faction in FactionList.factionlist:
-            if id == faction.id:
-                return faction
-        return False
-
-    @staticmethod
-    def getprefix(id):
-        faction = FactionList.getclassfromid(id)
-        return faction.shippre
-    
     @staticmethod
     def addfaction(name, type, abbr, notes, shippre, ordlvl, science, colony, mgmt, ships, scope, nameset, parents, id=""):
         parentlist = []
@@ -92,77 +52,37 @@ class FactionList:
                     nameset.append(nation)
             nameset = list(set(nameset))
         if id == "":
-            id = Faction.genfactionid()
+            id = FactionList.genfactionid()
         faction = Faction(name, type, abbr, notes, shippre, ordlvl, science, colony, mgmt, ships, scope, nameset, parentlist, id)
         FactionList.factionlist.append(faction)
         if faction.ships:
             FactionList.factionshiplist.append(faction)
         return faction
 
-    @staticmethod
-    def removefaction(id):
-        found = False
-        if id == 0:
-            raise ValueError(f"Unable to delete Unaligned faction.")
-        for faction in FactionList.factionlist:
-            for npc in NpcList.npclist: #Remove all saved npc references to faction and make them unaligned.
-                if npc.factionid == id:
-                    npc.factionid = 0
-            FactionList.updateshipfaction(id)
-            for parent in faction.parents:
-                if parent.id == id:
-                    faction.parents.remove(parent)
-        for faction in FactionList.factionlist: #Have to loop twice because if a faction is removed before the loop finished can no longer validate remaining data.
-            if faction.id == id:
-                FactionList.factionlist.remove(faction)
-                found = True
-        if faction.ships == True:
-            FactionList.factionshiplist.remove(faction)
-        return found
-
-    @staticmethod
-    def editfaction(id, name, type, abbr, notes, shippre, ordlvl, science, colony, mgmt, ships, scope, nameset, parentlist):
-        faction = FactionList.getclassfromid(int(id))
-        if not faction:
-            raise ValueError(f"Unable to find a faction for {name}.")
-        if faction.name != name: #name has a duplicate check to ensure that we can't have multiple factions with the same name, so skip blind assignment.
-            faction.name = name
-        faction.type = type
-        faction.abbr = abbr
-        faction.parents = parentlist
-        faction.nameset = nameset
-        faction.notes = notes
-        if faction.shippre != shippre:
+    def editfaction(self, name, type, abbr, notes, shippre, ordlvl, science, colony, mgmt, ships, scope, nameset, parentlist):
+        if self.name != name: # Avoid duplicate check if possible
+            self.name = name
+        self.type = type
+        self.abbr = abbr
+        self.parents = parentlist
+        self.nameset = nameset
+        self.notes = notes
+        if self.shippre != shippre:
             for ship in ShipList.shiplist:
                 if ship.factionid == id:
                     ship.prefix == shippre
-        faction.ordlvl = ordlvl
-        faction.science = science
-        faction.colony = colony
-        faction.mgmt = mgmt
-        if faction.ships != ships and ships != True: #Only if we are changing the value for ships.
+        self.ordlvl = ordlvl
+        self.science = science
+        self.colony = colony
+        self.mgmt = mgmt
+        if self.ships != ships and ships != True: #Only if we are changing the value for ships.
             if ships == True:
-                FactionList.shiplist.append(faction) #Going from false to true means faction can generate new ships
+                FactionList.shiplist.append(self) #Going from false to true means faction can generate new ships
             else:
-                FactionList.updateshipfaction(id) #Going from true to false requires an update to existing ships
-        faction.ships = ships
-        faction.scope = scope
-        return True
+                FactionList.updateshipfaction(self.id) #Going from true to false requires an update to existing ships
+        self.ships = ships
+        self.scope = scope
 
-    @staticmethod
-    def updateshipfaction(id):
-        for ship in ShipList.shiplist:
-            if ship.factionid == id:
-                ship.factionid = 0
-                for crew in ship.crewlist.values():
-                    crew.factionid == 0
-                ship.prefix = "SS"
-
-    @staticmethod
-    def editparent(faction, parentlist):
-        for parent in parentlist:
-            faction.parents.append(FactionList.getclassfromid(parent))
-    
     # Clears entire factionlist and then rebuilds. *SHOULD* be ok since every saved list will also be getting cleared.
     # Builds all factions and then builds parent relationships in case there are order issues. Faction.parents.setter should handle any potential messes.
     @staticmethod
@@ -170,33 +90,11 @@ class FactionList:
         FactionList.factionlist.clear()
         FactionList.factionshiplist.clear()
         for faction in factions:
-            factionc = FactionList.addfaction(faction["name"], faction["ftype"], faction["abbr"], faction["notes"], faction["shippre"], faction["ordlvl"], 
+            factionc = Faction.addfaction(faction["name"], faction["ftype"], faction["abbr"], faction["notes"], faction["shippre"], faction["ordlvl"], 
             faction["science"], faction["colony"], faction["mgmt"], faction["ships"], faction["scope"], faction["nameset"], [], faction["id"])
             FactionList.editparent(factionc, faction["parentlist"])
             if faction["id"] >= FactionList.masterid:
                 FactionList.masterid = faction["id"] + 1
-
-class Faction:
-    typelist = ['gov', 'corp', 'settlement', 'religion', 'outlaw', 'guild', 'military', 'alliance', 'agency', 'ngo', 'cooperative', 'none']
-    
-    ordenancelevel = ['none', 'security', 'black ops', 'military']
-    scopelevel = ['local', 'system', 'sector', 'pervasive', 'infiltrating', 'attached']
-
-    def __init__(self, name, type, abbr, notes, shippre, ordlvl, science, colony, mgmt, ships, scope, nameset, parents, id):
-        self.name = name
-        self.id = id
-        self.type = type
-        self.nameset = nameset
-        self.parents = parents
-        self.abbr = abbr
-        self.notes = notes
-        self.shippre = shippre
-        self.ordlvl = ordlvl
-        self.science = science
-        self.colony = colony
-        self.mgmt = mgmt
-        self.ships = ships
-        self.scope = scope
 
     # Used to convert HTML form responses to a faction list for any objects that can have factions.
     @staticmethod
@@ -213,6 +111,7 @@ class Faction:
             factions.append(faction3)
         return factions
 
+    # Returns faction name, used by classes that store a faction id.
     @classmethod
     def idtoname(cls, id):
         if id=="":
@@ -255,11 +154,7 @@ class Faction:
             raise ValueError(f"Faction id {id} must be unique.")
         self._id = id
 
-    @staticmethod
-    def genfactionid():
-        id = FactionList.masterid
-        FactionList.masterid += 1
-        return id
+    
 
     @property
     def type(self):
@@ -272,10 +167,6 @@ class Faction:
         self._type = type
 
     @property
-    def nameset(self):
-        return self._nameset
-
-    @property
     def notes(self):
         return self._notes
 
@@ -285,6 +176,9 @@ class Faction:
             raise ValueError(f"Faction notes are too long.")
         self._notes = notes
 
+    @property
+    def nameset(self):
+        return self._nameset
 
 # For now it is only actually valuable to save the namelists that are populated. 
 # Will change going forward when more namelists are available.
@@ -425,7 +319,22 @@ class Faction:
             raise ValueError(f"Invalid faction scope level {scope}.")
         self._scope = scope
 
+
+
+def initializefactionlist():
+    with open(r'static\FactionList_new.csv', newline='') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            namelist = list((row['NameList'].split(",")))
+            parents = list((row['Parents'].split(",")))
+            parentlist = []
+            if parents != [""]:
+                for parent in parents:
+                    parentlist.append(int(parent))
+            Faction.addfaction(row['FactionName'], row['EntityType'], row['Abbr'], row['Notes'], row['ShipPre'], row['OrdLvl'], convertbool(row['Science']), convertbool(row['Colony']), convertbool(row['MGMT']), convertbool(row['Ships']), row['Scope'], namelist, parentlist, int(row['Id']))
+
+
 def initializeall():
     CountryList()
-    FactionList.addfaction("Unaligned", "none", abbr="", notes="", shippre="SS", ordlvl="security", science=True, colony=False, mgmt=False, ships=True, scope="pervasive", nameset=[], parents=[])
+    Faction.addfaction("Unaligned", "none", abbr="", notes="", shippre="SS", ordlvl="security", science=True, colony=False, mgmt=False, ships=True, scope="pervasive", nameset=[], parents=[])
     initializefactionlist()

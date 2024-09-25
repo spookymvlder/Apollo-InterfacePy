@@ -9,6 +9,7 @@ from savedobjects import StarList
 
 
 # https://terraforming.fandom.com/wiki/Main_Sequence_A_Type_Stars_-_Habitable_Simulation
+# Generates a star as well as its planets.
 class Star:
     colorlist = ["white", "blue white", "blue", "yellow white", "yellow", "orange", "orange red", "red"]
     classlist = ["O", "B", "A", "F", "G", "K", "M"]
@@ -33,7 +34,7 @@ class Star:
         
         
     @staticmethod
-    def genrandomstar(name="", starclass="", spectype="", mass="", radius="", lum="", startemp="", notes="", pcount="", id=0, solarobjects=[]):
+    def genrandomstar(name="", starclass="", spectype="", mass="", radius="", lum="", startemp="", notes="", pcount="", id=0, solarobjects=""):
         if name =="":
             name = Star.genname()
         if starclass == "":
@@ -55,6 +56,8 @@ class Star:
         outzone = Star.genoutzone(lum)
         id = id
         spacing = Star.genspacing(pcount)
+        if solarobjects == "": # Defaulting in an empty list was not properly clearing it, so need to default in "" and then overwrite that. 
+            solarobjects = []
         solarobjects = Star.genplanet(pcount, spacing, inzone, outzone, startemp, mass, lum, solarobjects)
         return Star(name, starclass, spectype, color, mass, radius, lum, startemp, notes, pcount, inzone, outzone, id, spacing, solarobjects)
      
@@ -1036,6 +1039,7 @@ class Star:
     @property
     def inzone(self):
         return self._inzone
+
     @inzone.setter
     def inzone(self, inzone):
         if not isinstance(inzone, (int, float)):
@@ -1086,9 +1090,8 @@ class Star:
     # Generates a new planet based on characteristics of the sun.
     @staticmethod
     def genplanet(pcount, spacing, inzone, outzone, startemp, starmass, lum, solarobjects=[]):
+        min = 0.0013
         for i in range(pcount):
-            if i == 0:
-                min = 0.0013
             planet = Planet.genplanetfromstar(inzone, outzone, min, startemp, starmass, lum, spacing, i)
             min = planet.distance
             solarobjects.append(planet)

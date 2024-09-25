@@ -138,7 +138,7 @@ class Planet:
 
     @staticmethod
     def calcdistance(min, spacing):
-        return round(random.uniform(min, spacing), 2)
+        return round(random.uniform(min, min + spacing), 2)
 
     # Min is set in a loop while generating initial star size. 
     # This ensures that the new planet is the same relative distance from the sun in order to not make the planet jump around on the screen.

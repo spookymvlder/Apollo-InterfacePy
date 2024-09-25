@@ -1,10 +1,9 @@
 import sys, random, os, json, io
 from datetime import datetime
 
-
-
-from factions import Faction, FactionList, initializeall
+from factions import Faction, initializeall
 initializeall()
+
 from gennpc import Npc
 from location import Location
 from genmeow import Cat
@@ -14,7 +13,7 @@ from genmoon import Moon
 from hulls import HullTemplate, HullSpecs, HullModel, HullModels, HullType
 from genship import Ship
 from namelists import NationNameTable
-from savedobjects import ShipList, NpcList, StarList, CatList
+from savedobjects import ShipList, NpcList, StarList, CatList, FactionList
 from helpers import convertbool
 
 
@@ -101,8 +100,9 @@ def cats():
 # Generates a new star. Each star generates relevant planet and moon data. Saves star to temp star as some data isn't shown to user, but needed for editing.
 @app.route("/solar")
 def solar():
+    del StarList.tempstar
     sun = Star.genrandomstar()
-    StarList.tempstar = sun
+    StarList.tempstar = sun # Delete instead of overwrite??
     return render_template("solar.html", sun=sun, factionlist=FactionList.factionlist)
 
 @app.route("/editstar", methods=["POST"])
@@ -281,6 +281,7 @@ def factions():
 @app.route("/editfaction", methods=["POST"])
 def editfaction():
     editid = request.form.get("savebtn")
+    faction = FactionList.getclassfromid(editid)
     name = request.form.get("factionname")
     type = request.form.get("factiontype")
     abbr = request.form.get("abbr")
@@ -297,7 +298,7 @@ def editfaction():
     mgmt = convertbool(request.form.get("mgmt"))
     ships = convertbool(request.form.get("ships"))
     scope = request.form.get("scope")
-    FactionList.editfaction(editid, name, type, abbr, notes, shippre, ordlvl, science, colony, mgmt, ships, scope, nameset, parentlist)
+    Faction.editfaction(faction, name, type, abbr, notes, shippre, ordlvl, science, colony, mgmt, ships, scope, nameset, parentlist)
     return redirect("/factions")
             
 
@@ -320,7 +321,7 @@ def addfaction():
     mgmt = convertbool(request.form.get("mgmt"))
     ships = convertbool(request.form.get("ships"))
     scope = request.form.get("scope")
-    FactionList.addfaction(name, type, abbr, notes, shippre, ordlvl, science, colony, mgmt, ships, scope, nameset, parentlist)
+    Faction.addfaction(name, type, abbr, notes, shippre, ordlvl, science, colony, mgmt, ships, scope, nameset, parentlist)
     return redirect("/factions")
 
 @app.route("/settings")
@@ -565,7 +566,7 @@ def loadjson(data):
     cats = data.get("cats")
     ships = data.get("ships")
     stars = data.get("stars")
-    FactionList.unpackfactionsfromload(factions)
+    Faction.unpackfactionsfromload(factions)
     Npc.unpacknpcsfromload(npcs)
     Cat.unpackcatsfromload(cats)
     Ship.unpackshipsfromload(ships)
@@ -575,8 +576,8 @@ def loadjson(data):
 #hulltype = HullType()
 #ship = Ship(HullModel(HullTemplate(hulltype.size, hulltype.type, hulltype.category, hulltype.ordenance, hulltype.armor, hulltype.troops, hulltype.priority)))
 #ShipList.saveship(ship)
-'''star = Star()
-while len(star.solarobjects) < 3:
+#star = Star.genrandomstar(pcount=12)
+'''while len(star.solarobjects) < 3:
     star = Star()
 for planet in star.solarobjects:
     if planet.mooncount > 1:

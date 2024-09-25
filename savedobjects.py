@@ -1,4 +1,4 @@
-
+import csv
 
 class ShipList:
     shiplist = []
@@ -39,8 +39,6 @@ class ShipList:
             if ship.id == shipid:
                 return ship
         raise ValueError(f"Invalid shipid {shipid}.")
-
-
 
 class NpcList:
     npclist = []
@@ -142,3 +140,97 @@ class CatList:
                 if cat.id == catid:
                     return cat
         raise ValueError(f"Unable to find a cat for id {catid}.")
+
+class CountryList:
+    countrylist = {}
+
+    def __init__(self):
+        fieldnames = ["Country", "Abbr", "Code"]
+        with open(r'static\iso_codes.csv', newline='') as csvfile:
+            reader = csv.DictReader(csvfile, fieldnames)
+            for row in reader:
+                CountryList.countrylist[row['Abbr']] = []
+
+
+
+class FactionList:
+    factionlist = []
+    factionshiplist = []
+    masterid = 0
+
+    @staticmethod
+    def checkfactionid(id):
+        found = False
+        for faction in FactionList.factionlist:
+            if id == faction.id:
+                found = True
+                break
+        return found
+
+    @staticmethod
+    def checkfactionname(name):
+        found = False
+        for faction in FactionList.factionlist:
+            if name == faction.name:
+                found = True
+                break
+        return found
+
+    @staticmethod
+    def getclassfromid(id):
+        try:
+            id = int(id)
+        except:
+            return False
+        for faction in FactionList.factionlist:
+            if id == faction.id:
+                return faction
+        return False
+
+    @staticmethod
+    def getprefix(id):
+        faction = FactionList.getclassfromid(id)
+        return faction.shippre
+    
+    @staticmethod
+    def genfactionid():
+        id = FactionList.masterid
+        FactionList.masterid += 1
+        return id
+
+    @staticmethod
+    def removefaction(id):
+        found = False
+        if id == 0:
+            raise ValueError(f"Unable to delete Unaligned faction.")
+        for faction in FactionList.factionlist:
+            for npc in NpcList.npclist: #Remove all saved npc references to faction and make them unaligned.
+                if npc.factionid == id:
+                    npc.factionid = 0
+            FactionList.updateshipfaction(id)
+            for parent in faction.parents:
+                if parent.id == id:
+                    faction.parents.remove(parent)
+        for faction in FactionList.factionlist: #Have to loop twice because if a faction is removed before the loop finished can no longer validate remaining data.
+            if faction.id == id:
+                FactionList.factionlist.remove(faction)
+                found = True
+        if faction.ships == True:
+            FactionList.factionshiplist.remove(faction)
+        return found
+
+    @staticmethod
+    def updateshipfaction(id):
+        for ship in ShipList.shiplist:
+            if ship.factionid == id:
+                ship.factionid = 0
+                for crew in ship.crewlist.values():
+                    crew.factionid == 0
+                ship.prefix = "SS"
+
+    @staticmethod
+    def editparent(faction, parentlist):
+        for parent in parentlist:
+            faction.parents.append(FactionList.getclassfromid(parent))
+    
+    

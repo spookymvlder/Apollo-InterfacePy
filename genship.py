@@ -114,19 +114,20 @@ class Ship:
             faction = random.choice(FactionList.factionshiplist)
         return faction
         
+    # An unfortunate hardcoding based on factions.
     @staticmethod
     def genname(faction):
         name = ""
         factionname = Faction.idtoname(faction)
-        if factionname in ("United Americas", "Three World Empire", "Union of Progressive Peoples"):
+        if factionname in ("United Americas", "Three World Empire", "Union of Progressive Peoples", "United Americas Military", "United States Military", "UPP Military", "3WE Military"):
             flip = coin()
             if flip == 1:
                 match factionname:
-                    case "United Americas":
+                    case "United Americas" | "United Americas Military" | "United States Military":
                         search = "usname"
-                    case "Three World Empire":
+                    case "Three World Empire" | "3WE Military":
                         search = "3wename"
-                    case "Union of Progressive Peoples":
+                    case "Union of Progressive Peoples" | "UPP Military":
                         search = "uppname"
                 return "The " + random.choice(namelists.returnNameList(search))
         flip = coin()
