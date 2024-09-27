@@ -5,22 +5,23 @@ from factions import Faction, initializeall
 initializeall()
 
 from gennpc import Npc
-from location import Location
 from genmeow import Cat
 from genstar import Star
 from genplanet import Planet
 from genmoon import Moon
-from hulls import HullTemplate, HullSpecs, HullModel, HullModels, HullType
+from hulls import HullTemplate, HullModel, HullType
 from genship import Ship
 from namelists import NationNameTable
 from savedobjects import ShipList, NpcList, StarList, CatList, FactionList
 from helpers import convertbool
+from stats import JobList
 
 
 
 
 from flask import Flask, flash, redirect, render_template, request, session, send_file, jsonify
 from flask_session import Session
+from markupsafe import Markup
 
 app = Flask(__name__)
 
@@ -63,7 +64,7 @@ def index():
                 break
         npc = Npc.genrandomnpc(sex=sex, factionid=postfaction, pstat=pstat, type=type, nation=nation)
 
-    return render_template("index.html", namelist=NationNameTable.nationlist, sexes=Npc.sexlist, factions=FactionList.factionlist, types=Npc.typelist, statlist=Npc.statlist, npc=npc)
+    return render_template("index.html", namelist=NationNameTable.nationlist, sexes=Npc.sexlist, factions=FactionList.factionlist, types=Npc.typelist, statlist=Npc.statlist, npc=npc, joblist=JobList)
             
 # Saves user form data as a new NPC.
 @app.route("/validatenpc", methods=["POST"])
@@ -89,7 +90,7 @@ def validatenpc():
 @app.route("/saved", methods=["GET", "POST"])
 def saved():
 
-    return render_template("npcs.html", npcstrings=NpcList.npclist, starstrings=StarList.starlist, shipstrings=ShipList.shiplist)
+    return render_template("saved.html", npcstrings=NpcList.npclist, starstrings=StarList.starlist, shipstrings=ShipList.shiplist, catstrings=CatList.catlist)
 
 # Generates a random cat. Currently not saved as there's no functionality to manually attach a cat to a ship/location.
 @app.route("/cats")
@@ -251,13 +252,19 @@ def delmoon():
 
 @app.route("/ships", methods=["GET", "POST"])
 def ships():
+    selected=""
     if request.method=='POST':
-        if request.form['rollbtn']:
+        hulltype = request.form.get("genshiptype")
+        if hulltype == "":
             return redirect("/ships")
-    hulltype = HullType()
+        else:
+            selected=hulltype
+            hulltype = HullType(type=hulltype)
+    else:
+        hulltype = HullType()
     ship = Ship.genshipfrommodel(HullModel(HullTemplate(hulltype.size, hulltype.type, hulltype.category, hulltype.ordenance, hulltype.armor, hulltype.troops, hulltype.priority)))
     ShipList.tempship = ship
-    return render_template("ships.html", ship=ship)
+    return render_template("ships.html", ship=ship, typelist=HullType.types, selected=selected)
 
 @app.route("/saveship", methods=["POST"])
 def saveship():
@@ -505,7 +512,8 @@ def export():
                     "populated" : moon.populated,
                     "systemobjects" : moon.systemobjects,
                     "surveyed" : moon.surveyed,
-                    "pressure" : moon.pressure
+                    "pressure" : moon.pressure,
+                    "notes" : moon.notes
                 }
                 mfactions = []
                 for faction in moon.factions:
@@ -560,6 +568,11 @@ def import_file():
     return jsonify({"error": "Invalid file format"}), 400
 
 
+@app.template_filter(name="linebreaksbr")
+def linebreaksbr_filter(text):
+    string = text.__str__().replace("\n", "<br>")
+    return Markup(string)
+
 def loadjson(data):
     factions = data.get("factions")
     npcs = data.get("npcs")
@@ -571,6 +584,8 @@ def loadjson(data):
     Cat.unpackcatsfromload(cats)
     Ship.unpackshipsfromload(ships)
     Star.unpackstarfromload(stars)
+
+
 
 #FactionList.editfaction(1, "United Americas", "gov", "UA", "", "USCSS", "security", True, True, True, True, "pervasive", [], [FactionList.getclassfromid(4)])
 #hulltype = HullType()

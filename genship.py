@@ -6,7 +6,8 @@ from factions import FactionList, Faction
 from savedobjects import ShipList, CatList, NpcList
 from shipparts import ModuleList, ShipRooms
 
-
+# Formed by hulls.py components. Thought was to have a hull template used to create multiple models. Then those models could be used to generate ships.
+# Ship building is a three step process, allows for future functionality to let users create and save ship types that are similar, but different.
 class Ship:
 
     def __init__(self, size, hulltype, category, hardpoints, signature, crew, hullen, hullval, armorval, modules, manufacturer, shipmodel, 
@@ -157,65 +158,65 @@ class Ship:
         crewlist = {}
         i = 0
         if i < crewsize:
-            crewlist["pilot"] = Npc.genrandomnpc(factionid=faction, job="Pilot", pstat=1)
+            crewlist["pilot"] = Npc.genrandomnpc(factionid=faction, job="Pilot", pstat="Agility")
             i += 1
         if i < crewsize:
-            crewlist["captain"] = Npc.genrandomnpc(factionid=faction, job="Captain", pstat=3)
+            crewlist["captain"] = Npc.genrandomnpc(factionid=faction, job="Captain", pstat="Empathy")
             i += 1
         if i < crewsize:
-            crewlist["engineer"] = Npc.genrandomnpc(factionid=faction, job="Engineer", pstat=0)
+            crewlist["engineer"] = Npc.genrandomnpc(factionid=faction, job="Engineer", pstat="Strength")
             i += 1
         if i < crewsize:
-            crewlist["technician"] = Npc.genrandomnpc(factionid=faction, job="Technician", pstat=0)
+            crewlist["technician"] = Npc.genrandomnpc(factionid=faction, job="Technician", pstat="Strength")
             i += 1
         if i < crewsize:
             for module in eqmodules.modulelist:
                 if module.type == "Medlab":
-                    crewlist["medic"] = Npc.genrandomnpc(factionid=faction, job="Medic", pstat=3)
+                    crewlist["medic"] = Npc.genrandomnpc(factionid=faction, job="Medic", pstat="Empathy")
                     i += 1
                     break
         if i < crewsize:
             for module in eqmodules.modulelist:
                 if module.type == "Science Lab":
-                    crewlist["scientist"] = Npc.genrandomnpc(factionid=faction, job="Scientist", pstat=2)
+                    crewlist["scientist"] = Npc.genrandomnpc(factionid=faction, job="Scientist", pstat="Wits")
                     i += 1
                     break
         return crewlist
     
     def __str__(self):
-        description = f"This is a {self.manufacturer} {self.shipmodel}, a {self.category} {self.hulltype} ship named {self.name}.\n"
-        description += f"Crew size: {self.crewsize} \nLength: {self.hullen} \nSignature: {self.signature} \nHull: {self.hullval} \nArmor: {self.armorval} \nFTL: {self.ftl}\n"
-        description += "Hardpoints: "
-        return description
-        #count = 1
-        ''' for hardpoint in self.hardpoints:
+        description = f"This is a {self.manufacturer} {self.shipmodel}, a {self.category} {self.hulltype} ship named the {self.prefix} {self.name}. \n"
+        description += f"Length: {self.hullen}m \nSignature: {self.signature} \nHull: {self.hullval} \nArmor: {self.armorval} \nFTL: {self.ftl} \nThrusters: {self.thrusters} \n"
+        description += f"Crew Capacity: {self.crew[0]}-{self.crew[1]} \nCrew Size: {self.crewsize} \nFaction: {Faction.idtoname(self.factionid)} \n"
+        description += "Hardpoints: \n" 
+        count = 1
+        for hardpoint in self.hardpoints:
             description += f"{count}: {hardpoint} "
             count += 1
-        description += "\nModules Total: "
+        description += "\nEmpty Modules: \n"
+        count = 1
+        for module in self.availmodules:
+            description += f"{count}: {module} "
+            count += 1
+        description += "\nOriginal Modules: \n"
         count = 1
         for module in self.modules:
             description += f"{count}: {module} "
             count += 1
-        description += "\nOriginal Modules: "
-        count = 1
-        description += "\nModules Set: "
-        for module in self.eqmodules:
-            description += f"{module}, "
-        description += f"\nWeapons: "
+        description += "\nEquiped Modules: \n"
+        for module in self.eqmodules.modulelist:
+            description += f"Module: {module.name} Quantity: {module.quantity} Capacity: {module.capacity} \n"
+        description += f"\nWeapons: \n"
         count = 1
         for weapon in self.eqweapons:
             description += f"{weapon}, "
-        description += f"\nRooms: "
+        description += f"\nRooms: \n"
         count = 1
-        for room in self.rooms:
-            description += f"{room}, "
+        for room in self.rooms.shiproomlist:
+            description += f"Room: {room.type} Size: {room.size} Quantity: {room.quantity} \n"
         description += "\n Crew Members: \n"
         for role, crew in self.crewlist.items():
-            description += f"{role} {crew.forename} {crew.surname}\n"
-        description += "\n"'''
-        
-
-'''initializehulls()
-initializemodels()
-for model in HullModels.models:
-    print(Ship(model))'''
+            description += f"{role.title()} - {crew.forename} {crew.surname} \n"
+        if self.cat != "None":
+            description += f"Cat: {self.cat.name}, a very good kitty "
+        description += "\n"
+        return description

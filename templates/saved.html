@@ -9,17 +9,20 @@
 <div>
     <h1>NPCs</h1>
     {% for npc in npcstrings %}
-    <p>{{ npc }}</p>
+    <p>{{ npc|linebreaksbr }}</p>
     {% endfor %}
     <h1>Stars</h1>
     {% for star in starstrings %}
-    <p>{{star}}</p>
+    <p>{{star|linebreaksbr}}</p>
     {% endfor %}
     <h1>Ships</h1>
     {% for ship in shipstrings %}
-    <p>{{ship}}</p>
+    <p>{{ship|linebreaksbr}}</p>
     {% endfor %}
     <h1>Cats</h1>
+    {% for cat in catstrings %}
+    <p>{{cat|linebreaksbr}}</p>
+    {% endfor %}
 </div>
 
 

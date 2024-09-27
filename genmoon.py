@@ -5,7 +5,7 @@ class Moon:
     typelist = ["ocean", "terrestrial", "silicate", "hyceanth", "desert", "carbon", "coreless", "gas dwarf", "helium", "ice", "iron", "lava", "protoplanet"]
     
     # TODO update pname when planet name changes
-    def __init__(self, pname, gzone, id, name, mtype, lwater, atmo, life, populated, factions, systemobjects, surveyed, pressure):
+    def __init__(self, pname, gzone, id, name, mtype, lwater, atmo, life, populated, factions, systemobjects, surveyed, pressure, notes):
         self.pname = pname
         self.gzone = gzone
         self.id = id
@@ -19,6 +19,7 @@ class Moon:
         self.systemobjects = systemobjects
         self.surveyed = surveyed
         self.pressure = pressure
+        self.notes = notes
         
         
     def genrandommoon(pname, sundistance, gzone, id):
@@ -35,7 +36,8 @@ class Moon:
         systemobjects = []
         surveyed = PlanetBuilders.gensurveyed(factions)
         pressure = PlanetBuilders.genpressure(atmo, mtype)
-        return Moon(pname, gzone, id, name, mtype, lwater, atmo, life, populated, factions, systemobjects, surveyed, pressure)
+        notes = ""
+        return Moon(pname, gzone, id, name, mtype, lwater, atmo, life, populated, factions, systemobjects, surveyed, pressure, notes)
 
     def editmoon(self, name, lwater, life, mtype, atmo, factions, notes):
         self.name = name
@@ -132,5 +134,10 @@ class Moon:
 
 
     def __str__(self):
-        return f"Name: {self.name} \nType: {self.mtype} \nLife: {self.life} \nFactions: {self.factions} \nAtmosphere: {self.atmo}"
+        description = f"Name: {self.name} \nType: {self.mtype.title()} \nLife: {self.life} \nAtmosphere: {self.atmo.title()} \n"
+        description += f"Factions: \n"
+        for faction in self.factions:
+            description += f"{faction.name} \n"
+        description += f"Your notes: {self.notes} \n"
+        return description
     

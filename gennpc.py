@@ -231,14 +231,13 @@ class Npc:
     
     @pstat.setter
     def pstat(self, pstat):
-        if not (pstat >= 0 and pstat <= 3):
+        if pstat not in Npc.statlist:
             raise ValueError(f"Invalid primary stat {pstat}.")
         self._pstat = pstat
     
     @staticmethod
     def genprimarystat():
-        stat = random.randint(0,3)
-        return stat
+        return random.choice(Npc.statlist)
     
     @property
     def job(self):
@@ -257,9 +256,9 @@ class Npc:
 
     @staticmethod
     def getjob(stat):
-        if not stat or not (stat >= 0 and stat <= 3):
+        if stat not in Npc.statlist:
             stat = Npc.genprimarystat()
-        match Npc.statlist[stat]:
+        match stat:
             case "Strength":
                 jlist = JobList.strjob
             case "Agility":
@@ -282,10 +281,15 @@ class Npc:
 
     @staticmethod
     def genstatsrand(pstat, type):
+        # Probably can be removed.
         if not pstat:
             pstat = Npc.genprimarystat()
+        position = 0
+        for i, stat in enumerate(Npc.statlist):
+            if pstat == stat:
+                position = i
         stats = [1, 1, 1, 1]
-        stats[pstat] += 2
+        stats[position] += 2
         tstats = 6
         while tstats < 14:
             rand = random.randint(0,3)
@@ -293,7 +297,7 @@ class Npc:
                 stats[rand] += 1
                 tstats += 1
         if type == "SYNTH":
-            stats[pstat] += 3
+            stats[position] += 3
             largest = stats
             largest.sort()
             largest = largest[2] #index 3 should be primary stat as it is at least 6

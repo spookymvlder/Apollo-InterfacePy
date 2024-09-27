@@ -101,7 +101,7 @@ class Star:
                     for faction in moon["factions"]:
                         factions.append(FactionList.getclassfromid(faction))
                     moons.append(Moon(moon["pname"], moon["gzone"], moon["id"], moon["name"], moon["mtype"], moon["lwater"], moon["atmo"], moon["life"], moon["populated"], 
-                    factions, moon["systemobjects"], moon["surveyed"], moon["pressure"]))
+                    factions, moon["systemobjects"], moon["surveyed"], moon["pressure"], moon["notes"]))
                 factions = []
                 for faction in planet["factions"]:
                     factions.append(FactionList.getclassfromid(faction))
@@ -1106,8 +1106,8 @@ class Star:
                 planet.id -= 1
         
     def __str__(self):
-        description = f"Star system {self.name} is a {self.color} class {self.starclass}{self.spectype} star. \n"
-        description += f"Mass: {self.mass} Radius: {self.radius} Luminosity: {self.lum} Temperature: {self.startemp} \n"
+        description = f"Star system {self.name} is a {self.color.title()} class {self.starclass}{self.spectype} star. \n"
+        description += f"Mass: {self.mass}M Radius: {self.radius}R Luminosity: {self.lum}L Temperature: {self.startemp}K \n"
         description += f"Planets: {self.pcount} \n"
         description += f"Your notes: {self.notes} \n"
         if self.pcount > 0:

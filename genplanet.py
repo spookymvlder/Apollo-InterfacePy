@@ -690,8 +690,8 @@ class Planet:
         return tooltip
 
     def __str__(self):
-        description = f"{self.pname} is a {self.ptype} planet. \n"
-        description += f"Mass: {self.mass}Me Radius: {self.radius}Re Distance: {self.distance}AU Relative Gravity: {self.relativeg} Pressure: {self.pressure} Atmosphere: {self.atmo} \n"
+        description = f"{self.pname} is a {self.ptype.title()} planet. \n"
+        description += f"Mass: {self.mass}Me Radius: {self.radius}Re Distance: {self.distance}AU Relative Gravity: {self.relativeg} Pressure: {self.pressure.title()} Atmosphere: {self.atmo.title()} \n"
         description += f"Rings: {self.rings} Liquid Water: {self.lwater} Life: {self.life} Populated: {self.populated} Surevey Percentage: {self.surveyed}% \n"
         description += f"Your notes: {self.notes} \n"
         if len(self.factions) > 0:

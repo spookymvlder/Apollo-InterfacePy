@@ -83,3 +83,8 @@ body {
     transform: rotate(-90deg);
     transform-origin: left top 0;
 }
+
+.flash {
+    background-color: white;
+    transition: background-color 500ms linear;
+}

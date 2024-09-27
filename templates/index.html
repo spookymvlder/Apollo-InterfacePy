@@ -72,7 +72,9 @@
             <div class="row mb-3">
                 <div class="col">
                     <label class="visually-hidden" for="genjob">Job</label>
-                    <input type="text" class="form-control" id="genjob" name="genjob" required value="{{ npc.job }}">
+                    <select class="form-select flash" id="genjob" name="genjob" required>
+                        <option selected value="{{npc.job}}">{{npc.job}}</option>
+                    </select>
                 </div>
                 <div class="col">
                     <label class="visually-hidden" for="gentype">Type</label>
@@ -98,9 +100,9 @@
                     <label class="visually-hidden" for="genpstat">Primary Stat</label>
                     <div class="input-group">
                         <div class="input-group-text">Primary Stat</div>
-                        <select class="form-select" id="genpstat" name="genpstat">
-                            <option selected value="{{ npc.pstat }}">{{ npc.statlist[npc.pstat] }}</option>
-                            {% for stat in statlist if stat != npc.statlist[npc.pstat] %}
+                        <select class="form-select" id="genpstat" name="genpstat" onchange="updateJobs()">
+                            <option selected value="{{ npc.pstat }}">{{ npc.pstat }}</option>
+                            {% for stat in statlist if stat != npc.pstat %}
                             <option value="{{stat}}">{{stat}}</option>
                             {% endfor %}
                         </select>
@@ -148,4 +150,53 @@
         </form>
     </div>
 </div>
+<script>
+    // Provide a new job list if primary stat changes
+    // VS errors here are a result of JS using a jinja variable, not an actual error.
+    const jobMap = {
+            'Strength': {{ joblist.strjob|tojson }},
+            'Agility': {{ joblist.agljob|tojson }},
+            'Wits': {{ joblist.witjob|tojson }},
+            'Empathy': {{ joblist.empjob|tojson }},
+        };
+
+    function updateJobs() {
+        const pstat = document.getElementById('genpstat').value;
+        const jobSelect = document.getElementById('genjob');
+        
+        // Clear the current job options
+        jobSelect.innerHTML = '';
+        
+        // Get jobs based on selected primary stat
+        const jobs = jobMap[pstat] || [];
+        
+        // Populate the job dropdown
+        jobs.forEach(job => {
+            const option = document.createElement('option');
+            option.value = job;
+            option.textContent = job;
+            jobSelect.appendChild(option);
+        });
+        
+        // Keep current job if available in the new list
+        const currentJob = "{{ npc.job }}";
+        if (jobs.includes(currentJob)) {
+            jobSelect.value = currentJob;
+        } else {
+            // Choose random job if primary stat changed
+            jobSelect.value = jobs[(Math.floor(Math.random() * jobs.length))];
+            setTimeout(() => {
+                updateContent(document.getElementById('genjob'));
+            }, 1000);
+        }
+    }
+    // Changes background color of jobs when primary stat changes, called by updateJobs
+    function updateContent(element) {
+        element.style.backgroundColor = 'red';
+        setTimeout(() => {element.style.backgroundColor = 'white';}, 500);
+    }
+
+    // Initialize jobs on page load
+    document.addEventListener('DOMContentLoaded', updateJobs);
+</script>
 {% endblock %}

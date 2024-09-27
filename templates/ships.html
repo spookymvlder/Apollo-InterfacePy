@@ -5,7 +5,6 @@
 {% endblock %}
 
 {% block main %}
-
 <div class="container">
     <h1> Ship Generator</h1>
     <div class="section primary">
@@ -22,7 +21,7 @@
                         <li class="list-group-item">Model: {{ship.shipmodel}}</li>
                     </ul>
                 </div>
-                <div class="col-sm-5">
+                <div class="col-sm-4">
                     <ul class="list group">
                         <li class="list-group-item">Length: {{ship.hullen}} m</li>
                         <li class="list-group-item">Crew Capacity: [{{ship.crew[0]}} - {{ship.crew[1]}}]</li>
@@ -51,6 +50,18 @@
                     <form method="post" action="/ships">
                         <div class="row">
                             <button class="btn img-wrapper" name="rollbtn" value="roll" type="submit" data-toggle="tooltip" title="Generate new ship"><img class="" src="static\icons\dice_out.png"></button>
+                        </div>
+                        <div class="row" style="padding-bottom: 5px; padding-right: 5px;">
+                            <label for="selshiptype">Ship Type</label>
+                            <select class="form-select" id="genshiptype" name="genshiptype" data-toggle="tooltip" title="Uses the Generate New Ship button to create a new ship of the chosen type.">
+                                <option selected value="{{selected}}">{{selected|title}}</option>
+                                {% if selected != "" %}
+                                <option value="">-</option>
+                                {% endif %}
+                                {% for type in typelist %}
+                                <option value="{{type}}">{{type|title}}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                     </form>
                     
@@ -165,6 +176,10 @@
         </div>
     </div>
 </div>
-
+<script>
+    $(document).ready(function(){
+      $('[data-toggle="tooltip"]').tooltip();
+    });
+    </script>
 
 {% endblock %}

@@ -1,9 +1,12 @@
 import random
-from helpers import coin, hisher, heshe
+from helpers import coin, heshe
 from gennpc import Npc
 from namelists import CatNames
 from savedobjects import CatList
-#https://www.reddit.com/media?url=https%3A%2F%2Fi.redd.it%2Fjk1hor2f5hf11.jpg
+
+
+# Cat data taken from link below, doesn't account for chances or actual breeds of cat. That way lies madness.
+# https://www.reddit.com/media?url=https%3A%2F%2Fi.redd.it%2Fjk1hor2f5hf11.jpg
 
 
 class Cat:
@@ -32,6 +35,7 @@ class Cat:
         self.name = name
         self.id = id
 
+    @staticmethod
     def genrandcat(mutation="", color1="", color2="", eye1="", eye2="", tort="", tabby="", colorpoint="", whitespot="", tipped="", whitespotpatt="", sex="", name=""):
         if mutation == "":
             mutation = Cat.genmutation()
@@ -57,10 +61,12 @@ class Cat:
                 colorpoint = Cat.gencolorpoint()
             if whitespot == "":
                 whitespot = Cat.genwhitespotting()
+                if whitespot is False:
+                    whitespotpatt = False
+                else:
+                    whitespotpatt = Cat.genwhitespotpatt()
             if tipped == "":
                 tipped = Cat.gentipped()
-            if whitespot and whitespotpatt == "":
-                whitespotpatt = Cat.genwhitespotpatt()
         else:
             if tort == "":
                 tort = False
@@ -70,10 +76,9 @@ class Cat:
                 colorpoint = False
             if whitespot == "":
                 whitespot = False
+                whitespotpatt = False
             if tipped == "":
                 tipped = False
-            if whitespotpatt == "":
-                whitespotpatt = False
         if sex == "":
             if color1 != "orange":
                 sex = Npc.gensexrand()
@@ -124,6 +129,17 @@ class Cat:
 
             return description
     
+    @property
+    def mutation(self):
+        return self._mutation
+
+    @mutation.setter
+    def mutation(self, mutation):
+        if mutation not in Cat.mutationlist:
+            if mutation is not False:
+                raise ValueError(f"Invalid cat mutation type {mutation}.")
+        self._mutation = mutation
+
     @staticmethod
     def gendichroic(mutation, eye1):
         if mutation != "dichroic":
@@ -162,14 +178,66 @@ class Cat:
             color1 = "white"
         return color1
 
+    @property
+    def eye1(self):
+        return self._eye1
+
+    @eye1.setter
+    def eye1(self, eye1):
+        if eye1 not in Cat.eyecolorlist:
+            raise ValueError(f"Invalid cat eye color {eye1}.")
+        self._eye1 = eye1
+
+    @property
+    def eye2(self):
+        return self._eye2
+
+    @eye2.setter
+    def eye2(self, eye2):
+        if eye2 not in Cat.eyecolorlist:
+            raise ValueError(f"Invalid cat eye color {eye2}.")
+        self._eye2 = eye2
+
     @staticmethod
     def geneyes():
         return random.choice(Cat.eyecolorlist)
+
+    @property
+    def color1(self):
+        return self._color1
+
+    @color1.setter
+    def color1(self, color1):
+        if color1 not in Cat.colorlist:
+            raise ValueError(f"Invalid cat color {color1}.")
+        self._color1 = color1
+
+    @property
+    def color2(self):
+        return self._color2
+
+    @color2.setter
+    def color2(self, color2):
+        if color2 not in Cat.colorlist:
+            if color2 != False:
+                raise ValueError(f"Invalid cat color {color2}.")
+        self._color2 = color2
 
     @staticmethod
     def gencatcolor():
         return random.choice(Cat.colorlist)
     
+    @property
+    def tort(self):
+        return self._tort
+
+    @tort.setter
+    def tort(self, tort):
+        if tort not in Cat.tortlist:
+            if tort != False:
+                raise ValueError(f"Invalid cat tort type {tort}.")
+        self._tort = tort
+
     @staticmethod
     def gentort():
         r = random.randint(1,9)
@@ -179,6 +247,17 @@ class Cat:
             tort = random.choice(Cat.tortlist)
         return tort
     
+    @property
+    def tabby(self):
+        return self._tabby
+
+    @tabby.setter
+    def tabby(self, tabby):
+        if tabby not in Cat.tabbylist:
+            if tabby is not False:
+                raise ValueError(f"Invalid cat tabby type {tabby}.")
+        self._tabby = tabby
+
     @staticmethod
     def gentabby():
         r = random.randint(1,12)
@@ -188,6 +267,17 @@ class Cat:
             tabby = random.choice(Cat.tabbylist)
         return tabby
     
+    @property
+    def colorpoint(self):
+        return self._colorpoint
+    
+    @colorpoint.setter
+    def colorpoint(self, colorpoint):
+        if colorpoint not in Cat.colorpointlist:
+            if colorpoint is not False:
+                raise ValueError(f"Invalid cat colorpoint type {colorpoint}.")
+        self._colorpoint = colorpoint
+
     @staticmethod
     def gencolorpoint():
         r = random.randint(1,6)
@@ -196,6 +286,16 @@ class Cat:
         else:
             colorpoint = random.choice(Cat.colorpointlist)
         return colorpoint
+
+    @property
+    def whitespot(self):
+        return self._whitespot
+    
+    @whitespot.setter
+    def whitespot(self, whitespot):
+        if whitespot is not False and whitespot is not True:
+            raise ValueError(f"Invalid whitespot value {whitespot}, must be bool.")
+        self._whitespot = whitespot
 
     @staticmethod
     def genwhitespotting():
@@ -206,9 +306,31 @@ class Cat:
             whitespot = True
         return whitespot
 
+    @property
+    def whitespotpatt(self):
+        return self._whitespotpatt
+    
+    @whitespotpatt.setter
+    def whitespotpatt(self, whitespotpatt):
+        if whitespotpatt not in Cat.whitespotlist:
+            if whitespotpatt is not False:
+                raise ValueError(f"Invalid cat whitespot type {whitespotpatt}.")
+        self._whitespotpatt = whitespotpatt
+
     @staticmethod
     def genwhitespotpatt():
         return random.choice(Cat.whitespotlist)
+
+    @property
+    def tipped(self):
+        return self._tipped
+    
+    @tipped.setter
+    def tipped(self, tipped):
+        if tipped not in Cat.tippedlist:
+            if tipped is not False:
+                raise ValueError(f"Invalid cat tip type {tipped}.")
+        self._tipped = tipped
 
     @staticmethod
     def gentipped():
@@ -219,9 +341,29 @@ class Cat:
             tipped = random.choice(Cat.tippedlist)
         return tipped
     
+    @property
+    def sex(self):
+        return self._sex
+    
+    @sex.setter
+    def sex(self, sex):
+        if sex not in Npc.sexlist:
+            raise ValueError(f"Invalid cat sex {sex}.")
+        self._sex = sex
+        
+    @property
+    def name(self):
+        return self._name
+    
+    @name.setter
+    def name(self, name):
+        if name == "" or not isinstance(name, str):
+            raise ValueError(f"Invalide cat name {name}.")
+        self._name = name
+
     @staticmethod
     def genname(sex):
-        r = random.randint(1,5)
+        r = random.randint(1,6)
         name = ""
         match r:
             case 1:
@@ -243,8 +385,6 @@ class Cat:
                         name = random.choice(x[1])
                     else:
                         name = random.choice(x[2])
-        if name:
-            return name
         r = random.randint(1,5)
         if r == 1:
             u = ["Honorable", "Senator", "President", "Councillor", "Alderman", "Mayor", "Governor", "Prefect", "Prelate", "Premier", "Ambassador", "Envoy", "Provost", "Chief", "Dr.", "Professor", "Admiral", "Captain", "Commander", "Colonel", "General", "Constable", "Sensei"]
@@ -261,5 +401,3 @@ class Cat:
             name = title + " " + name
         return name
     
-#cat = Cat()
-#print(cat)

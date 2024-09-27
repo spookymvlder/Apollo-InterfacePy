@@ -1,5 +1,6 @@
 import random
 
+# Not in use yet, was planning on this being a parent class to anything where people can live. 
 class Location():
     types = ["Ship", "Base", "Station", "Habitat", "Planet", "Star", "Camp", "Default"]
 

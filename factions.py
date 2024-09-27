@@ -319,7 +319,8 @@ class Faction:
             raise ValueError(f"Invalid faction scope level {scope}.")
         self._scope = scope
 
-
+    def __str__(self):
+        return self.name
 
 def initializefactionlist():
     with open(r'static\FactionList_new.csv', newline='') as csvfile:
