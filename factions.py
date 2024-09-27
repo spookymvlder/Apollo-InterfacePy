@@ -252,9 +252,6 @@ class Faction:
             raise ValueError(f"Ship prefix {shippre} must be a string less than 5 characters.")
         self._shippre = shippre
 
-    def __str__(self):
-        return f"Name: {self.name}\nId: {self.id}\nType: {self.type}\nName Lists: {self.nameset}"
-
     @property
     def ordlvl(self):
         return self._ordlvl

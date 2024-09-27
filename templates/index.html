@@ -153,6 +153,7 @@
 <script>
     // Provide a new job list if primary stat changes
     // VS errors here are a result of JS using a jinja variable, not an actual error.
+    // updateJobs and jobMap generated mostly via chatgpt
     const jobMap = {
             'Strength': {{ joblist.strjob|tojson }},
             'Agility': {{ joblist.agljob|tojson }},

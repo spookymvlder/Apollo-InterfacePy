@@ -26,7 +26,7 @@ from markupsafe import Markup
 app = Flask(__name__)
 
 
-
+# Many objects just store a faction id, rather than pointing to the class. This makes it possible to render the name of that faction.
 def idtoname(id):
     return Faction.idtoname(id)
 
@@ -58,10 +58,6 @@ def index():
         pstat = request.form.get("pstat")
         type = request.form.get("type")
         nation = request.form.get("namelist")
-        for x in range(len(Npc.statlist)):
-            if pstat == Npc.statlist[x]:
-                pstat = x
-                break
         npc = Npc.genrandomnpc(sex=sex, factionid=postfaction, pstat=pstat, type=type, nation=nation)
 
     return render_template("index.html", namelist=NationNameTable.nationlist, sexes=Npc.sexlist, factions=FactionList.factionlist, types=Npc.typelist, statlist=Npc.statlist, npc=npc, joblist=JobList)
@@ -71,10 +67,6 @@ def index():
 def validatenpc():
         sex = request.form.get("gensex")
         pstat = request.form.get("genpstat")
-        for x in range(len(Npc.statlist)):
-            if pstat == Npc.statlist[x]:
-                pstat = x
-                break
         type = request.form.get("gentype")
         postfaction = int(request.form.get("genfaction"))
         forename = request.form.get("genforename")
@@ -532,7 +524,7 @@ def export():
         "ships" : ships,
         "stars" : stars
     }
-
+    # JSON export and import code generated with help from chatgpt.
     json_data = json.dumps(exportlist, indent=6)
     return_data = io.BytesIO()
     return_data.write(json_data.encode('utf-8'))

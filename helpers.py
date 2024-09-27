@@ -40,7 +40,7 @@ def skewvalue(value):
     return value
 
 def isbool(value):
-    if value == True or value == False:
+    if value is True or value is False:
         return True
     return False
 

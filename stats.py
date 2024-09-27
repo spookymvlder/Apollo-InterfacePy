@@ -8,17 +8,17 @@ class JobList:
     joblist = strjob + agljob + witjob + empjob
 
 
-    strjoblist = []
-    agljoblist = []
-    witjoblist = []
-    empjoblist = []
-
     #empty lists for saving new jobs to, which can then be exported.
     newstrjoblist = []
     newagljoblist = []
     newwitjoblist = []
     newempjoblist = []
 
+
+    strjoblist = strjob + newstrjoblist
+    agljoblist = agljob + newagljoblist
+    witjoblist = witjob + newwitjoblist
+    empjoblist = empjob + newempjoblist
     #def addjobtolist
 
 class Job:
