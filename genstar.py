@@ -112,6 +112,87 @@ class Star:
             star["pcount"], star["inzone"], star["outzone"], star["id"], star["spacing"], planets))
             if StarList.masterid <= star["id"]:
                 StarList.masterid = star["id"] + 1
+
+    # Converts stars from star list in to a dictionary to be exported via JSON. Also turns planets and moons in to dictionaries.
+    @staticmethod
+    def packstars():
+        stars = []
+        for star in StarList.starlist:
+            dict = {
+                "name" : star.name,
+                "starclass" : star.starclass,
+                "spectype" : star.spectype,
+                "color" : star.color,
+                "mass" : star.mass,
+                "radius" : star.radius,
+                "lum" : star.lum,
+                "startemp" : star.startemp,
+                "notes" : star.notes,
+                "pcount" : star.pcount,
+                "inzone" : star.inzone,
+                "outzone" : star.outzone,
+                "id" : star.id,
+                "spacing" : star.spacing
+                #solarobjects
+            }
+            planets = []
+            for planet in star.solarobjects:
+                planetdict = {
+                "distance" : planet.distance,
+                "gzone" : planet.gzone,
+                "basetemp" : planet.basetemp,
+                "terrestrial" : planet.terrestrial,
+                "ptype" : planet.ptype,
+                "lwater" : planet.lwater,
+                "atmo" : planet.atmo,
+                "mass" : planet.mass,
+                "radius" : planet.radius,
+                "rings" : planet.rings,
+                "mooncandidate" : planet.mooncandidate,
+                "mooncount" : planet.mooncount,
+                "gravity" : planet.gravity,
+                "relativeg" : planet.relativeg,
+                "notes" : planet.notes,
+                "life" : planet.life,
+                "populated" : planet.populated,
+                "pname" : planet.pname,
+                "surveyed" : planet.surveyed,
+                "pressure" : planet.pressure,
+                "settlements" : planet.settlements,
+                "id" : planet.id
+                }
+                pfactions = []
+                for faction in planet.factions:
+                    pfactions.append(faction.id)
+                planetdict["factions"] = pfactions
+                moonlist = []
+                for moon in planet.moons:
+                    moondict = {
+                        "pname" : moon.pname,
+                        "gzone" : moon.gzone,
+                        "id" : moon.id,
+                        "name" : moon.name,
+                        "mtype" : moon.mtype,
+                        "lwater" : moon.lwater,
+                        "atmo" : moon.atmo,
+                        "life" : moon.life,
+                        "populated" : moon.populated,
+                        "systemobjects" : moon.systemobjects,
+                        "surveyed" : moon.surveyed,
+                        "pressure" : moon.pressure,
+                        "notes" : moon.notes
+                    }
+                    mfactions = []
+                    for faction in moon.factions:
+                        mfactions.append(faction.id)
+                    moondict["factions"] = mfactions
+                    moonlist.append(moondict)
+                planetdict["moons"] = moonlist
+                planets.append(planetdict)
+            dict["solarobjects"] = planets
+            stars.append(dict)
+        return stars
+
     @property
     def name(self):
         return self._name

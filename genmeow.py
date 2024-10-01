@@ -100,6 +100,30 @@ class Cat:
             CatList.catlist.append(Cat(cat["mutation"], cat["color1"], cat["color2"], cat["eye1"], cat["eye2"], cat["tort"], cat["tabby"], cat["colorpoint"], cat["whitespot"], cat["tipped"], cat["whitespotpatt"], cat["sex"], cat["name"], cat["id"]))
             if CatList.masterid <= cat["id"]:
                 CatList.masterid = cat["id"] + 1
+
+    # Converts cats from cat list in to a JSON ingestible dicitonary.
+    @staticmethod
+    def packcats():
+        cats = []
+        for cat in CatList.catlist:
+            dict = {
+                "mutation" : cat.mutation,
+                "color1" : cat.color1,
+                "color2" : cat.color2,
+                "eye1" : cat.eye1,
+                "eye2" : cat.eye2,
+                "tort" : cat.tort,
+                "tabby" : cat.tabby,
+                "colorpoint" : cat.colorpoint,
+                "whitespot" : cat.whitespot,
+                "tipped" : cat.tipped,
+                "whitespotpatt" : cat.whitespotpatt,
+                "sex" : cat.sex,
+                "name" : cat.name,
+                "id" : cat.id
+            }
+            cats.append(dict)
+        return cats
                 
     def __str__(self):
             description = f"{self.name} is a very good kitty. {heshe(self.sex, 1)} is "

@@ -96,6 +96,32 @@ class Faction:
             if faction["id"] >= FactionList.masterid:
                 FactionList.masterid = faction["id"] + 1
 
+    # Packs each faction from the faction list as a dictionary to be converted to JSON later.
+    @staticmethod
+    def packfactions():
+        factions = []
+        for faction in FactionList.factionlist:
+            dict = {
+            "name" : faction.name,
+            "id" : faction.id,
+            "ftype" : faction.type,
+            "abbr" : faction.abbr,
+            "notes" : faction.notes,
+            "shippre" : faction.shippre,
+            "ordlvl" : faction.ordlvl,
+            "science" : faction.science,
+            "colony" : faction.colony,
+            "mgmt" : faction.mgmt,
+            "ships" : faction.ships,
+            "scope" : faction.scope,
+            "nameset" : faction.nameset,
+            "parentlist" : []
+            }
+            for parent in faction.parents:
+                dict["parentlist"].append(parent.id)
+            factions.append(dict)
+        return factions
+
     # Used to convert HTML form responses to a faction list for any objects that can have factions.
     @staticmethod
     def factionstolist(faction1, faction2, faction3=""):

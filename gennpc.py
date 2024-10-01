@@ -32,6 +32,26 @@ class Npc:
             if npc["id"] >= NpcList.masterid:
                 NpcList.masterid = npc["id"] + 1
 
+    # Packs each npc from the npc list as a dictionary to be converted to JSON later.
+    @staticmethod
+    def packnpcs():
+        npcs = []
+        for npc in NpcList.npclist:
+            dict = {
+                "forename" : npc.forename,
+                "surname" : npc.surname,
+                "type" : npc.type,
+                "sex" : npc.sex,
+                "factionid" : npc.factionid,
+                "job" : npc.job,
+                "stats" : npc.stats,
+                "pstat" : npc.pstat,
+                "nation" : npc.nation,
+                "id" : npc.id
+            }
+            npcs.append(dict)
+        return npcs
+
     @staticmethod
     def genrandomnpc(forename="", surname="", type="", sex="", factionid="", job="", stats="", pstat="", nation=""):
         if sex == "":

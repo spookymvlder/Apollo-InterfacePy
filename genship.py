@@ -93,6 +93,67 @@ class Ship:
             if ShipList.masterid <= ship["id"]:
                 ShipList.masterid = ship["id"] + 1
 
+    # Converts ship list in to JSON ingestible format.
+    @staticmethod
+    def packships():
+        ships = []
+        for ship in ShipList.shiplist:
+            dict = {
+                "size" : ship.size,
+                "hulltype" : ship.hulltype,
+                "category" : ship.category,
+                "hardpoints" : ship.hardpoints,
+                "signature" : ship.signature,
+                "crew" : ship.crew,
+                "hullen" : ship.hullen,
+                "hullval" : ship.hullval,
+                "armorval" : ship.armorval,
+                "modules" : ship.modules,
+                "manufacturer" : ship.manufacturer,
+                "shipmodel" : ship.shipmodel,
+                #"eqmodules" : ship.eqmodules,
+                "availmodules" : ship.availmodules,
+                "squads" : ship.squads,
+                "thrusters" : ship.thrusters,
+                "eqweapons" : ship.eqweapons,
+                #"rooms" : ship.rooms,
+                "ftl" : ship.ftl,
+                "factionid" : ship.factionid,
+                "name" : ship.name,
+                "crewsize" : ship.crewsize,
+                "prefix" : ship.prefix,
+                "id" : ship.id
+            }
+            crewdict = {}
+            for job, crew in ship.crewlist.items():
+                crewdict[job] = crew.id
+            dict["crewdict"] = crewdict
+            if ship.cat != "None":
+                dict["cat"] = ship.cat.id
+            else:
+                dict["cat"] = ship.cat
+            modulelist = []
+            for module in ship.eqmodules.modulelist:
+                moduledict = {
+                    "type" : module.type,
+                    "lvl" : module.lvl,
+                    "quantity" : module.quantity
+                }
+                modulelist.append(moduledict)
+            dict["eqmodules"] = modulelist
+            roomlist = []
+            for room in ship.rooms.shiproomlist:
+                roomdict = {
+                    "type" : room.type,
+                    "lvl" : room.lvl,
+                    "size" : room.size,
+                    "quantity" : room.quantity
+                }
+                roomlist.append(roomdict)
+            dict["rooms"] = roomlist
+            ships.append(dict)
+        return ships
+
     @property
     def id(self):
         return self._id
