@@ -3,6 +3,7 @@ from helpers import coin, isbool
 from factions import FactionList
 from genmoon import Moon
 from planethelpers import PlanetBuilders
+from math import sqrt
 
 
 # Trying something different in formatting for refactor of genplanet.
@@ -70,6 +71,16 @@ class Planet:
         pressure = PlanetBuilders.genpressure(atmo, ptype)
         settlements = [] # Empty list for now, may generate later to pass in
         moons = Planet.genmoons(pname, mooncount, distance, gzone)
+        # TODO Not plugged in anywhere yet.
+        period = Planet.calcperiod(distance, starmass)
+        eccentricity = Planet.geneccentricity()
+        aphelion = Planet.calcaphelion(eccentricity, distance)
+        periapsis = Planet.calcperiapsis(eccentricity, distance)
+        inclination = Planet.geninclination()
+        obliquity = Planet.genobliquity()
+        rotation = Planet.genrotation(mass, gzone)
+        tidelock = Planet.calctidelock(mass, starmass, radius, distance)
+        #print(f"Period: {period}, Eccentricity: {eccentricity}, Aphelion: {aphelion}, Periapsis: {periapsis}, \nInclination: {inclination}, Obliquity: {obliquity}, Rotation: {rotation}, Tidelock: {tidelock}")
         return Planet(distance, gzone, basetemp, terrestrial, ptype, lwater, atmo, mass, radius, rings, mooncandidate, mooncount, gravity, relativeg, notes, life, populated, pname, factions, surveyed, pressure, settlements, moons, id)
 
     # For use with /editplanet in app.py. Should be converting HTML inputs to non-string data types first.
@@ -317,6 +328,7 @@ class Planet:
         self._radius = radius
 
     # Returns Earth Radius
+    # From https://worldbuildingpasta.blogspot.com/2019/10/an-apple-pie-from-scratch-part-ivb.html
     @staticmethod
     def genradius(mass):
         if mass < 2.04:
@@ -535,6 +547,184 @@ class Planet:
             raise ValueError(f"Invalid planet pressure {pressure}.")
         self._pressure = pressure
     
+    # Time it takes to orbit a star, that planet's year. Unit is Earth Years.
+    @property
+    def period(self):
+        return self._period
+
+    @period.setter
+    def period(self, period):
+        if not isinstance(period, (int, float)):
+            raise ValueError(f"Invalid orbital period {period}.")
+        self._period = period
+
+    @staticmethod
+    def calcperiod(distance, starmass):
+        return round(sqrt((distance**3)/starmass), 4)
+
+    # How elliptical an orbit is. 0 is circular and 1 is very oval. Over 1 and escape occurs.
+    @property
+    def eccentricity(self):
+        return self._eccentricity
+    
+    @eccentricity.setter
+    def eccentricity(self, eccentricity):
+        if eccentricity < 0 or eccentricity > .99:
+            raise ValueError(f"Invalid planetary eccentricity, value must be between 0 and .99")
+        self._eccentricity = eccentricity
+
+    # Average eccentricity of solar system planets is .061.
+    @staticmethod
+    def geneccentricity():
+        r = random.randint(0, 100)
+        if r < 75:
+            eccentricity = round(random.uniform(0, .1500), 4)
+        else:
+            eccentricity = round(random.uniform(0, .35), 4)
+        return eccentricity
+
+    # Furthest point from star. Can be used for seasons
+    @property
+    def aphelion(self):
+        return self._aphelion
+    
+    @aphelion.setter
+    def aphelion(self, aphelion):
+        if not isinstance(aphelion, (int, float)):
+            raise ValueError(f"Invalid planetary aphelion {aphelion}.")
+        self._aphelion = aphelion
+
+    # TODO review if the units are correct, currently distance is in AU but may need to be converted to meters
+    @staticmethod
+    def calcaphelion(eccentricity, distance):
+        return round(distance * (1 + eccentricity), 4)
+    
+    # Closest point between planet and star
+    @property
+    def periapsis(self):
+        return self._periapsis
+    
+    @periapsis.setter
+    def periapsis(self, periapsis):
+        if not isinstance(periapsis, (int, float)):
+            raise ValueError(f"Invalid planetary periapsis {periapsis}.")
+        self._periapsis = periapsis
+    
+    # TODO review if the units are correct, currently distance is in AU but may need to be converted to meters
+    @staticmethod
+    def calcperiapsis(eccentricity, distance):
+        return round(distance * (1 - eccentricity), 4)
+
+    # Angle difference from the equitorial plane of the star 
+    @property
+    def inclination(self):
+        return self._inclination
+
+    @inclination.setter
+    def inclination(self, inclination):
+        if inclination < 0 or inclination > 180:
+            raise ValueError(f"Invalid planetary inclination {inclination}.")
+        self._inclination = inclination
+    
+    # Average inclination between 0 and 5, but need to make things interesting
+    # In our solar system, most planets are between 3.38 and 7.25, plus Pluto at 11.88 if it's a planet.
+    # https://academic.oup.com/mnras/article/490/4/4575/5613397?login=false
+    @staticmethod
+    def geninclination():
+        r = random.randint(0,100)
+        if r > 75:
+            end = 5.00
+        else:
+            end = 15.00
+        return round(random.uniform(0, end), 2)
+
+    # Axial tilt
+    @property
+    def obliquity(self):
+        return self._obliquity
+    
+    @obliquity.setter
+    def obliquity(self, obliquity):
+        if obliquity < 0 or obliquity > 180:
+            raise ValueError(f"Invalid planetary obliquity {obliquity}.")
+        self._obliquity = obliquity
+    
+    # Most objects will spin the same way they rotate, so the angle will be <= 90. Over 90 and they spin backwards.
+    @staticmethod
+    def genobliquity():
+        r = random.randint(0,100)
+        if r > 75:
+            end = 90.00
+        else:
+            end = 180.00
+        return round(random.uniform(0, 180.00), 2)
+
+    # Number of hours a planet has in its day.
+    @property
+    def rotation(self):
+        return self._rotation
+
+    @rotation.setter
+    def rotation(self, rotation):
+        if not isinstance(rotation, (float,  int)):
+            raise ValueError(f"Invalid planetary rotation {rotation}.")
+        self._rotation = rotation
+    
+    # Planets closer to the sun are more likely to be tidally locked and not rotate. To determine this we would need a rotational rate and do a lot of math.
+    # Larger planets seem to have shorter days as they rotate faster, but this isn't guaranteed. 
+    # Generates a rotation period in hours. 
+    @staticmethod
+    def genrotation(mass, gzone):
+        if gzone == "hot":
+            type = "long"
+        else:
+            type = "short"
+        if type == "short" and mass < 11:
+            if random.randint(1, 100) > 90:
+                type = "long"
+        if type == "long":
+            edge = 9600
+        else:
+            edge = 35
+        return round(random.uniform(4, edge), 2)
+
+    # Bool value determining if the planet rotates.
+    @property
+    def tidelock(self):
+        return self._tidelock
+
+    @tidelock.setter
+    def tidelock(self, tidelock):
+        if tidelock is not (True or False):
+            raise ValueError(f"Invalid tidelock value {tidelock}. Must be bool.")
+        self._tidelock = tidelock
+    
+    # Calculates the years until planet becomes tidelocked.
+    @staticmethod
+    def calctidelock(mass, starmass, radius, distance):
+        radius = radius * 6378 # Convert to km
+        mass = mass * (5.9742 * (10 ** 24)) # Convert to kg
+        starmass2 = starmass * (1.98892 * (10 ** 30)) # Convert to kg
+        distance = (distance * 1000) ** 6
+        tidelock = distance * radius * 3 * (10 ** 10)
+        tidelock = (tidelock / (mass * (starmass2 ** 2))) * 6
+        tidelock = tidelock * (10 ** 10) # Billions of years it would take to lock a planet's rotation to a star.
+        if starmass > 70 and tidelock < .001: # Life expectancy of star is 1 million
+            tidelocked = True
+        elif starmass > 10 and tidelock < .01: # Life expectency of star is 10 million
+            tidelocked = True
+        # Average star age is 8 billion, galaxy is only 13 billion years old. But after this point it gets hard to distinguish star class based off mass.
+        # Cutting off arbitrarily here unless we start calculating the age of the star. We do expect most stars in the habitable zone to be tidally locked.
+        # https://physics.stackexchange.com/questions/12541/tidal-lock-radius-in-habitable-zones
+        elif tidelock < 2: 
+            tidelocked = True
+        else:
+            tidelocked = False
+        return tidelocked
+        
+
+
+
 
     # What to show for the planet row of HTML to save space.
     @staticmethod

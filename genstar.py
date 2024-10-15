@@ -1160,6 +1160,7 @@ class Star:
     
     # TODO figure out a way to make spacing interesting, right now seems to cluster as cold planets.
     # Pluto is 40 AU at its furthest, anything beyone that is in the darkness of space and while it may be interesting, hard to account for.
+    # TODO incorporate periods in to orbital spacing. Orbital period of a body will be 1.5-3 times greater than the previous planet
     @staticmethod
     def genspacing(pcount):
         if pcount != 0:
@@ -1168,6 +1169,7 @@ class Star:
             spacing = 40
         return round(spacing, 4)
     
+    # TODO incorporate check of Hill radius to next planet https://worldbuildingpasta.blogspot.com/2019/09/an-apple-pie-from-scratch-part-iva.html
     # Generates a new planet based on characteristics of the sun.
     @staticmethod
     def genplanet(pcount, spacing, inzone, outzone, startemp, starmass, lum, solarobjects=[]):

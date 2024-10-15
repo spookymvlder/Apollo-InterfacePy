@@ -7,6 +7,7 @@ from savedobjects import NpcList
 
 
 class Npc:
+    # Move statlist to stats.py
     statlist = ["Strength", "Agility", "Wits", "Empathy"]
     sexlist = ["M", "F"]
     typelist = ["HUMAN", "SYNTH"]
