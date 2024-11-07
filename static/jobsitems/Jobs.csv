@@ -1,0 +1,53 @@
+Job,id,Stat,Type
+Marine,1,str,military
+Soldier,2,str,military
+Mercenary,3,str,"military,enforcement"
+Security Guard,4,str,enforcement
+Bounty Hunter,5,str,"intrigue,enforcement"
+Roughneck,6,str,"labor,tech"
+Factory Worker,7,str,labor
+Machinist,8,str,labor
+Mechanic,9,str,"labor,tech"
+Engineer,10,str,tech
+Farmer,11,str,"labor,frontier"
+Technician,12,str,tech
+Pilot,13,agl,"tech,spacer"
+Military Pilot,14,agl,"military,tech,spacer"
+Smuggler,15,agl,intrigue
+Wildcatter,16,agl,labor
+Prospector,17,agl,"labor,frontier"
+Surveyor,18,agl,"labor,frontier"
+Colonial Marshal,19,wit,"enforcement,frontier"
+Security Chief,20,wit,enforcement
+Marshal,21,wit,enforcement
+Deputy,22,wit,enforcement
+Sheriff,23,wit,enforcement
+Bounty Hunter,24,wit,"enforcement,intrigue"
+Guard,25,wit,enforcement
+Company Agent,26,wit,"intrigue,admin"
+Executive,27,wit,admin
+Junior Executive,28,wit,admin
+Manager,29,wit,admin
+Division Head,30,wit,admin
+Supervisor,31,wit,admin
+Journalist,32,wit,"admin,research,intrigue"
+Researcher,33,wit,research
+Inventor,34,wit,research
+Scientist,35,wit,research
+Biologist,36,wit,research
+Chemist,37,wit,research
+Medic,38,emp,health
+Paramedic,39,emp,health
+Doctor,40,emp,health
+Combat Medic,41,emp,"health,military"
+Officer,42,emp,military
+Captain,43,emp,"admin,spacer"
+Bridge Officer,44,emp,"admin,tech,spacer"
+Inspector,45,emp,"admin,intrigue,spacer"
+Facility Manager,46,emp,admin
+Counselor,47,emp,admin
+Quartermaster,48,emp,"admin,military"
+Performer,49,emp,labor
+Club Owner,50,emp,admin
+Waiter,51,emp,labor
+Bartender,52,emp,labor

@@ -3,6 +3,8 @@ from datetime import datetime
 
 from factions import Faction, initializeall
 initializeall()
+from stats import initializestats
+initializestats()
 
 from gennpc import Npc
 from genmeow import Cat
