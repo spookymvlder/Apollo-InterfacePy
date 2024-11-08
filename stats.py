@@ -3,61 +3,87 @@ import csv
 
 class JobList:
     statlist = ["strength", "agility", "wits", "empathy"]
-    strjob = ['Marine', 'Soldier', 'Mercenary', 'Security Guard', 'Bounty Hunter', 'Roughneck', 'Miner', 'Factory Worker', 'Machinist', 'Mechanic', 'Engineer', 'Farmer', 'Technician']
-    agljob = ['Pilot', 'Military Pilot', 'Smuggler', 'Wildcatter', 'Prospector', 'Surveyor']
-    witjob = ['Colonial Marshal', 'Security Chief', 'Marshal', 'Deputy', 'Sheriff', 'Bounty Hunter', 'Guard', 'Company Agent', 'Executive', 'Junior Executive', 'Manager', 'Division Head', 'Supervisor', 'Journalist', 'Researcher', 'Inventor', 'Scientist', 'Biologist', 'Chemist']
-    empjob = ['Medic', 'Paramedic', 'Doctor', 'Combat Medic', 'Officer', 'Captain', 'Bridge Officer', 'Inspector', 'Facility Manager', 'Counselor', 'Quartermaster','Performer', 'Club Owner', 'Waiter', 'Bartender']
-    joblist = strjob + agljob + witjob + empjob
-    
+    abbrstats = ["str", "agl", "wit", "emp"]
 
-
-    #empty lists for saving new jobs to, which can then be exported.
-    newstrjoblist = []
-    newagljoblist = []
-    newwitjoblist = []
-    newempjoblist = []
-
-
-    strjoblist = strjob + newstrjoblist
-    agljoblist = agljob + newagljoblist
-    witjoblist = witjob + newwitjoblist
-    empjoblist = empjob + newempjoblist
+    # Holds class references
+    jobclasslist = []
+    # Easy to reference string lists
+    strjoblist = []
+    agljoblist = []
+    witjoblist = []
+    empjoblist = []
+    # Compiled list of string lists for name validation
+    tjoblist = []
+    masterid = 1
     #def addjobtolist
 
+    # Populates a stat specific job list to allow easy lookup based on name, but also jobclasslist to store actual reference to class.
     @staticmethod
-    def addjobtolist(job, stat):
-        match stat:
-            case "strength":
+    def addjobtolist(job):
+        match job.stat:
+            case "str":
                 joblist = JobList.strjoblist
-                newlist = JobList.newstrjoblist
-            case "agility":
+            case "agl":
                 joblist = JobList.agljoblist
-                newlist = JobList.newagljoblist
-            case "wits":
+            case "wit":
                 joblist = JobList.witjoblist
-                newlist = JobList.newwitjoblist
-            case "empathy":
+            case "emp":
                 joblist = JobList.empjoblist
-                newlist = JobList.newempjoblist
-        if job in joblist:
+        if job.jobname in joblist:
             raise ValueError(f"Invalid job, job already present in list.")
-        newlist.append(job)
+        joblist.append(job.jobname)
+        JobList.tjoblist.append(job.jobname)
+        if job.id <= JobList.masterid:
+            JobList.masterid += 1
+        JobList.jobclasslist.append(job)
+        
 
 class Job:
-    def __init__(self, job, id, stat, jobtypes):
-        self.job = job
+    def __init__(self, job, stat, jobtypes, id=""):
+        self.jobname = job
+        if id == 0 or id == "":
+            id = JobList.masterid
         self.id = id
         self.jobtypes = Job.buildtypelist(jobtypes)
         self.stat = stat
         self.itemdict = Job.checkitemdicts(self.jobtypes)
 
+    @property
+    def jobname(self):
+        return self._jobname
+    
+    @jobname.setter
+    def jobname(self, jobname):
+        if not isinstance(jobname, str):
+            raise ValueError(f"Invalid job name {jobname}.")
+        self._jobname = jobname
+
+    @property
+    def stat(self):
+        return self._stat
+
+    @stat.setter
+    def stat(self, stat):
+        if stat not in JobList.abbrstats:
+            raise ValueError(f"Invalid job stat of {stat}.")
+        self._stat = stat
+
+    @property
+    def jobtypes(self):
+        return self._jobtypes
+    
+    @jobtypes.setter
+    def jobtypes(self, jobtypes):
+        if not isinstance(jobtypes, list):
+            raise ValueError(f"Jobtype list for job must be a list.")
+        self._jobtypes = jobtypes
 
     @staticmethod
     def buildtypelist(jobtypes):
         typelist = []
-        for type in jobtypes:
+        for ttype in jobtypes:
             for jtype in JobTypeList.jobtypelist:
-                if type == jtype.jobtype:
+                if ttype == jtype.type:
                     typelist.append(jtype)
         return typelist
 
@@ -75,11 +101,37 @@ class Job:
     
 
 # Job types are used to define what type of items should be available to npcs of a specific job.
+# TODO rename to Job Tags so type doesn't get confusing.
 class JobType:
-    def __init__(self, jobtype, id, itemdict):
-        self.jobtype = jobtype
+    def __init__(self, jobtype, itemdict, id=""):
+        self.type = jobtype
         self.itemdict = itemdict
+        if id == "" or id == 0:
+            id = JobTypeList.masterid
         self.id = id
+    
+    @property
+    def type(self):
+        return self._type
+    
+    @type.setter
+    def type(self, type):
+        if not isinstance(type, str):
+            raise ValueError(f"Invalid job type {type}.")
+        self._type = type
+
+    @property
+    def itemdict(self):
+        return self._itemdict
+
+    @itemdict.setter
+    def itemdict(self, itemdict):
+        if not isinstance(itemdict,dict):
+            raise ValueError(f"Invalid itemdict for {self.type}.")
+        if not ('rifle' or 'sidearm' or 'heavyweapon' or 'armor' or 'melee' or 'explosive' or 'suit' or 'technical' or 'accessory' or 'tool' or 'medical' or 'food' or 'substance') in itemdict:
+            raise ValueError(f"Itemdict missing item key.")
+        self._itemdict = itemdict
+
 
     # Creates a new dictionary and updates the min and max value for each starting type based on all item count dictionaries passed in.
     @staticmethod
@@ -107,7 +159,7 @@ class JobType:
                     newdict[key][1] = itemdict[key][1]
         return newdict
 
-
+# Container for job types
 class JobTypeList:
     jobtypelist = []
     masterid = 1
@@ -142,7 +194,7 @@ class Item:
         self.types = types
         self.value = value
         self.manufacturer = manufacturer
-        if id == "":
+        if id == "" or id == 0:
             id = ItemList.masterid
         self.id = id
 
@@ -217,22 +269,14 @@ def initializejobtypes():
             for value in itemdict.values():
                 for x in range(len(value)):
                     value[x] = int(value[x])
-            JobTypeList.addjobtype(JobType(row['Job Type'], int(row['id']), itemdict))
+            JobTypeList.addjobtype(JobType(row['Job Type'], itemdict, int(row['id'])))
             
 def initializejoblist():
     with open(r'static\jobsitems\Jobs.csv', newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             typelist = list((row['Type'].split(",")))
-            if row['Stat'] == "str":
-                joblist = JobList.newstrjoblist
-            elif row['Stat'] == 'agl':
-                joblist = JobList.newagljoblist
-            elif row['Stat'] == 'wit':
-                joblist = JobList.newwitjoblist
-            elif row['Stat'] == 'emp':
-                joblist = JobList.newempjoblist
-            joblist.append(Job(row['Job'], int(row['id']), row['Stat'], typelist))
+            JobList.addjobtolist(Job(row['Job'], row['Stat'], typelist, int(row['id'])))
 
 # Called from app.py
 def initializestats():
@@ -243,3 +287,4 @@ def initializestats():
 
 
 
+#initializestats()

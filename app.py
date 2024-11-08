@@ -414,3 +414,4 @@ for planet in star.solarobjects:
         mooncount = 0
     Planet.editplanet(planet, planet.pname, planet.distance, planet.ptype, planet.atmo, planet.mass, planet.radius, planet.basetemp, planet.pressure, mooncount, planet.factions, planet.lwater, planet.rings, planet.life, planet.notes, planet.surveyed, star)
 '''
+#Npc.genrandomnpc()

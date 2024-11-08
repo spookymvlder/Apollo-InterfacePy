@@ -257,12 +257,7 @@ class Npc:
     
     @job.setter
     def job(self, job):
-        found = False
-        for jobs in JobList.joblist:
-            if job in jobs:
-                found = True
-                break
-        if found == False:
+        if job not in JobList.tjoblist:
             raise ValueError(f"Invalid job type {job}.")
         self._job = job
 
@@ -272,13 +267,13 @@ class Npc:
             stat = Npc.genprimarystat()
         match stat:
             case "Strength":
-                jlist = JobList.strjob
+                jlist = JobList.strjoblist
             case "Agility":
-                jlist = JobList.agljob
+                jlist = JobList.agljoblist
             case "Wits":
-                jlist = JobList.witjob
+                jlist = JobList.witjoblist
             case "Empathy":
-                jlist = JobList.empjob
+                jlist = JobList.empjoblist
         return random.choice(jlist)
 
     @property
