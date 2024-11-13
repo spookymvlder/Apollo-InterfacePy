@@ -1,4 +1,4 @@
-import csv
+import csv, random
 # Place to save everything related to primary stats, such as jobs, talents, skills, and items.
 
 class JobList:
@@ -48,6 +48,7 @@ class Job:
         self.stat = stat
         self.itemdict = Job.checkitemdicts(self.jobtypes)
 
+
     @property
     def jobname(self):
         return self._jobname
@@ -78,6 +79,7 @@ class Job:
             raise ValueError(f"Jobtype list for job must be a list.")
         self._jobtypes = jobtypes
 
+    # Given 
     @staticmethod
     def buildtypelist(jobtypes):
         typelist = []
@@ -85,6 +87,7 @@ class Job:
             for jtype in JobTypeList.jobtypelist:
                 if ttype == jtype.type:
                     typelist.append(jtype)
+                    break
         return typelist
 
     # Checks if more than one job type exists for job. If so, merges the item list dictionaries for each so that the character can spawn the correct number of items. Skips this check if only one job type present.
@@ -98,6 +101,22 @@ class Job:
         else:
             itemdict = jobtypes[0].itemdict
         return itemdict
+
+    @property
+    def itemdict(self):
+        return self._itemdict
+
+    @itemdict.setter
+    def itemdict(self, itemdict):
+        for type in Item.typelist:
+            if type not in itemdict.keys():
+                raise ValueError(f"Missing item types from {self.jobname} item dictionary.")
+        for value in itemdict.values():
+            if not isinstance(value, list):
+                raise ValueError(f"Item dictionary for {self.jobname} is not list based.")
+        if itemdict["substance"] == 0:
+            raise ValueError(f"Likely issue with {self.jobname} item dictionary.")
+        self._itemdict = itemdict
     
 
 # Job types are used to define what type of items should be available to npcs of a specific job.
@@ -128,8 +147,11 @@ class JobType:
     def itemdict(self, itemdict):
         if not isinstance(itemdict,dict):
             raise ValueError(f"Invalid itemdict for {self.type}.")
-        if not ('rifle' or 'sidearm' or 'heavyweapon' or 'armor' or 'melee' or 'explosive' or 'suit' or 'technical' or 'accessory' or 'tool' or 'medical' or 'food' or 'substance') in itemdict:
+        if not ('rifle' or 'sidearm' or 'heavyweapon' or 'armor' or 'melee' or 'explosive' or 'suit' or 'technical' or 'accessory' or 'tool' or 
+        'medical' or 'food' or 'substance') in itemdict:
             raise ValueError(f"Itemdict missing item key.")
+        if itemdict["substance"] == 0:
+            raise ValueError(f"Likely issue with {self.type} item dictionary.")
         self._itemdict = itemdict
 
 
@@ -172,22 +194,98 @@ class JobTypeList:
             JobTypeList.masterid = jobtype.id + 1
 
 class ItemList:
-    weaponlist = []
     itemlist = []
     masterid = 1
+    riflelist = []
+    sidearmlist = []
+    hweaponlist = []
+    armorlist = []
+    meleelist = []
+    explosivelist = []
+    suitlist = []
+    techlist = []
+    acclist = []
+    toollist = []
+    medlist = []
+    foodlist = []
+    sublist = []
     
     @staticmethod
     def additem(item):
         ItemList.itemlist.append(item)
         if item.id >= ItemList.masterid:
             ItemList.masterid = item.id + 1
-            # May not be worth it, but create a secondary list that is just weapons.
+            # May be a more efficient way to do this, but useful for getitems()
+            # Item may have multiple types so second list is needed.
+            typelist = []
             for type in item.types:
-                if type in ["rifle", "sidearm", "heavy weapon", "melee", "explosive"]:
-                    ItemList.weaponlist.append(item)
+                typelist.append(ItemList.getitemtypelist(type))
+            for list in typelist:
+                list.append(item)
+    
+    # For each key in dict, choose a number of random items for each key.
+    # TODO Add handling to prevent duplicates of some item types. Ok to have more than one ration, but not ok to have 2 smart guns.
+    @staticmethod
+    def getitems(itemdict):
+        itemlist = []
+        for key in itemdict.keys():
+            for x in range(random.randint(itemdict[key][0], itemdict[key][1])):
+                itemlist.append(random.choice(ItemList.getitemtypelist(key)))
+        return itemlist
+    
+    @staticmethod
+    def getitemtypelist(itemtype):
+        typelist = ""
+        match itemtype:
+            case "rifle": 
+                typelist = ItemList.riflelist
+            case "sidearm":
+                typelist = ItemList.sidearmlist
+            case "heavy weapon":
+                typelist = ItemList.hweaponlist
+            case "armor":
+                typelist = ItemList.armorlist
+            case "melee":
+                typelist = ItemList.meleelist
+            case "explosive":
+                typelist = ItemList.explosivelist
+            case "suit":
+                typelist = ItemList.suitlist
+            case "technical":
+                typelist = ItemList.techlist
+            case "accessory":
+                typelist = ItemList.acclist
+            case "tool":
+                typelist = ItemList.toollist
+            case "medical":
+                typelist = ItemList.medlist
+            case "food":
+                typelist = ItemList.foodlist
+            case "substance":
+                typelist = ItemList.sublist
+        return typelist
+
+    @staticmethod
+    def getitemids(itemlist):
+        itemids = []
+        for item in itemlist:
+            itemids.append(item.id)
+        return itemids
+
+    @staticmethod
+    def builditemlistfromids(itemids):
+        titemlist = []
+        for item in itemids:
+            for citem in ItemList.itemlist:
+                if citem.id == item:
+                    titemlist.append(citem)
+                    break
+        return titemlist
+
 
 class Item:
-    typelist = ["rifle", "sidearm", "heavy weapon", "armor", "melee", "explosive", "suit", "technical", "accessory", "tool", "medical", "food", "substance"]
+    typelist = ["rifle", "sidearm", "heavy weapon", "armor", "melee", "explosive", "suit", "technical", "accessory", "tool", 
+    "medical", "food", "substance"]
     
     def __init__(self, name, types, value, id="", manufacturer=""):
         self.name = name

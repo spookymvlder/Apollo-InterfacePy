@@ -2,7 +2,7 @@ import random
 from helpers import coin
 from namelists import NationNameTable
 from factions import FactionList, CountryList, Faction
-from stats import JobList
+from stats import JobList, ItemList
 from savedobjects import NpcList
 
 
@@ -12,7 +12,7 @@ class Npc:
     sexlist = ["M", "F"]
     typelist = ["HUMAN", "SYNTH"]
 
-    def __init__(self, forename, surname, type, sex, factionid, job, stats, pstat, nation, id):
+    def __init__(self, forename, surname, type, sex, factionid, job, stats, pstat, nation, id, items):
         self.sex = sex
         self.factionid = factionid
         self.nation = nation
@@ -23,13 +23,15 @@ class Npc:
         self.job = job
         self.stats = stats
         self.id = id
+        self.items = items # List of ids of items
 
     # TODO find a better spot for this, can't put in saved objects due to circular reference
     @staticmethod
     def unpacknpcsfromload(npcs):
         NpcList.npclist.clear()
         for npc in npcs:
-            NpcList.npclist.append(Npc(npc["forename"], npc["surname"], npc["type"], npc["sex"], npc["factionid"], npc["job"], npc["stats"], npc["pstat"], npc["nation"], npc["id"]))
+            NpcList.npclist.append(Npc(npc["forename"], npc["surname"], npc["type"], npc["sex"], npc["factionid"], npc["job"], npc["stats"], npc["pstat"], 
+            npc["nation"], npc["id"], ItemList.builditemlistfromids(npc["items"])))
             if npc["id"] >= NpcList.masterid:
                 NpcList.masterid = npc["id"] + 1
 
@@ -48,13 +50,14 @@ class Npc:
                 "stats" : npc.stats,
                 "pstat" : npc.pstat,
                 "nation" : npc.nation,
-                "id" : npc.id
+                "id" : npc.id,
+                "items" : ItemList.getitemids(npc.items)
             }
             npcs.append(dict)
         return npcs
 
     @staticmethod
-    def genrandomnpc(forename="", surname="", type="", sex="", factionid="", job="", stats="", pstat="", nation=""):
+    def genrandomnpc(forename="", surname="", type="", sex="", factionid="", job="", stats="", pstat="", nation="", items=""):
         if sex == "":
             sex = Npc.gensexrand()
         if factionid != "" and nation == "":
@@ -77,8 +80,10 @@ class Npc:
             job = Npc.getjob(pstat)
         if stats == "":
             stats = Npc.genstatsrand(pstat, type)
+        if items == "":
+            items = Npc.genitems(job)
         id = 0
-        return Npc(forename, surname, type, sex, factionid, job, stats, pstat, nation, id)
+        return Npc(forename, surname, type, sex, factionid, job, stats, pstat, nation, id, items)
 
     @property
     def id(self):
@@ -347,13 +352,36 @@ class Npc:
                 return False
         return True
     
-
+    # First get job class record, then get item dict from job class, then generate items
+    def genitems(npcjob):
+        itemdict = ""
+        for job in JobList.jobclasslist:
+            if job.jobname == npcjob:
+                itemdict = job.itemdict
+                break
+        # TODO break out into new function, but *shouldn't* get hit.
+        if itemdict == "":
+            itemdict = {
+            'rifle': [0, 0],
+            'sidearm': [0,1],
+            'heavy weapon': [0, 0],
+            'armor': [0, 0],
+            'melee': [0, 0],
+            'explosive': [0, 0],
+            'suit': [0, 1],
+            'technical': [0, 1],
+            'accessory': [0, 2],
+            'tool': [0, 1],
+            'medical': [0, 1],
+            'food': [0, 1],
+            'substance': [0, 0]
+            }
+        return ItemList.getitems(itemdict)
     
 
     def __str__(self):
-        return f"Name: {self.forename} {self.surname}\nType: {self.type}\nFaction: {Faction.idtoname(self.factionid)}\nJob: {self.job}\nStats: {self.stats}\n"
+        itemstrings = []
+        for item in self.items:
+            itemstrings.append(item.name)
+        return f"Name: {self.forename} {self.surname}\nType: {self.type}\nFaction: {Faction.idtoname(self.factionid)}\nJob: {self.job}\nStats: {self.stats}\nItems: {itemstrings}"
 
-#character = genchar()
-#printcharacter(character)
-#npc = Npc()
-#print(npc)

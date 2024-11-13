@@ -16,7 +16,7 @@ from genship import Ship
 from namelists import NationNameTable
 from savedobjects import ShipList, NpcList, StarList, CatList, FactionList
 from helpers import convertbool
-from stats import JobList
+from stats import JobList, ItemList
 
 
 
@@ -51,6 +51,7 @@ Session(app)
 def index():
     if request.method == "GET":
         npc = Npc.genrandomnpc()
+
 
     if request.method =="POST":
         sex = request.form.get("sex")
@@ -414,4 +415,4 @@ for planet in star.solarobjects:
         mooncount = 0
     Planet.editplanet(planet, planet.pname, planet.distance, planet.ptype, planet.atmo, planet.mass, planet.radius, planet.basetemp, planet.pressure, mooncount, planet.factions, planet.lwater, planet.rings, planet.life, planet.notes, planet.surveyed, star)
 '''
-#Npc.genrandomnpc()
+Npc.genrandomnpc()

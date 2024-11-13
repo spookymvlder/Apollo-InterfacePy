@@ -145,6 +145,15 @@
                 </div>
             </div>
             <div class="row">
+                <label> Items</label>
+                <ul>
+                    {% for item in npc.items %}
+                    <li>{{ item.name }}</li>
+                    {% endfor %}
+                </ul>
+
+            </div>
+            <div class="row">
                 <button type="submit" class="btn btn-primary" id="save">Save Character</button>
             </div>
         </form>
