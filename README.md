@@ -9,6 +9,8 @@ After pip is installed, run "pip install Flask" from the command line. Then run 
 
 Change your directory on the command line to your project's directory, and then run "flask run". This should launch a locally hosted website in a browser window, which will let you use the tool. It may be necessary to click on an IP address that appears in the terminal window to open the browser.
 
+*Note that while this project is structured like a website, it currently can't be deployed as one. The current build does not yet implement any session based storage, so any saved data would be accessible to all users.
+
 #### Description: 
 The Apollo Interface is a tool made to assist players running Frea League Publishing's Alien RPG. This is primarily through generation of random objects, but differs from many online tools that are similar by allowing users to save the randomly generated objects and make notes about them for reference later.
 
