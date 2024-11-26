@@ -195,6 +195,7 @@ class NationNameTable:
         "AUS",
         "AZE",
         "CHL",
+        "CHN",
         "DEU",
         "EGY",
         "ESP",
@@ -241,6 +242,12 @@ class NationNameTable:
                 tables.append(CHL.sur)
                 tables.append(CHL.fem)
                 tables.append(CHL.mal)
+            case "CHN":
+                if nation not in NationNameTable.namelist:
+                    CHN()
+                tables.append(CHN.sur)
+                tables.append(CHN.fem)
+                tables.append(CHN.mal)
             case "DEU":
                 if nation not in NationNameTable.namelist:
                     DEU()
@@ -365,6 +372,17 @@ class CHL():
         CHL.fem = initializetxt(Path(r'static\names\FCHL.txt'))
         CHL.mal = initializetxt(Path(r'static\names\MCHL.txt'))
         NationNameTable.namelist.append("CHL")
+
+class CHN():
+    sur = []
+    fem = []
+    mal = []
+    factions = []
+    def __init__(self):
+        CHN.sur = initializetxt(Path(r'static\names\SURCHN.txt'))
+        CHN.fem = initializetxt(Path(r'static\names\FCHN.txt'))
+        CHN.mal = initializetxt(Path(r'static\names\MCHN.txt'))
+        NationNameTable.namelist.append("CHN")
 
 class DEU():
     sur = []

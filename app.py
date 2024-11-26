@@ -346,7 +346,7 @@ def export():
         "ships" : ships,
         "stars" : stars
     }
-    # JSON export and import code generated with help from chatgpt.
+    # JSON export and import code.
     json_data = json.dumps(exportlist, indent=6)
     return_data = io.BytesIO()
     return_data.write(json_data.encode('utf-8'))
@@ -381,11 +381,11 @@ def import_file():
         return redirect("/saved")
     return jsonify({"error": "Invalid file format"}), 400
 
-
-@app.template_filter(name="linebreaksbr")
+# Commenting out for now, doesn't appear to be in use.
+'''@app.template_filter(name="linebreaksbr")
 def linebreaksbr_filter(text):
     string = text.__str__().replace("\n", "<br>")
-    return Markup(string)
+    return Markup(string)'''
 
 def loadjson(data):
     factions = data.get("factions")
@@ -415,4 +415,4 @@ for planet in star.solarobjects:
         mooncount = 0
     Planet.editplanet(planet, planet.pname, planet.distance, planet.ptype, planet.atmo, planet.mass, planet.radius, planet.basetemp, planet.pressure, mooncount, planet.factions, planet.lwater, planet.rings, planet.life, planet.notes, planet.surveyed, star)
 '''
-Npc.genrandomnpc()
+#Npc.genrandomnpc()
