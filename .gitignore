@@ -1,5 +1,6 @@
 __pycache__/
-*.py[codz]
-*$py.class
-.vscode
-flask_session
+*.pyc
+.venv/
+flask_session/
+uploads/
+flask.log

@@ -1,4 +1,4 @@
-import sys, random, os, json, io
+import sys, random, os, json, io, copy, threading
 from datetime import datetime
 
 from factions import Faction, initializeall
@@ -18,6 +18,15 @@ from savedobjects import ShipList, NpcList, StarList, CatList, FactionList
 from helpers import convertbool
 from stats import JobList, ItemList
 
+# Snapshot the canonical default factions immediately after initializeall() so
+# every new user session starts from a clean copy. Anything added or edited by
+# a user lives only in their session, never on these defaults.
+_DEFAULT_FACTIONS = copy.deepcopy(FactionList.factionlist)
+_DEFAULT_FACTIONSHIPS = copy.deepcopy(FactionList.factionshiplist)
+# initializeall() leaves masterid stuck at 1 because CSV factions pass explicit
+# ids that bypass genfactionid. Compute the real next-free id from the defaults.
+_DEFAULT_FACTION_MASTERID = max((f.id for f in _DEFAULT_FACTIONS), default=-1) + 1
+
 
 
 
@@ -34,6 +43,14 @@ def idtoname(id):
 
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
+# Explicit session dir + ensure it exists. cachelib uses tempfile.mkstemp(dir=...)
+# which fails silently on missing dir, leaving sessions un-persisted.
+app.config["SESSION_FILE_DIR"] = os.path.join(os.path.dirname(__file__), "flask_session")
+os.makedirs(app.config["SESSION_FILE_DIR"], exist_ok=True)
+# In production set APOLLO_SECRET_KEY to a stable random string so sessions
+# survive process restarts. The os.urandom fallback keeps local dev working
+# but invalidates everyone's sessions on every restart.
+app.config["SECRET_KEY"] = os.environ.get("APOLLO_SECRET_KEY") or os.urandom(32)
 app.jinja_env.globals.update(idtoname=idtoname)
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads')
 
@@ -42,6 +59,96 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 
 Session(app)
 
+
+# Per-session state.
+#
+# The legacy code (60+ callsites across 9 files) reads and writes class-level
+# lists like NpcList.npclist directly. To avoid rewriting all of it, we keep
+# those class attributes as the working surface but rebind them per request:
+# before each request we hydrate them from the user's session (or seed
+# defaults), and after each request we persist them back. The lock serializes
+# the hot section so two concurrent requests in the same worker can't clobber
+# each other's view of the class state.
+_state_lock = threading.Lock()
+
+def _seed_defaults_into_classes():
+    NpcList.npclist = []
+    NpcList.masterid = 1
+    StarList.starlist = []
+    StarList.masterid = 1
+    StarList.tempstar = ""
+    ShipList.shiplist = []
+    ShipList.masterid = 1
+    ShipList.tempship = ""
+    CatList.catlist = []
+    CatList.masterid = 1
+    FactionList.factionlist = copy.deepcopy(_DEFAULT_FACTIONS)
+    # factionshiplist must point to the same Faction instances that live in
+    # factionlist, not separate copies — many code paths compare by identity
+    # or mutate one and expect the other to see it.
+    by_id = {f.id: f for f in FactionList.factionlist}
+    FactionList.factionshiplist = [by_id[f.id] for f in _DEFAULT_FACTIONSHIPS if f.id in by_id]
+    FactionList.masterid = _DEFAULT_FACTION_MASTERID
+
+@app.before_request
+def _hydrate_state():
+    _state_lock.acquire()
+    try:
+        bundle = session.get("apollo_state")
+        if bundle is None:
+            _seed_defaults_into_classes()
+            return
+        NpcList.npclist = bundle["npclist"]
+        NpcList.masterid = bundle["npc_masterid"]
+        StarList.starlist = bundle["starlist"]
+        StarList.masterid = bundle["star_masterid"]
+        StarList.tempstar = bundle["tempstar"]
+        ShipList.shiplist = bundle["shiplist"]
+        ShipList.masterid = bundle["ship_masterid"]
+        ShipList.tempship = bundle["tempship"]
+        CatList.catlist = bundle["catlist"]
+        CatList.masterid = bundle["cat_masterid"]
+        FactionList.factionlist = bundle["factionlist"]
+        FactionList.factionshiplist = bundle["factionshiplist"]
+        FactionList.masterid = bundle["faction_masterid"]
+    except Exception:
+        # If anything goes wrong rehydrating (e.g. an old/incompatible session
+        # blob from before a code change), fall back to defaults rather than
+        # holding the lock forever or 500ing every request.
+        _seed_defaults_into_classes()
+
+@app.after_request
+def _persist_state(response):
+    # after_request runs before flask-session saves the session cookie/file.
+    # teardown_request would be too late (it fires after save_session).
+    try:
+        session["apollo_state"] = {
+            "npclist": NpcList.npclist,
+            "npc_masterid": NpcList.masterid,
+            "starlist": StarList.starlist,
+            "star_masterid": StarList.masterid,
+            "tempstar": StarList.tempstar,
+            "shiplist": ShipList.shiplist,
+            "ship_masterid": ShipList.masterid,
+            "tempship": ShipList.tempship,
+            "catlist": CatList.catlist,
+            "cat_masterid": CatList.masterid,
+            "factionlist": FactionList.factionlist,
+            "factionshiplist": FactionList.factionshiplist,
+            "faction_masterid": FactionList.masterid,
+        }
+    except Exception:
+        pass
+    return response
+
+@app.teardown_request
+def _release_state_lock(exc):
+    # teardown_request always runs, even on exceptions in the view or in
+    # after_request handlers, so it's the right place to release the lock.
+    try:
+        _state_lock.release()
+    except RuntimeError:
+        pass
 
 
 # TODO Break out posts so a banner appears if invalid combination attempted to be saved. Or warning that invalid combinations will be automatically resolved.
