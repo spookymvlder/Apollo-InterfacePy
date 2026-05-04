@@ -176,11 +176,6 @@ Richard M. Nixon
 Gerald R. Ford
 Jimmy Carter
 Ronald Reagan
-George H. W. Bush
-Bill Clinton
-George W. Bush
-Barack Obama
-Joseph R. Biden
 Martha Washington
 Abigail Adams
 Martha Wayles Skelton Jefferson
@@ -222,11 +217,6 @@ Pat Nixon
 Betty Ford
 Rosalynn Carter
 Nancy Reagan
-Barbara Bush
-Hillary Rodham Clinton
-Laura Bush
-Michelle Obama
-Jill Biden
 Aaron Burr
 George Clinton
 Elbridge Gerry
@@ -256,8 +246,4 @@ Hubert Humphrey
 Spiro T. Agnew
 Nelson Rockefeller
 Walter F. Mondale
-Dan Quayle
-Albert Gore
-Richard Cheney
-Mike Pence
-Kamala Harris
+George H. W. Bush
