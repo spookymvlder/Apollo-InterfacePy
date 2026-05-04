@@ -1,5 +1,5 @@
 import sys, random, os, json, io, copy, threading
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from factions import Faction, initializeall
 initializeall()
@@ -41,8 +41,12 @@ app = Flask(__name__)
 def idtoname(id):
     return Faction.idtoname(id)
 
-app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_PERMANENT"] = True
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=30)
 app.config["SESSION_TYPE"] = "filesystem"
+# Bounds disk usage: once 500 session files exist, cachelib prunes oldest on
+# write. ~5KB/session ≈ 2.5MB ceiling, comfortable on a free PythonAnywhere disk.
+app.config["SESSION_FILE_THRESHOLD"] = 500
 # Explicit session dir + ensure it exists. cachelib uses tempfile.mkstemp(dir=...)
 # which fails silently on missing dir, leaving sessions un-persisted.
 app.config["SESSION_FILE_DIR"] = os.path.join(os.path.dirname(__file__), "flask_session")
