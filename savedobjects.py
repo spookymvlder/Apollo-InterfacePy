@@ -146,7 +146,7 @@ class CountryList:
 
     def __init__(self):
         fieldnames = ["Country", "Abbr", "Code"]
-        with open(r'static\iso_codes.csv', newline='') as csvfile:
+        with open(r'static/iso_codes.csv', newline='') as csvfile:
             reader = csv.DictReader(csvfile, fieldnames)
             for row in reader:
                 CountryList.countrylist[row['Abbr']] = []

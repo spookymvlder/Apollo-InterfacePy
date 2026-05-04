@@ -346,7 +346,7 @@ class Faction:
         return self.name
 
 def initializefactionlist():
-    with open(r'static\FactionList_new.csv', newline='') as csvfile:
+    with open(r'static/FactionList_new.csv', newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             namelist = list((row['NameList'].split(",")))

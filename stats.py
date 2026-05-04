@@ -339,14 +339,14 @@ class Item:
 
 
 def initializeitemlist():
-    with open(r'static\jobsitems\items.csv', newline='') as csvfile:
+    with open(r'static/jobsitems/items.csv', newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             typelist = list((row['Type'].split(",")))
             ItemList.additem(Item(row['Name'], typelist, int(row['Value']), int(row['Id'])))
 
 def initializejobtypes():
-    with open(r'static\jobsitems\JobTypes.csv', newline='') as csvfile:
+    with open(r'static/jobsitems/JobTypes.csv', newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             itemdict = {
@@ -370,7 +370,7 @@ def initializejobtypes():
             JobTypeList.addjobtype(JobType(row['Job Type'], itemdict, int(row['id'])))
             
 def initializejoblist():
-    with open(r'static\jobsitems\Jobs.csv', newline='') as csvfile:
+    with open(r'static/jobsitems/Jobs.csv', newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             typelist = list((row['Type'].split(",")))

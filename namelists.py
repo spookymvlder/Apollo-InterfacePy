@@ -24,77 +24,77 @@ class AnimalName:
     newnamelist = []
     
     def __init__(self):
-        AnimalName.namelist = initializetxt(Path(r'static\other_names\animals.txt'))
+        AnimalName.namelist = initializetxt(Path(r'static/other_names/animals.txt'))
 
 class MythicalName:
     namelist = []
     newnamelist = []
     
     def __init__(self):
-        MythicalName.namelist = initializetxt(Path(r'static\other_names\mythical.txt'))
+        MythicalName.namelist = initializetxt(Path(r'static/other_names/mythical.txt'))
 
 class FantasyJobs:
     namelist = []
     newnamelist = []
     
     def __init__(self):
-        FantasyJobs.namelist = initializetxt(Path(r'static\other_names\fantasyjobs.txt'))
+        FantasyJobs.namelist = initializetxt(Path(r'static/other_names/fantasyjobs.txt'))
 
 class PredatorName:
     namelist = []
     newnamelist = []
     
     def __init__(self):
-        PredatorName.namelist = initializetxt(Path(r'static\other_names\predators.txt'))
+        PredatorName.namelist = initializetxt(Path(r'static/other_names/predators.txt'))
 
 class WeatherName:
     namelist = []
     newnamelist = []
     
     def __init__(self):
-        WeatherName.namelist = initializetxt(Path(r'static\other_names\weather.txt'))
+        WeatherName.namelist = initializetxt(Path(r'static/other_names/weather.txt'))
 
 class CargoName:
     namelist = []
     newnamelist = []
     
     def __init__(self):
-        CargoName.namelist = initializetxt(Path(r'static\other_names\cargo.txt'))
+        CargoName.namelist = initializetxt(Path(r'static/other_names/cargo.txt'))
 
 class YachtName:
     namelist = []
     newnamelist = []
     
     def __init__(self):
-        YachtName.namelist = initializetxt(Path(r'static\other_names\yachts.txt'))
+        YachtName.namelist = initializetxt(Path(r'static/other_names/yachts.txt'))
 
 class ExplorerName:
     namelist = []
     newnamelist = []
     
     def __init__(self):
-        ExplorerName.namelist = initializetxt(Path(r'static\other_names\explorers.txt'))
+        ExplorerName.namelist = initializetxt(Path(r'static/other_names/explorers.txt'))
 
 class CourierName:
     namelist = []
     newnamelist = []
     
     def __init__(self):
-        CourierName.namelist = initializetxt(Path(r'static\other_names\couriers.txt'))
+        CourierName.namelist = initializetxt(Path(r'static/other_names/couriers.txt'))
 
 class AdjectiveName:
     namelist = []
     newnamelist = []
 
     def __init__(self):
-        AdjectiveName.namelist = initializetxt(Path(r'static\other_names\adjectives.txt'))
+        AdjectiveName.namelist = initializetxt(Path(r'static/other_names/adjectives.txt'))
 
 class ColorName:
     namelist = []
     newnamelist = []
 
     def __init__(self):
-        ColorName.namelist = initializetxt(Path(r'static\other_names\colors.txt'))
+        ColorName.namelist = initializetxt(Path(r'static/other_names/colors.txt'))
 
 
 class USName:
@@ -102,28 +102,28 @@ class USName:
     newnamelist = []
 
     def __init__(self):
-        USName.namelist = initializetxt(Path(r'static\other_names\USnames.txt'))
+        USName.namelist = initializetxt(Path(r'static/other_names/USnames.txt'))
 
 class TWEName:
     namelist = []
     newnamelist = []
 
     def __init__(self):
-        TWEName.namelist = initializetxt(Path(r'static\other_names\TWEnames.txt'))
+        TWEName.namelist = initializetxt(Path(r'static/other_names/TWEnames.txt'))
 
 class UPPName:
     namelist = []
     newnamelist = []
 
     def __init__(self):
-        UPPName.namelist = initializetxt(Path(r'static\other_names\UPPnames.txt'))
+        UPPName.namelist = initializetxt(Path(r'static/other_names/UPPnames.txt'))
 
 class TerrainName:
     namelist = []
     newnamelist = []
 
     def __init__(self):
-        TerrainName.namelist = initializetxt(Path(r'static\other_names\terrain.txt'))
+        TerrainName.namelist = initializetxt(Path(r'static/other_names/terrain.txt'))
 
 def returnNameList(category):
     tlist = ""
@@ -324,9 +324,9 @@ class AFG:
     mal = []
     factions = []
     def __init__(self):
-        AFG.sur = initializetxt(Path(r'static\names\SURAFG.txt'))
-        AFG.fem = initializetxt(Path(r'static\names\FAFG.txt'))
-        AFG.mal = initializetxt(Path(r'static\names\MAFG.txt'))
+        AFG.sur = initializetxt(Path(r'static/names/SURAFG.txt'))
+        AFG.fem = initializetxt(Path(r'static/names/FAFG.txt'))
+        AFG.mal = initializetxt(Path(r'static/names/MAFG.txt'))
         NationNameTable.namelist.append("AFG")
 
 class ARG():
@@ -335,9 +335,9 @@ class ARG():
     mal = []
     factions = []
     def __init__(self):
-        ARG.sur = initializetxt(Path(r'static\names\SURARG.txt'))
-        ARG.fem = initializetxt(Path(r'static\names\FARG.txt'))
-        ARG.mal = initializetxt(Path(r'static\names\MARG.txt'))
+        ARG.sur = initializetxt(Path(r'static/names/SURARG.txt'))
+        ARG.fem = initializetxt(Path(r'static/names/FARG.txt'))
+        ARG.mal = initializetxt(Path(r'static/names/MARG.txt'))
         NationNameTable.namelist.append("ARG")
 
 class AUS():
@@ -346,9 +346,9 @@ class AUS():
     mal = []
     factions = []
     def __init__(self):
-        AUS.sur = initializetxt(Path(r'static\names\SURAUS.txt'))
-        AUS.fem = initializetxt(Path(r'static\names\FAUS.txt'))
-        AUS.mal = initializetxt(Path(r'static\names\MAUS.txt'))
+        AUS.sur = initializetxt(Path(r'static/names/SURAUS.txt'))
+        AUS.fem = initializetxt(Path(r'static/names/FAUS.txt'))
+        AUS.mal = initializetxt(Path(r'static/names/MAUS.txt'))
         NationNameTable.namelist.append("AUS")
 
 class AZE():
@@ -357,9 +357,9 @@ class AZE():
     mal = []
     factions = []
     def __init__(self):
-        AZE.sur = initializetxt(Path(r'static\names\SURAZE.txt'))
-        AZE.fem = initializetxt(Path(r'static\names\FAZE.txt'))
-        AZE.mal = initializetxt(Path(r'static\names\MAZE.txt'))
+        AZE.sur = initializetxt(Path(r'static/names/SURAZE.txt'))
+        AZE.fem = initializetxt(Path(r'static/names/FAZE.txt'))
+        AZE.mal = initializetxt(Path(r'static/names/MAZE.txt'))
         NationNameTable.namelist.append("AZE")
 
 class CHL():
@@ -368,9 +368,9 @@ class CHL():
     mal = []
     factions = []
     def __init__(self):
-        CHL.sur = initializetxt(Path(r'static\names\SURCHL.txt'))
-        CHL.fem = initializetxt(Path(r'static\names\FCHL.txt'))
-        CHL.mal = initializetxt(Path(r'static\names\MCHL.txt'))
+        CHL.sur = initializetxt(Path(r'static/names/SURCHL.txt'))
+        CHL.fem = initializetxt(Path(r'static/names/FCHL.txt'))
+        CHL.mal = initializetxt(Path(r'static/names/MCHL.txt'))
         NationNameTable.namelist.append("CHL")
 
 class CHN():
@@ -379,9 +379,9 @@ class CHN():
     mal = []
     factions = []
     def __init__(self):
-        CHN.sur = initializetxt(Path(r'static\names\SURCHN.txt'))
-        CHN.fem = initializetxt(Path(r'static\names\FCHN.txt'))
-        CHN.mal = initializetxt(Path(r'static\names\MCHN.txt'))
+        CHN.sur = initializetxt(Path(r'static/names/SURCHN.txt'))
+        CHN.fem = initializetxt(Path(r'static/names/FCHN.txt'))
+        CHN.mal = initializetxt(Path(r'static/names/MCHN.txt'))
         NationNameTable.namelist.append("CHN")
 
 class DEU():
@@ -389,9 +389,9 @@ class DEU():
     fem = []
     mal = []
     def __init__(self):
-        DEU.sur = initializetxt(Path(r'static\names\SURDEU.txt'))
-        DEU.fem = initializetxt(Path(r'static\names\FDEU.txt'))
-        DEU.mal = initializetxt(Path(r'static\names\MDEU.txt'))
+        DEU.sur = initializetxt(Path(r'static/names/SURDEU.txt'))
+        DEU.fem = initializetxt(Path(r'static/names/FDEU.txt'))
+        DEU.mal = initializetxt(Path(r'static/names/MDEU.txt'))
         NationNameTable.namelist.append("DEU")
 
 class EGY():
@@ -399,9 +399,9 @@ class EGY():
     fem = []
     mal = []
     def __init__(self):
-        EGY.sur = initializetxt(Path(r'static\names\SUREGY.txt'))
-        EGY.fem = initializetxt(Path(r'static\names\FEGY.txt'))
-        EGY.mal = initializetxt(Path(r'static\names\MEGY.txt'))
+        EGY.sur = initializetxt(Path(r'static/names/SUREGY.txt'))
+        EGY.fem = initializetxt(Path(r'static/names/FEGY.txt'))
+        EGY.mal = initializetxt(Path(r'static/names/MEGY.txt'))
         NationNameTable.namelist.append("EGY")
 
 class ESP():
@@ -409,9 +409,9 @@ class ESP():
     fem = []
     mal = []
     def __init__(self):
-        ESP.sur = initializetxt(Path(r'static\names\SURESP.txt'))
-        ESP.fem = initializetxt(Path(r'static\names\FESP.txt'))
-        ESP.mal = initializetxt(Path(r'static\names\MESP.txt'))
+        ESP.sur = initializetxt(Path(r'static/names/SURESP.txt'))
+        ESP.fem = initializetxt(Path(r'static/names/FESP.txt'))
+        ESP.mal = initializetxt(Path(r'static/names/MESP.txt'))
         NationNameTable.namelist.append("ESP")
 
 class FJI():
@@ -419,9 +419,9 @@ class FJI():
     fem = []
     mal = []
     def __init__(self):
-        FJI.sur = initializetxt(Path(r'static\names\SURFJI.txt'))
-        FJI.fem = initializetxt(Path(r'static\names\FFJI.txt'))
-        FJI.mal = initializetxt(Path(r'static\names\MFJI.txt'))
+        FJI.sur = initializetxt(Path(r'static/names/SURFJI.txt'))
+        FJI.fem = initializetxt(Path(r'static/names/FFJI.txt'))
+        FJI.mal = initializetxt(Path(r'static/names/MFJI.txt'))
         NationNameTable.namelist.append("FJI")
 
 class FRA():
@@ -429,9 +429,9 @@ class FRA():
     fem = []
     mal = []
     def __init__(self):
-        FRA.sur = initializetxt(Path(r'static\names\SURFRA.txt'))
-        FRA.fem = initializetxt(Path(r'static\names\FFRA.txt'))
-        FRA.mal = initializetxt(Path(r'static\names\MFRA.txt'))
+        FRA.sur = initializetxt(Path(r'static/names/SURFRA.txt'))
+        FRA.fem = initializetxt(Path(r'static/names/FFRA.txt'))
+        FRA.mal = initializetxt(Path(r'static/names/MFRA.txt'))
         NationNameTable.namelist.append("FRA")
 
 class IDN():
@@ -439,9 +439,9 @@ class IDN():
     fem = []
     mal = []
     def __init__(self):
-        IDN.sur = initializetxt(Path(r'static\names\SURIDN.txt'))
-        IDN.fem = initializetxt(Path(r'static\names\FIDN.txt'))
-        IDN.mal = initializetxt(Path(r'static\names\MIDN.txt'))
+        IDN.sur = initializetxt(Path(r'static/names/SURIDN.txt'))
+        IDN.fem = initializetxt(Path(r'static/names/FIDN.txt'))
+        IDN.mal = initializetxt(Path(r'static/names/MIDN.txt'))
         NationNameTable.namelist.append("IDN") 
 
 class IND():
@@ -449,9 +449,9 @@ class IND():
     fem = []
     mal = []
     def __init__(self):
-        IND.sur = initializetxt(Path(r'static\names\SURIND.txt'))
-        IND.fem = initializetxt(Path(r'static\names\FIND.txt'))
-        IND.mal = initializetxt(Path(r'static\names\MIND.txt')) 
+        IND.sur = initializetxt(Path(r'static/names/SURIND.txt'))
+        IND.fem = initializetxt(Path(r'static/names/FIND.txt'))
+        IND.mal = initializetxt(Path(r'static/names/MIND.txt')) 
         NationNameTable.namelist.append("IND")
 
 class IRN():
@@ -459,9 +459,9 @@ class IRN():
     fem = []
     mal = []
     def __init__(self):
-        IRN.sur = initializetxt(Path(r'static\names\SURIRN.txt'))
-        IRN.fem = initializetxt(Path(r'static\names\FIRN.txt'))
-        IRN.mal = initializetxt(Path(r'static\names\MIRN.txt'))
+        IRN.sur = initializetxt(Path(r'static/names/SURIRN.txt'))
+        IRN.fem = initializetxt(Path(r'static/names/FIRN.txt'))
+        IRN.mal = initializetxt(Path(r'static/names/MIRN.txt'))
         NationNameTable.namelist.append("IRN")
 
 class JPN():
@@ -469,9 +469,9 @@ class JPN():
     fem = []
     mal = []
     def __init__(self):
-        JPN.sur = initializetxt(Path(r'static\names\SURJPN.txt'))
-        JPN.fem = initializetxt(Path(r'static\names\FJPN.txt'))
-        JPN.mal = initializetxt(Path(r'static\names\MJPN.txt'))
+        JPN.sur = initializetxt(Path(r'static/names/SURJPN.txt'))
+        JPN.fem = initializetxt(Path(r'static/names/FJPN.txt'))
+        JPN.mal = initializetxt(Path(r'static/names/MJPN.txt'))
         NationNameTable.namelist.append("JPN")
 
 class RUS():
@@ -479,9 +479,9 @@ class RUS():
     fem = []
     mal = []
     def __init__(self):
-        RUS.sur = initializetxt(Path(r'static\names\SURRUS.txt'))
-        RUS.fem = initializetxt(Path(r'static\names\FRUS.txt'))
-        RUS.mal = initializetxt(Path(r'static\names\MRUS.txt'))
+        RUS.sur = initializetxt(Path(r'static/names/SURRUS.txt'))
+        RUS.fem = initializetxt(Path(r'static/names/FRUS.txt'))
+        RUS.mal = initializetxt(Path(r'static/names/MRUS.txt'))
         NationNameTable.namelist.append("RUS")
 
 class USA():
@@ -489,9 +489,9 @@ class USA():
     fem = []
     mal = []
     def __init__(self):
-        USA.sur = initializetxtUSA(Path(r'static\names\SURUSA.txt'))
-        USA.fem = initializetxtUSA(Path(r'static\names\FUSA.txt'))
-        USA.mal = initializetxtUSA(Path(r'static\names\MUSA.txt'))  
+        USA.sur = initializetxtUSA(Path(r'static/names/SURUSA.txt'))
+        USA.fem = initializetxtUSA(Path(r'static/names/FUSA.txt'))
+        USA.mal = initializetxtUSA(Path(r'static/names/MUSA.txt'))  
         NationNameTable.namelist.append("USA")
 
 
@@ -502,9 +502,9 @@ class CatNames:
     load = False
 
     def __init__(self):
-        CatNames.fcat = initializetxt(Path(r'static\other_names\FCAT.txt'))
-        CatNames.mcat = initializetxt(Path(r'static\other_names\MCAT.txt'))
-        CatNames.gcat = initializetxt(Path(r'static\other_names\GENERICCAT.txt'))
+        CatNames.fcat = initializetxt(Path(r'static/other_names/FCAT.txt'))
+        CatNames.mcat = initializetxt(Path(r'static/other_names/MCAT.txt'))
+        CatNames.gcat = initializetxt(Path(r'static/other_names/GENERICCAT.txt'))
         CatNames.load = True
     
 
