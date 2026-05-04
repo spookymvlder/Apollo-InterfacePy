@@ -113,6 +113,8 @@ class HullType:
                 ordenance = random.choice(["light", "support", "defensive"])
             case "patrol":
                 ordenance = "light"
+            case _:
+                ordenance = "none"
         return ordenance
             
     def genarmorcat(type, category):

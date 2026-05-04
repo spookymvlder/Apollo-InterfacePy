@@ -381,11 +381,10 @@ def import_file():
         return redirect("/saved")
     return jsonify({"error": "Invalid file format"}), 400
 
-# Commenting out for now, doesn't appear to be in use.
-'''@app.template_filter(name="linebreaksbr")
+@app.template_filter(name="linebreaksbr")
 def linebreaksbr_filter(text):
     string = text.__str__().replace("\n", "<br>")
-    return Markup(string)'''
+    return Markup(string)
 
 def loadjson(data):
     factions = data.get("factions")

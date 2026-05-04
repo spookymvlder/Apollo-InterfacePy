@@ -10,7 +10,7 @@ from savedobjects import CatList
 
 
 class Cat:
-    mutationlist = ["dichoic", "albino"]
+    mutationlist = ["dichroic", "albino"]
     eyecolorlist = ["blue", "hazel", "gold", "yellow", "amber", "orange", "copper", "pink"]
     colorlist = ["black", "blue grey", "caramel", "brown", "lilac", "cinnamon", "fawn", "orange", "cream", "apricot", "white", "bald"]
     tortlist = ["distinct", "brindled"]
@@ -136,7 +136,7 @@ class Cat:
                     description += f"a {self.color1} cat with "
                 else:
                     description += f"a {self.color1} and {self.color2} cat with "
-            if self.mutation == "dichronic":
+            if self.mutation == "dichroic":
                 description += f"a {self.eye1} and {self.eye2} eye. "
             else:
                 description += f"{self.eye1} eyes. "
