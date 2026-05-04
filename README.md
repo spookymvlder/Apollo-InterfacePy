@@ -2,6 +2,8 @@
 #### Video Demo: https://youtu.be/jYqLi41qsrw
 
 #### Instructions:
+3/19/25 update - I won't be continuing development on the Python version of Apollo Interface. I do plan to continue work in a similar space, but it won't be in Python. I'll update this with a link once I have something in place, but the scope of the project has grown large enough that the current data structure is unweildy. The UI doesn't fully support the item update which was the last major change.
+
 If you have VS Code installed, you'll need to install Flask. Follow these instructions if you're unfamiliar with importing packages
 https://packaging.python.org/en/latest/tutorials/installing-packages/
 
